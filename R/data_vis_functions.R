@@ -164,6 +164,7 @@ plot_dots <- function(Q, K=ncol(Q)-1, group = colnames(Q)[1], max_dotsize = 5, p
 
     {if(pivot & !facet_true)ggplot2::theme(legend.position = "top")}+
     {if(pivot & !facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barwidth = 3))}+
+    {if(pivot & facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}+
 
     {if(facet_true & pivot)ggplot2::facet_wrap(~facet, scales = "free_y", ncol = 1)}+
     {if(facet_true & !pivot)ggplot2::facet_wrap(~facet, scales = "free_x")}+
@@ -173,3 +174,4 @@ plot_dots <- function(Q, K=ncol(Q)-1, group = colnames(Q)[1], max_dotsize = 5, p
 
     ggplot2::xlab(group)
 }
+
