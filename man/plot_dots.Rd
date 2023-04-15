@@ -4,7 +4,14 @@
 \alias{plot_dots}
 \title{Plot the mean mutational signature attributions of each group of samples}
 \usage{
-plot_dots(Q, K = ncol(Q) - 1, group = colnames(Q)[1])
+plot_dots(
+  Q,
+  K = ncol(Q) - 1,
+  group = colnames(Q)[1],
+  max_dotsize = 5,
+  pivot = FALSE,
+  facet
+)
 }
 \arguments{
 \item{Q}{A dataframe, matrix, or array representing mutatational signature
@@ -20,6 +27,14 @@ minus 1 (since one column must specify the group).}
 
 \item{group}{A string specifying the name of the column that describes which
 group/population each sample belongs to. Default is the first column name.}
+
+\item{max_dotsize}{Optional; a number specifying the maximum size for each dot.}
+
+\item{pivot}{Optional; set \code{pivot=TRUE} if you would like to plot groups
+on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.}
+
+\item{facet}{Optional; a string specifying the name of the column by which
+you would like to facet your plot.}
 }
 \value{
 A ggplot object containing a dor plot visualization of the mean

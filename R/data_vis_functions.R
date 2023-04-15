@@ -76,6 +76,11 @@ Q_checker <- function(Q, K, rep) {
 #'   minus 1 (since one column must specify the group).
 #' @param group A string specifying the name of the column that describes which
 #'   group/population each sample belongs to. Default is the first column name.
+#' @param facet Optional; a string specifying the name of the column by which
+#'   you would like to facet your plot.
+#' @param pivot Optional; set \code{pivot=TRUE} if you would like to plot groups
+#'   on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.
+#' @param max_dotsize Optional; a number specifying the maximum size for each dot.
 #' @return A ggplot object containing a dor plot visualization of the mean
 #'   mutational signature attributions
 #' @examples
@@ -105,7 +110,8 @@ Q_checker <- function(Q, K, rep) {
 #' @importFrom dplyr mutate
 #' @importFrom rlang .data
 #' @export
-plot_dots <- function(Q, K=ncol(Q)-1, group = colnames(Q)[1]) {
+plot_dots <- function(Q, K=ncol(Q)-1, group = colnames(Q)[1], max_dotsize = 5, pivot = FALSE, facet) {
+  facet_true = !missing(facet)
 
   signatures = colnames(Q)[(ncol(Q)-K + 1):ncol(Q)]
 
@@ -117,30 +123,53 @@ plot_dots <- function(Q, K=ncol(Q)-1, group = colnames(Q)[1]) {
     dplyr::group_by(group) %>%
     dplyr::summarise(dplyr::across(dplyr::all_of(signatures),
                                    function(x) sum(x > 0)/dplyr::n())) %>%
-    tidyr::pivot_longer(cols = signatures, names_to = "Signature",
-                        values_to = "Proportion\nof tumors\nwith sig.")
-
+    tidyr::pivot_longer(cols = dplyr::all_of(signatures), names_to = "Signature",
+                        values_to = "Proportion_present")
 
   Q_means = Q_sigs %>%
     dplyr::group_by(group) %>%
-    dplyr::summarise(dplyr::across(dplyr::all_of(signatures), mean)) %>%
-    tidyr::pivot_longer(cols = signatures, names_to = "Signature",
-                        values_to = "Mean\nrelative\ncontribution")
+    dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) mean(col[col>0]))) %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(signatures),
+                        names_to = "Signature",
+                        values_to = "Mean_contribution")
 
-  dplyr::inner_join(Q_present, Q_means) %>%
-  ggplot2::ggplot(ggplot2::aes(y = Signature, x = group,
-             color = `Mean\nrelative\ncontribution`,
-             size = `Proportion\nof tumors\nwith sig.`)) +
+
+  plot_data = dplyr::inner_join(Q_present, Q_means) %>%
+    dplyr::mutate(Signature = factor(Signature, ordered = TRUE,
+                                     levels = (signatures))) %>%
+    {if(facet_true){dplyr::left_join(.,
+                                     Q %>%
+                                       dplyr::transmute(group = get(group),
+                                                        facet = get(facet)) %>%
+                                       dplyr::distinct())
+    }else{.}}
+
+  ggplot2::ggplot(plot_data,
+                  ggplot2::aes(y = Signature, x = group,
+                               color = Mean_contribution,
+                               size = Proportion_present)) +
     ggplot2::geom_point() +
-    ggplot2::scale_size_area(max_size=8,
-                    limits = c(0,1), breaks = c(0, 0.5, 1)) +
+    ggplot2::scale_size_continuous(#max_size = max_dotsize,
+      limits = c(0,1), range = c(-1, max_dotsize), breaks = c(0.1, 0.5, 1),
+      name = "Proportion of\ntumors with\nsignature") +
     ggplot2::scale_color_gradientn(colours = c("#E81F27", "#881F92", "#2419F9"),
-                          limits = c(0,1), breaks = c(0, 0.5, 1)) +
+                                   limits = c(0,1), breaks = c(0, 0.5, 1),
+                                   name = "Mean relative\ncontribution in\ntumors with\nsignature") +
     ggplot2::theme_bw()  +
-    # theme(axis.title = element_blank(),
-    #       axis.text.y = ggtext::element_markdown(size = 12),
-    #       axis.text.x = element_text(size = 12, color = c("#199CC9", "#D86600")))+
-    ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3)) +
-    ggplot2::xlab(group)
 
+    {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
+
+    {if(pivot)ggplot2::coord_flip()} +
+    {if(pivot)ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))}+
+
+    {if(pivot & !facet_true)ggplot2::theme(legend.position = "top")}+
+    {if(pivot & !facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barwidth = 3))}+
+
+    {if(facet_true & pivot)ggplot2::facet_wrap(~facet, scales = "free_y", ncol = 1)}+
+    {if(facet_true & !pivot)ggplot2::facet_wrap(~facet, scales = "free_x")}+
+
+    {if(facet_true)ggplot2::theme(strip.background = element_blank(),
+                                  strip.text = element_text(size = 12))}+
+
+    ggplot2::xlab(group)
 }
