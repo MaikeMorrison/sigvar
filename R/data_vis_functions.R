@@ -155,13 +155,13 @@ plot_dots <- function(Q, group = colnames(Q)[1],
                                color = Mean_attribution,
                                size = Proportion_present)) +
     ggplot2::geom_point() +
-    ggplot2::scale_size_continuous(guide = guide_legend(title.position = "top",
-                                                        direction = "vertical"),
+    ggplot2::scale_size_continuous(guide = ggplot2::guide_legend(title.position = "top",
+                                                        direction = "horizontal"),
                                    #max_size = max_dotsize,
                                    limits = c(0,1), range = c(-1, max_dotsize),
-                                   breaks = c(0.1, 0.5, 1),
+                                   breaks = c(0.5, 1),
                                    name = "Proportion of\ntumors with\nsignature") +
-    ggplot2::scale_color_gradientn(guide = guide_colorbar(title.position = "top",
+    ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
                                                           barwidth = 4,
                                                           direction = "horizontal"),
                                    colours = c("#E81F27", "#881F92", "#2419F9"),
@@ -181,8 +181,8 @@ plot_dots <- function(Q, group = colnames(Q)[1],
     {if(facet_true & pivot)ggplot2::facet_wrap(~facet, scales = "free_y", ncol = 1)}+
     {if(facet_true & !pivot)ggplot2::facet_wrap(~facet, scales = "free_x")}+
 
-    {if(facet_true)ggplot2::theme(strip.background = element_blank(),
-                                  strip.text = element_text(size = 12))}+
+    {if(facet_true)ggplot2::theme(strip.background = ggplot2::element_blank(),
+                                  strip.text = ggplot2::element_text(size = 12))}+
 
     ggplot2::xlab(group)
 }
