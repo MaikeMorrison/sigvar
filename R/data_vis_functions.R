@@ -71,11 +71,13 @@ Q_checker <- function(Q, K, rep) {
 #'   contain other information about the sample, and must contain the grouping
 #'   variable. When restricted to the last \code{K} columns, the rows of this
 #'   matrix must sum to 1.
-#' @param K The number of signatures in the matrix. Each vector must
-#'   must have \code{K} categories. Default is the number of columns in \code{Q}
-#'   minus 1 (since one column must specify the group).
 #' @param group A string specifying the name of the column that describes which
 #'   group/population each sample belongs to. Default is the first column name.
+#' @param K Optional; the number of signatures in the matrix. Default is
+#'   \code{K=ncol(Q)-1-as.numeric(!missing(facet))}, the number of columns in
+#'    \code{Q} minus either 1 (since one column must specify the group) or 2 if
+#'   \code{facet} is provided, since one column must specify the variable on
+#'   which to facet.
 #' @param facet Optional; a string specifying the name of the column by which
 #'   you would like to facet your plot.
 #' @param pivot Optional; set \code{pivot=TRUE} if you would like to plot groups
@@ -110,7 +112,11 @@ Q_checker <- function(Q, K, rep) {
 #' @importFrom dplyr mutate
 #' @importFrom rlang .data
 #' @export
-plot_dots <- function(Q, K=ncol(Q)-1, group = colnames(Q)[1], max_dotsize = 5, pivot = FALSE, facet) {
+plot_dots <- function(Q, group = colnames(Q)[1],
+                      K=ncol(Q)-1-as.numeric(!missing(facet)),
+                      max_dotsize = 5,
+                      pivot = FALSE,
+                      facet) {
   facet_true = !missing(facet)
 
   signatures = colnames(Q)[(ncol(Q)-K + 1):ncol(Q)]
@@ -131,7 +137,7 @@ plot_dots <- function(Q, K=ncol(Q)-1, group = colnames(Q)[1], max_dotsize = 5, p
     dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) mean(col[col>0]))) %>%
     tidyr::pivot_longer(cols = dplyr::all_of(signatures),
                         names_to = "Signature",
-                        values_to = "Mean_contribution")
+                        values_to = "Mean_attribution")
 
 
   plot_data = dplyr::inner_join(Q_present, Q_means) %>%
@@ -146,7 +152,7 @@ plot_dots <- function(Q, K=ncol(Q)-1, group = colnames(Q)[1], max_dotsize = 5, p
 
   ggplot2::ggplot(plot_data,
                   ggplot2::aes(y = Signature, x = group,
-                               color = Mean_contribution,
+                               color = Mean_attribution,
                                size = Proportion_present)) +
     ggplot2::geom_point() +
     ggplot2::scale_size_continuous(#max_size = max_dotsize,
@@ -154,7 +160,7 @@ plot_dots <- function(Q, K=ncol(Q)-1, group = colnames(Q)[1], max_dotsize = 5, p
       name = "Proportion of\ntumors with\nsignature") +
     ggplot2::scale_color_gradientn(colours = c("#E81F27", "#881F92", "#2419F9"),
                                    limits = c(0,1), breaks = c(0, 0.5, 1),
-                                   name = "Mean relative\ncontribution in\ntumors with\nsignature") +
+                                   name = "Mean relative\nattribution in\ntumors with\nsignature") +
     ggplot2::theme_bw()  +
 
     {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +

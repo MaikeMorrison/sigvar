@@ -6,8 +6,8 @@
 \usage{
 plot_dots(
   Q,
-  K = ncol(Q) - 1,
   group = colnames(Q)[1],
+  K = ncol(Q) - 1 - as.numeric(!missing(facet)),
   max_dotsize = 5,
   pivot = FALSE,
   facet
@@ -21,12 +21,14 @@ contain other information about the sample, and must contain the grouping
 variable. When restricted to the last \code{K} columns, the rows of this
 matrix must sum to 1.}
 
-\item{K}{The number of signatures in the matrix. Each vector must
-must have \code{K} categories. Default is the number of columns in \code{Q}
-minus 1 (since one column must specify the group).}
-
 \item{group}{A string specifying the name of the column that describes which
 group/population each sample belongs to. Default is the first column name.}
+
+\item{K}{Optional; the number of signatures in the matrix. Default is
+\code{K=ncol(Q)-1-as.numeric(!missing(facet))}, the number of columns in
+\code{Q} minus either 1 (since one column must specify the group) or 2 if
+\code{facet} is provided, since one column must specify the variable on
+which to facet.}
 
 \item{max_dotsize}{Optional; a number specifying the maximum size for each dot.}
 
