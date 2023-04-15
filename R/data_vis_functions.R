@@ -57,16 +57,16 @@ Q_checker <- function(Q, K, rep) {
 
 
 # plot_dots -----------------------------------------------------------------
-#' Plot the mean mutational signature attributions of each group of samples
+#' Plot the mean mutational signature contributions of each group of samples
 #'
 #' This function generates a dot plot with signatures along the y-axis,
 #' group/populations along the x-axis, dot size corresponding to the fraction
 #' of samples in each population containing a signature, and dot color
-#' corresponding to the mean relative attribution of mutations to that
+#' corresponding to the mean relative contribution of mutations to that
 #' signature.
 #'
 #' @param Q A dataframe, matrix, or array representing mutatational signature
-#'   relative attributions.
+#'   relative contributions.
 #'   Each row represents a sample. The first \code{ncol(Q)-K} columns may
 #'   contain other information about the sample, and must contain the grouping
 #'   variable. When restricted to the last \code{K} columns, the rows of this
@@ -84,7 +84,7 @@ Q_checker <- function(Q, K, rep) {
 #'   on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.
 #' @param max_dotsize Optional; a number specifying the maximum size for each dot.
 #' @return A ggplot object containing a dor plot visualization of the mean
-#'   mutational signature attributions
+#'   mutational signature contributions
 #' @examples
 #'   # Make an example matrix.
 #'   # Each row is a sample. Rows sum to 1.
@@ -137,7 +137,7 @@ plot_dots <- function(Q, group = colnames(Q)[1],
     dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) mean(col[col>0]))) %>%
     tidyr::pivot_longer(cols = dplyr::all_of(signatures),
                         names_to = "Signature",
-                        values_to = "Mean_attribution")
+                        values_to = "Mean_contribution")
 
 
   plot_data = dplyr::inner_join(Q_present, Q_means) %>%
@@ -152,7 +152,7 @@ plot_dots <- function(Q, group = colnames(Q)[1],
 
   ggplot2::ggplot(plot_data,
                   ggplot2::aes(y = Signature, x = group,
-                               color = Mean_attribution,
+                               color = Mean_contribution,
                                size = Proportion_present)) +
     ggplot2::geom_point() +
     ggplot2::scale_size_continuous(guide = ggplot2::guide_legend(title.position = "top",
@@ -166,7 +166,7 @@ plot_dots <- function(Q, group = colnames(Q)[1],
                                                           direction = "horizontal"),
                                    colours = c("#E81F27", "#881F92", "#2419F9"),
                                    limits = c(0,1), breaks = c(0, 0.5, 1),
-                                   name = "Mean relative\nattribution in\ntumors with\nsignature") +
+                                   name = "Mean relative\ncontribution in\ntumors with\nsignature") +
     ggplot2::theme_bw()  +
     # ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3)) +
     # {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +

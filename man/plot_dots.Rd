@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_vis_functions.R
 \name{plot_dots}
 \alias{plot_dots}
-\title{Plot the mean mutational signature attributions of each group of samples}
+\title{Plot the mean mutational signature contributions of each group of samples}
 \usage{
 plot_dots(
   Q,
@@ -15,7 +15,7 @@ plot_dots(
 }
 \arguments{
 \item{Q}{A dataframe, matrix, or array representing mutatational signature
-relative attributions.
+relative contributions.
 Each row represents a sample. The first \code{ncol(Q)-K} columns may
 contain other information about the sample, and must contain the grouping
 variable. When restricted to the last \code{K} columns, the rows of this
@@ -40,13 +40,13 @@ you would like to facet your plot.}
 }
 \value{
 A ggplot object containing a dor plot visualization of the mean
-mutational signature attributions
+mutational signature contributions
 }
 \description{
 This function generates a dot plot with signatures along the y-axis,
 group/populations along the x-axis, dot size corresponding to the fraction
 of samples in each population containing a signature, and dot color
-corresponding to the mean relative attribution of mutations to that
+corresponding to the mean relative contribution of mutations to that
 signature.
 }
 \examples{
