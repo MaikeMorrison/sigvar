@@ -155,22 +155,28 @@ plot_dots <- function(Q, group = colnames(Q)[1],
                                color = Mean_attribution,
                                size = Proportion_present)) +
     ggplot2::geom_point() +
-    ggplot2::scale_size_continuous(#max_size = max_dotsize,
-      limits = c(0,1), range = c(-1, max_dotsize), breaks = c(0.1, 0.5, 1),
-      name = "Proportion of\ntumors with\nsignature") +
-    ggplot2::scale_color_gradientn(colours = c("#E81F27", "#881F92", "#2419F9"),
+    ggplot2::scale_size_continuous(guide = guide_legend(title.position = "top",
+                                                        direction = "vertical"),
+                                   #max_size = max_dotsize,
+                                   limits = c(0,1), range = c(-1, max_dotsize),
+                                   breaks = c(0.1, 0.5, 1),
+                                   name = "Proportion of\ntumors with\nsignature") +
+    ggplot2::scale_color_gradientn(guide = guide_colorbar(title.position = "top",
+                                                          barwidth = 4,
+                                                          direction = "horizontal"),
+                                   colours = c("#E81F27", "#881F92", "#2419F9"),
                                    limits = c(0,1), breaks = c(0, 0.5, 1),
                                    name = "Mean relative\nattribution in\ntumors with\nsignature") +
     ggplot2::theme_bw()  +
-
-    {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
+    # ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3)) +
+    # {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
 
     {if(pivot)ggplot2::coord_flip()} +
     {if(pivot)ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))}+
 
-    {if(pivot & !facet_true)ggplot2::theme(legend.position = "top")}+
-    {if(pivot & !facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barwidth = 3))}+
-    {if(pivot & facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}+
+    # {if(pivot & !facet_true)ggplot2::theme(legend.position = "top")}+
+    # {if(pivot & !facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barwidth = 3))}+
+    # {if(pivot & facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}+
 
     {if(facet_true & pivot)ggplot2::facet_wrap(~facet, scales = "free_y", ncol = 1)}+
     {if(facet_true & !pivot)ggplot2::facet_wrap(~facet, scales = "free_x")}+
@@ -180,4 +186,3 @@ plot_dots <- function(Q, group = colnames(Q)[1],
 
     ggplot2::xlab(group)
 }
-
