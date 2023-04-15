@@ -9,6 +9,8 @@ Q_checker <- function(Q, K, rep) {
   if (is.list(Q) && !is.data.frame(Q) && !is.array(Q)) {
     Q <- Q[[1]]
   }
+  # Check if K is too large
+  if(K>ncol(Q)){stop("K is larger than the number of columns in the provided matrix.")}
   # Check if Q matrix is in STRUCTURE/ADMIXTURE output form, or if it only contains columns of ancestry coefficients
   # If it is in STRUCTURE/ADMIXTURE output form, extract the ancestry coefficients--the last K columns.
   if (ncol(Q) > K) {
@@ -117,7 +119,10 @@ plot_dots <- function(Q, group = colnames(Q)[1],
                       max_dotsize = 5,
                       pivot = FALSE,
                       facet) {
+
   facet_true = !missing(facet)
+  # will there be a few facet panels, or many? used to determine # of columns
+  facets_few = ifelse(facet_true, length(unique(unlist(Q[facet])))<4, FALSE)
 
   signatures = colnames(Q)[(ncol(Q)-K + 1):ncol(Q)]
 
@@ -178,7 +183,8 @@ plot_dots <- function(Q, group = colnames(Q)[1],
     # {if(pivot & !facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barwidth = 3))}+
     # {if(pivot & facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}+
 
-    {if(facet_true & pivot)ggplot2::facet_wrap(~facet, scales = "free_y", ncol = 1)}+
+    {if(facet_true & pivot & facets_few)ggplot2::facet_wrap(~facet, scales = "free_y", ncol = 1)}+
+    {if(facet_true & pivot & !facets_few)ggplot2::facet_wrap(~facet, scales = "free_y")}+
     {if(facet_true & !pivot)ggplot2::facet_wrap(~facet, scales = "free_x")}+
 
     {if(facet_true)ggplot2::theme(strip.background = ggplot2::element_blank(),
