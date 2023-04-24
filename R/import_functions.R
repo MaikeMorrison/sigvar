@@ -6,6 +6,12 @@
 #' @export
 #'
 #' @examples
+#' #Import dummy SigProfilerExtractor output results
+#' SPfolder = system.file("extdata", "example_SigProfiler_results", package = "sigFAVA")
+#' Qlist = import_SigProfiler(SPfolder)
+#'
+#' #Plot imported signatures
+#' plot_dots(Qlist[[1]])
 #' @importFrom readr read_tsv
 import_SigProfiler <- function(folder="."){
   # find activity files within the folder
