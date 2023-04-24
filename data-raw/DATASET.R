@@ -7,3 +7,6 @@ usethis::use_data(PCAWG_SigProfiler_COSMIC_SBS)
 usethis::use_data(PCAWG_SigProfiler_COSMIC_DBS)
 usethis::use_data(PCAWG_SigProfiler_COSMIC_ID)
 
+SPfolder = system.file("extdata", "example_SigProfiler_results", package = "sigFAVA")
+internal_for_import_test = import_SigProfiler(SPfolder)
+usethis::use_data(internal_for_import_test, internal = TRUE)

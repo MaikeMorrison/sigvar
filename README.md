@@ -21,36 +21,67 @@ devtools::install_github("MaikeMorrison/sigFAVA")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example which shows you how to import results from
+SigProfiler and plot the signature attributions:
 
 ``` r
 library(sigFAVA)
-## basic example code
+
+SPfolder = system.file("extdata", "example_SigProfiler_results", package = "sigFAVA")
+Qlist = import_SigProfiler(SPfolder)
+#> Rows: 10 Columns: 5
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: "\t"
+#> chr (1): Samples
+#> dbl (4): DBS2, DBS3, DBS5, DBS11
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> Rows: 10 Columns: 3
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: "\t"
+#> chr (1): Samples
+#> dbl (2): DBS78A, DBS78B
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> Rows: 10 Columns: 7
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: "\t"
+#> chr (1): Samples
+#> dbl (6): ID1, ID2, ID3, ID5, ID8, ID9
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> Rows: 10 Columns: 6
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: "\t"
+#> chr (1): Samples
+#> dbl (5): ID83A, ID83B, ID83C, ID83D, ID83E
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> Rows: 10 Columns: 7
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: "\t"
+#> chr (1): Samples
+#> dbl (6): SBS1, SBS5, SBS8, SBS26, SBS30, SBS40
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+#> Rows: 10 Columns: 4
+#> ── Column specification ────────────────────────────────────────────────────────
+#> Delimiter: "\t"
+#> chr (1): Samples
+#> dbl (3): SBS96A, SBS96B, SBS96C
+#> 
+#> ℹ Use `spec()` to retrieve the full column specification for this data.
+#> ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+plot_dots(Qlist[[1]])
+#> Warning in Q_checker(Q, K): At least one Q matrix has rows which do not sum to
+#> exactly 1. Rounding the sum of each row to 1 by dividing all entries by the sum
+#> of the row.
+#> Joining with `by = join_by(group, Signature)`
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+<img src="man/figures/README-example-1.png" width="100%" />
