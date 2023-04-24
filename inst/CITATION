@@ -1,0 +1,13 @@
+citHeader("To cite sigFAVA in publications use:")
+
+bibentry(
+  "Article",
+  title    = "sigFAVA: Quantify and visualize variability of mutational signatures within and across samples",
+  author   = "Maike Morrison, Nicolas Alcala",
+  journal  = "bioRxiv",
+  year     = 2023,
+  volume   = "",
+  number   = "",
+  pages    = "",
+  url      = "",
+)
