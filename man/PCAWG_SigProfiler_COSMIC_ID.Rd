@@ -3,7 +3,7 @@
 \docType{data}
 \name{PCAWG_SigProfiler_COSMIC_ID}
 \alias{PCAWG_SigProfiler_COSMIC_ID}
-\title{Indel COSIMC mutational signatures for 2780 tumors}
+\title{Indel COSMIC mutational signatures for 2780 tumors}
 \format{
 \subsection{\code{PCAWG_SigProfiler_COSMIC_ID}}{
 

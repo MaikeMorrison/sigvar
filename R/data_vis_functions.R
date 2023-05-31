@@ -21,7 +21,7 @@ Q_checker <- function(Q, K, rep) {
   Q <- data.matrix(Q)
 
   # Name Q matrix columns q1, q2, ..., qK
-  colnames(Q) <- paste0("q",1:K)
+  #colnames(Q) <- paste0("q",1:K)
 
   # Check if Q matrix has any missing values, and give warning if necessary
   if(any(is.na(Q))){
@@ -67,7 +67,7 @@ Q_checker <- function(Q, K, rep) {
 #' corresponding to the mean relative contribution of mutations to that
 #' signature.
 #'
-#' @param Q A dataframe, matrix, or array representing mutatational signature
+#' @param Q A dataframe, matrix, or array representing mutational signature
 #'   relative contributions.
 #'   Each row represents a sample. The first \code{ncol(Q)-K} columns may
 #'   contain other information about the sample, and must contain the grouping
@@ -124,10 +124,11 @@ plot_dots <- function(Q, group = colnames(Q)[1],
   # will there be a few facet panels, or many? used to determine # of columns
   facets_few = ifelse(facet_true, length(unique(unlist(Q[facet])))<4, FALSE)
 
-  signatures = colnames(Q)[(ncol(Q)-K + 1):ncol(Q)]
+  if(length(K)>0){ if(K>(ncol(Q)-1) ) warning(paste0("K too large, not enough columns in K; K reduced to ncol(Q)-1=",ncol(Q)-1))}
+  signatures = colnames(Q)[colnames(Q)!=group][1:min(K,ncol(Q)-1)]
 
   Q_sigs = cbind(data.frame("group" = Q[[group]]),
-                 Q_checker(Q, K)) %>%
+                 Q_checker(Q %>% dplyr::select(-group), K)) %>%
     `colnames<-`(c("group", signatures))
 
   Q_present = Q_sigs %>%
@@ -177,7 +178,9 @@ plot_dots <- function(Q, group = colnames(Q)[1],
     # {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
 
     {if(pivot)ggplot2::coord_flip()} +
-    {if(pivot)ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))}+
+    #{if(pivot)
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  #}+
 
     # {if(pivot & !facet_true)ggplot2::theme(legend.position = "top")}+
     # {if(pivot & !facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barwidth = 3))}+

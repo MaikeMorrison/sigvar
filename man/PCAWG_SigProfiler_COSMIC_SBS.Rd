@@ -3,7 +3,7 @@
 \docType{data}
 \name{PCAWG_SigProfiler_COSMIC_SBS}
 \alias{PCAWG_SigProfiler_COSMIC_SBS}
-\title{Single Base Substitution COSIMC mutational signatures for 2780 tumors}
+\title{Single Base Substitution COSMIC mutational signatures for 2780 tumors}
 \format{
 \subsection{\code{PCAWG_SigProfiler_COSMIC_SBS}}{
 

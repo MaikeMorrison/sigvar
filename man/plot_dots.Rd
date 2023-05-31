@@ -14,7 +14,7 @@ plot_dots(
 )
 }
 \arguments{
-\item{Q}{A dataframe, matrix, or array representing mutatational signature
+\item{Q}{A dataframe, matrix, or array representing mutational signature
 relative contributions.
 Each row represents a sample. The first \code{ncol(Q)-K} columns may
 contain other information about the sample, and must contain the grouping
