@@ -58,6 +58,45 @@ Q_checker <- function(Q, K, rep) {
 }
 
 
+# plot_signature_prop -----------------------------------------------------------------
+#' Plot the signature proportion for a set of samples
+#'
+#'
+#' @param Q A dataframe, matrix, or array representing mutational signature
+#'   relative contributions.
+#'   Each row represents a sample.
+plot_signature_prop <- function(Q){
+  # convert to long format
+  Q_long <- Q %>% mutate(Sample=paste0("P",1:nrow(Q))) %>%
+    tidyr::pivot_longer(-Sample,names_to = "Signature",values_to = "Proportion") %>%
+    mutate(Signature = factor(Signature, ordered = TRUE, levels=colnames(Q)[order(colMeans(Q),decreasing = T)]) )
+
+  # order samples
+  Sample_order = Q_long %>% dplyr::group_by(Signature) %>% dplyr::arrange(Proportion) %>% dplyr::pull(Sample) %>% unique()
+  Q_long = Q_long %>% dplyr::mutate(Sample = factor(Sample,levels=Sample_order))
+
+  # create color palette
+  sig_palette = sigFAVA::sbs_palette[levels(Q_long$Signature)[levels(Q_long$Signature)%in%names(sigFAVA::sbs_palette)]]
+  sig_palette = c(sig_palette,
+                  PNWColors::pnw_palette("Sailboat",length(levels(Q_long$Signature))-length(sig_palette) ) %>%
+                    `names<-`(sort(levels(Q_long$Signature)[!levels(Q_long$Signature)%in%names(sigFAVA::sbs_palette)]) ))
+  sig_palette = sig_palette[order(names(sig_palette))]
+
+  ggplot2::ggplot(Q_long,
+       ggplot2::aes(x = Sample, y = Proportion,
+           fill = Signature, color = Signature)) +
+  ggplot2::geom_bar(stat = "identity") +
+  #facet_wrap(~ Group, scales = "free_x", ncol = 4)+
+  scale_color_manual(values = sig_palette) + #, breaks = rev(SBS_sigs)[1:10]) +
+  scale_fill_manual( values = sig_palette) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(#legend.position = "bottom",
+    panel.grid = ggplot2::element_blank(),
+    strip.background = ggplot2::element_blank(), strip.text = ggplot2::element_text(size = 11),
+    axis.text = ggplot2::element_blank()) +
+    ggplot2::ylab("") + ggplot2::xlab("Sample")
+}
+
 # plot_dots -----------------------------------------------------------------
 #' Plot the mean mutational signature contributions of each group of samples
 #'

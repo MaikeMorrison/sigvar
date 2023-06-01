@@ -14,9 +14,10 @@
 #' Qmice[Qmice<0.1] = 0
 #' plot_dots(Qmice, group = "chemical" )
 #' #test
-#' test_covariable(Qlist[[1]],1)
+#' test_covariable(Qlist[[1]],1,1)
 #' @importFrom readr read_tsv
-test_covariable <- function(Q,w){
+test_covariable <- function(Q,covariable,bandwidth){
   test = NA
   return(test)
 }
+

@@ -65,3 +65,16 @@
 #' }
 #' @source <https://github.com/team113sanger/mouse-mutatation-signatures/blob/6a00d910df40d178c373ac4d57849918e9814951/figure1/mexposure.rds>
 "mutsig_carcinogens_mice_SBS"
+
+#' Single Base Substitution COSMIC mutational signatures for 2780 tumors
+#'
+#' Single Base Substitution mutational signature attributions to COSMIC signatures
+#' from the Pan Cancer Whole-Genome consortium (PCAWG). Oct 19 2019 version
+#'
+#' @format ## `sbs_palette`
+#' A vector of colors for COSMIC SBS signatures
+#' \describe{
+#' RGB codes for COSMIC signatures
+#' }
+#' @source <https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples>
+"sbs_palette"

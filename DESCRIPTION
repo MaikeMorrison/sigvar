@@ -18,7 +18,8 @@ Imports:
     ggplot2,
     rlang,
     tidyr,
-    readr
+    readr,
+    FAVA
 Suggests: 
     testthat (>= 3.0.0)
 biocViews: Software, WholeGenome, SomaticMutation, StructuralVariation
