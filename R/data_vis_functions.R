@@ -161,7 +161,7 @@ plot_dots <- function(Q, group = colnames(Q)[1],
 
   facet_true = !missing(facet)
   # will there be a few facet panels, or many? used to determine # of columns
-  facets_few = ifelse(facet_true, length(unique(unlist(Q[facet])))<4, FALSE)
+  facets_few = ifelse(facet_true, length(unique(unlist(Q[facet])))<=4, FALSE)
 
   if(length(K)>0){ if(K>(ncol(Q)-1) ) warning(paste0("K too large, not enough columns in K; K reduced to ncol(Q)-1=",ncol(Q)-1))}
   signatures = colnames(Q)[colnames(Q)!=group][1:min(K,ncol(Q)-1)]
