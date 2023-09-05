@@ -66,6 +66,30 @@
 #' @source <https://github.com/team113sanger/mouse-mutatation-signatures/blob/6a00d910df40d178c373ac4d57849918e9814951/figure1/mexposure.rds>
 "mutsig_carcinogens_mice_SBS"
 
+
+#' Copy Number and Single Base Substitution mutational signatures for 120 malignant pleural mesothelioma from the MESOMICS cohort
+#'
+#' Copy Number and Single Base Substitution mutational signature attributions
+#' from Mangiante et al. Nat Genet 55, 607–618 (2023). https://doi.org/10.1038/s41588-023-01321-1
+#'
+#' @format ## `MESOMICS_CN_SBS`
+#' A tibble with 120 rows and 41 columns:
+#' \describe{
+#'   \item{ID_MESOMICS}{Identifier of the patient}
+#'   \item{Sample}{Identifier of the tumor sample}
+#'   \item{Sex}{Patient sex}
+#'   \item{Age}{Patient age at diagnosis}
+#'   \item{Smoking, Professional.Asbestos, ...}{Patient exposure status}
+#'   \item{Survival.Censor, Survival.Time}{Survival status (dead or alive) and time in months}
+#'   \item{Asbestos.Exposure.probability, Asbestos.Exposure.frequency, ...}{Quantitative asbestos exposure variables}
+#'   \item{Type}{Tumor histological type (WHO)}
+#'   \item{CNB}{Copy number burden}
+#'   \item{CN1,...,CN19}{Copy number signature attributions}
+#'   \item{SBS1,...,SBS40}{Single Base Substitution signature attributions}
+#' }
+#' @source <https://static-content.springer.com/esm/art%3A10.1038%2Fs41588-023-01321-1/MediaObjects/41588_2023_1321_MOESM4_ESM.xlsx>
+"MESOMICS_CN_SBS"
+
 #' Single Base Substitution COSMIC mutational signatures for 2780 tumors
 #'
 #' Single Base Substitution mutational signature attributions to COSMIC signatures
