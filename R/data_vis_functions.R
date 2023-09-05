@@ -69,10 +69,10 @@ plot_signature_prop <- function(Q){
   # convert to long format
   Q_long <- Q %>% mutate(Sample=paste0("P",1:nrow(Q))) %>%
     tidyr::pivot_longer(-Sample,names_to = "Signature",values_to = "Proportion") %>%
-    mutate(Signature = factor(Signature, ordered = TRUE, levels=colnames(Q)[order(colMeans(Q),decreasing = T)]) )
+    mutate(Signature = factor(Signature, ordered = TRUE, levels=colnames(Q)[order(colMeans(Q),decreasing = F)]) )
 
   # order samples
-  Sample_order = Q_long %>% dplyr::group_by(Signature) %>% dplyr::arrange(Proportion) %>% dplyr::pull(Sample) %>% unique()
+  Sample_order = Q_long %>% dplyr::group_by(Signature) %>% dplyr::arrange(desc(Signature),Proportion) %>% dplyr::pull(Sample) %>% unique()
   Q_long = Q_long %>% dplyr::mutate(Sample = factor(Sample,levels=Sample_order))
 
   # create color palette
