@@ -1,0 +1,66 @@
+---
+title: "sigFAVA analysis of the mutational signatures of carcinogens"
+author:
+  - name: "Nicolas Alcala"
+    affiliation: "Rare Cancers Genomics Team, International Agency for Research on Cancer / World Health Organization"
+    email: "alcalan@iarc.who.int"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Mutational signatures of carcinogens}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(sigFAVA)
+```
+
+# Introduction
+
+This vignette details an example of using sigFAVA to detect the effect of exposure to a carcinogen on the variability of mutational signatures. 
+
+# Datasets
+
+## Mutational signatures of tumors from mice exposed to known or suspected carcinogens (Riva et al. Nat Genet 2020)
+
+```{r }
+
+```
+
+## Mutational signatures of malignant pleural mesothelioma patients with various degrees of asbestos exposure (Mangiante et al. Nat Genet 2023)
+
+```{r }
+
+```
+
+# Computing variability statistics
+
+## Gini-Simpson index
+```{r }
+
+```
+
+## FST
+
+# Plotting
+```{r }
+
+```
+
+# Session information
+
+```{r }
+sessionInfo()
+```
+
