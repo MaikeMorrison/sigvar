@@ -90,6 +90,20 @@
 #' @source <https://static-content.springer.com/esm/art%3A10.1038%2Fs41588-023-01321-1/MediaObjects/41588_2023_1321_MOESM4_ESM.xlsx>
 "MESOMICS_CN_SBS"
 
+#' Copy Number reference signatures for COSMIC3.1
+#'
+#' COSMIC 3.1 Copy Number mutational signatures
+#' from Mangiante et al. Nat Genet 55, 607–618 (2023). https://doi.org/10.1038/s41588-023-01321-1
+#'
+#' @format ## `COSMIC3.1_CN`
+#' A tibble with 48 rows and 8 columns:
+#' \describe{
+#'   \item{MutationsType}{Type of segment}
+#'   \item{CN1,...,CN19}{Proportion of Copy number segments in each category}
+#' }
+#' @source <https://static-content.springer.com/esm/art%3A10.1038%2Fs41588-023-01321-1/MediaObjects/41588_2023_1321_MOESM4_ESM.xlsx>
+"COSMIC3.1_CN"
+
 #' Single Base Substitution COSMIC mutational signatures for 2780 tumors
 #'
 #' Single Base Substitution mutational signature attributions to COSMIC signatures

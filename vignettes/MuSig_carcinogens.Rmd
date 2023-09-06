@@ -24,6 +24,9 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(sigFAVA)
+library(FAVA)
+library(ggplot2)
+library(stringr)
 ```
 
 # Introduction
@@ -31,31 +34,61 @@ library(sigFAVA)
 This vignette details an example of using sigFAVA to detect the effect of exposure to a carcinogen on the variability of mutational signatures. 
 
 # Datasets
+This vignettes analyses two public datasets included in the sigFAVA package.
 
 ## Mutational signatures of tumors from mice exposed to known or suspected carcinogens (Riva et al. Nat Genet 2020)
 
 ```{r }
-
+head(mutsig_carcinogens_mice_SBS)
 ```
 
 ## Mutational signatures of malignant pleural mesothelioma patients with various degrees of asbestos exposure (Mangiante et al. Nat Genet 2023)
-
+This dataset was assembled from supplementary tables from Mangiante et al. 2023. It contains metadata (ID, sex, age, exposure), COSMIC copy number signatures (CN1, CN2, etc), and COSMIC single base substitution signatures (SBS1, SBS2, etc).
 ```{r }
-
+head(MESOMICS_CN_SBS)
 ```
 
+For the purpose of this analysis, we will use the Asbestos.Score column, which contains an asbestos score which is the product of exposure probability, intensity, and duration, in units of "years with certain, constant exposure at intensity 1", similar to the concept of pack-years used to quantify exposure to cigarette smoking. For instance, a frequent (1) but uncertain exposure (probability 0.5) of medium intensity (2) for 10 years leads to a score of 1*0.5*2*10=10, similar to that of a frequent (1), certain (probability of 1), low-intensity (1) exposure of 10 years. This score is available for 47 patients, among which 45 have whole-genome sequencing data available and thus mutational signature data.
+
+```{r }
+ggplot(MESOMICS_CN_SBS,aes(x=Asbestos.Score)) + geom_histogram(stat="count") + theme_classic()
+
+table(!is.na(MESOMICS_CN_SBS$Asbestos.Score),!is.na(MESOMICS_CN_SBS$`CNB (number of segments)`))
+```
+
+### Data preparation
+We compute proportions rather than counts for each signature, keeping the ID and asbestos score information, and removing samples without whole-genome sequencing data:
+```{r}
+MESOMICS_CN = MESOMICS_CN_SBS[,str_detect(colnames(MESOMICS_CN_SBS),"^CN[0-9]+") ]
+MESOMICS_CN = sweep(MESOMICS_CN,1,rowSums(MESOMICS_CN),"/")
+MESOMICS_CN = bind_cols(Sample=MESOMICS_CN_SBS$Sample , Asbestos.Score=MESOMICS_CN_SBS$Asbestos.Score, as_tibble(MESOMICS_CN))
+MESOMICS_CN = MESOMICS_CN[colSums(apply(MESOMICS_CN[,-1],1,is.na))==0,] %>% arrange(Asbestos.Score)
+```
+
+
 # Computing variability statistics
+We first compute the cosine similarities between mutational signatures, which we will use to weight the differences between signature such that profiles with plenty of similar signatures are not deemed diverse.
+```{r }
+#sig_cossim <- text2vec::sim2(x = sbs %>% select(all_of(signatures)) %>% as.matrix %>% t,method = "cosine")
+```
 
 ## Gini-Simpson index
+We compute the Gini-Simpson index of all individuals with regards to their CN signatures
 ```{r }
-
+#gini_simpson(MESOMICS_CN[,-1)],time="Asbestos.Score)
+MESOMICS_GS = apply(MESOMICS_CN[,-(1:2)], 1, gini_simpson )
 ```
 
 ## FST
+In this context, FST corresponds to the inter-patient variability of mutational signatures and is computed by function fava
+```{r }
+#fava()
+MESOMICS_GS = apply(MESOMICS_CN[,-(1:2)], 1, gini_simpson )
+```
 
 # Plotting
 ```{r }
-
+ggplot(bind_cols(MESOMICS_CN,GS=MESOMICS_GS) , aes(x=Asbestos.Score,y=GS)) + geom_point() + geom_smooth(method = "lm") + theme_classic()
 ```
 
 # Session information
