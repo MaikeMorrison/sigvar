@@ -27,6 +27,8 @@ library(sigFAVA)
 library(FAVA)
 library(ggplot2)
 library(stringr)
+library(dplyr)
+library(patchwork)
 ```
 
 # Introduction
@@ -37,6 +39,7 @@ This vignette details an example of using sigFAVA to detect the effect of exposu
 This vignettes analyses two public datasets included in the sigFAVA package.
 
 ## Mutational signatures of tumors from mice exposed to known or suspected carcinogens (Riva et al. Nat Genet 2020)
+This dataset was assembled from the supplementary data from Riva et al. 2020. It contains COSMIC mice single base substitution mutational signatures (mSBS) along with the organ where the tumor originated and the chemical substances to which the mouse was exposed, with "spontaneous" being the control tumors arising spontaneously in the absence of any exposure.
 
 ```{r }
 head(mutsig_carcinogens_mice_SBS)
@@ -69,26 +72,51 @@ MESOMICS_CN = MESOMICS_CN[colSums(apply(MESOMICS_CN[,-1],1,is.na))==0,] %>% arra
 # Computing variability statistics
 We first compute the cosine similarities between mutational signatures, which we will use to weight the differences between signature such that profiles with plenty of similar signatures are not deemed diverse.
 ```{r }
-#sig_cossim <- text2vec::sim2(x = sbs %>% select(all_of(signatures)) %>% as.matrix %>% t,method = "cosine")
+sig_cossim <- lsa::cosine(x = COSMIC3.1_CN[,-1] %>% as.matrix)
 ```
 
 ## Gini-Simpson index
 We compute the Gini-Simpson index of all individuals with regards to their CN signatures
 ```{r }
 #gini_simpson(MESOMICS_CN[,-1)],time="Asbestos.Score)
-MESOMICS_GS = apply(MESOMICS_CN[,-(1:2)], 1, gini_simpson )
+MESOMICS_GS = apply(MESOMICS_CN[,-(1:2)], 1, gini_simpson,S=sig_cossim )
 ```
 
 ## FST
-In this context, FST corresponds to the inter-patient variability of mutational signatures and is computed by function fava
+In this context, FST corresponds to the inter-patient variability of mutational signatures and is computed by function fava. We first compute weights for each sample depending on its asbestos score using a gaussian kernel, putting emphasis on either weak, intermediate, or strong exposures (centered around no exposure, median exposure, and max exposure), using a bandwidth of 1 standard deviation in asbestos score. We use the log scale for asbestos scores in order to account for their different orders of magnitude.
 ```{r }
-#fava()
-MESOMICS_GS = apply(MESOMICS_CN[,-(1:2)], 1, gini_simpson )
+MESOMICS_CN$Asbestos.Score.log10 = log(MESOMICS_CN$Asbestos.Score+1,10)
+
+bw = sd(MESOMICS_CN$Asbestos.Score.log10)
+w.asb = sapply(quantile(MESOMICS_CN$Asbestos.Score.log10,c(0,1)), function(x) dnorm(MESOMICS_CN$Asbestos.Score.log10,x,bw))
+w.asb = sweep(w.asb,2, colSums(w.asb),"/")
+```
+
+We compute weighted statistics using bootstrapping for each group and merge the results
+```{r }
+set.seed(0)
+MESOMICS_bootstrap_fava.low            = bootstrap_fava(MESOMICS_CN[,c(3:9)],S=sig_cossim,n_replicates = 1000,w = w.asb[,1])
+MESOMICS_bootstrap_fava.high           = bootstrap_fava(MESOMICS_CN[,c(3:9)],S=sig_cossim,n_replicates = 1000,w = w.asb[,2])
+
+MESOMICS_bootstrap_fava.low$statistics$group = "Weak asbestos exposure"
+MESOMICS_bootstrap_fava.high$statistics$group = "Strong asbestos exposure"
+
+MESOMICS_bootstrap_fava.res = bind_rows(MESOMICS_bootstrap_fava.low$statistics, MESOMICS_bootstrap_fava.high$statistics) 
+MESOMICS_bootstrap_fava.res.mean = MESOMICS_bootstrap_fava.res %>% group_by(group) %>%
+  summarize(FAVA=mean(FAVA),gini_simpson_mean=mean(gini_simpson_mean))
 ```
 
 # Plotting
+Asbestos exposure
 ```{r }
-ggplot(bind_cols(MESOMICS_CN,GS=MESOMICS_GS) , aes(x=Asbestos.Score,y=GS)) + geom_point() + geom_smooth(method = "lm") + theme_classic()
+gg_asbestos <- ggplot(MESOMICS_bootstrap_fava.res , aes(x=gini_simpson_mean,y=FAVA,col=group)) + 
+  geom_point(alpha=0.1) + geom_point(data=MESOMICS_bootstrap_fava.res.mean,size=4) + stat_ellipse(level=0.90) + 
+  xlab("Mean within-sample variability") + ylab("Across-sample\nvariability") + theme_classic()
+```
+
+## Assembling all panels
+```{r }
+gg_asbestos
 ```
 
 # Session information

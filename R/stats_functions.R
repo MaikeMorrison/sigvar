@@ -1,5 +1,5 @@
-#' test_covariable
-#' Test the statistical association between the variability of a Q matrix and a covariable
+#' sigFAVA
+#' Main function for FAVA. Can test the statistical association between the variability of a Q matrix and a covariable
 #' using a moving average with a Gaussian kernel
 #'
 #' @param Q a matrix of mutational signatures in multiple individuals
@@ -16,8 +16,8 @@
 #' #test
 #' test_covariable(Qlist[[1]],1,1)
 #' @importFrom readr read_tsv
-test_covariable <- function(Q,covariable,bandwidth){
-  test = NA
-  return(test)
+sigFAVA <- function(){
+
 }
+
 
