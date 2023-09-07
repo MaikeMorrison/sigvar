@@ -39,7 +39,7 @@ This vignette details an example of using sigFAVA to detect the effect of exposu
 This vignettes analyses two public datasets included in the sigFAVA package.
 
 ## Mutational signatures of tumors from mice exposed to known or suspected carcinogens (Riva et al. Nat Genet 2020)
-This dataset was assembled from the supplementary data from Riva et al. 2020. It contains COSMIC mice single base substitution mutational signatures (mSBS) along with the organ where the tumor originated and the chemical substances to which the mouse was exposed, with "spontaneous" being the control tumors arising spontaneously in the absence of any exposure.
+This dataset was assembled from the supplementary data from Riva et al. 2020. It contains COSMIC mice single base substitution mutational signatures (mSBS) along with the tissue where the tumor originated and the chemical substances to which the mouse was exposed, with "spontaneous" being the control tumors arising spontaneously in the absence of any exposure.
 
 ```{r }
 head(mutsig_carcinogens_mice_SBS)
