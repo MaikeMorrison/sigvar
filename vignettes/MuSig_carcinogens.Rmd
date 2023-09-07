@@ -72,18 +72,25 @@ MESOMICS_CN = MESOMICS_CN[colSums(apply(MESOMICS_CN[,-1],1,is.na))==0,] %>% arra
 # Computing variability statistics
 We first compute the cosine similarities between mutational signatures, which we will use to weight the differences between signature such that profiles with plenty of similar signatures are not deemed diverse.
 ```{r }
-sig_cossim <- lsa::cosine(x = COSMIC3.1_CN[,-1] %>% as.matrix)
+CN_cossim <- lsa::cosine(x = COSMIC3.1_CN[,-1] %>% as.matrix)
+SBSmm_cossim <- lsa::cosine(x = COSMIC3.3.1_SBS_mm10[,-1] %>% as.matrix)
 ```
 
-## Gini-Simpson index
-We compute the Gini-Simpson index of all individuals with regards to their CN signatures
+Because the Riva et al. 2020 signatures do not exactly match COSMIC signatures, we used the closest signature mentioned in Table 4 to compute cosine similarities. mSBS17 from the study presented the T>G excess found in COSMIC mSBS17b, so we chose this signature as reference, and mSBS_N3 was closest to mSBS39, and both mSBS_N1 and mSBS_N2 were closest to mSBS25.
 ```{r }
-#gini_simpson(MESOMICS_CN[,-1)],time="Asbestos.Score)
-MESOMICS_GS = apply(MESOMICS_CN[,-(1:2)], 1, gini_simpson,S=sig_cossim )
+colnames(SBSmm_cossim) = paste0("m",colnames(SBSmm_cossim))
+rownames(SBSmm_cossim) = paste0("m",rownames(SBSmm_cossim))
+siglist = c(colnames(mutsig_carcinogens_mice_SBS)[2:4] , "mSBS17b" , colnames(mutsig_carcinogens_mice_SBS)[6:9],
+               "mSBS25","mSBS25","mSBS39")
+SBSmm_cossim = SBSmm_cossim[siglist,siglist]
+colnames(SBSmm_cossim)[4]  = rownames(SBSmm_cossim)[4]  = "mSBS17"
+colnames(SBSmm_cossim)[9]  = rownames(SBSmm_cossim)[9]  = "mSBS_N1"
+colnames(SBSmm_cossim)[10] = rownames(SBSmm_cossim)[10] = "mSBS_N2"
+colnames(SBSmm_cossim)[11] = rownames(SBSmm_cossim)[11] = "mSBS_N3"
 ```
 
-## FST
-In this context, FST corresponds to the inter-patient variability of mutational signatures and is computed by function fava. We first compute weights for each sample depending on its asbestos score using a gaussian kernel, putting emphasis on either weak, intermediate, or strong exposures (centered around no exposure, median exposure, and max exposure), using a bandwidth of 1 standard deviation in asbestos score. We use the log scale for asbestos scores in order to account for their different orders of magnitude.
+## Taking into account the asbestos score
+We first compute weights for each sample depending on its asbestos score using a gaussian kernel, putting emphasis on either weak, intermediate, or strong exposures (centered around no exposure, median exposure, and max exposure), using a bandwidth of 1 standard deviation in asbestos score. We use the log scale for asbestos scores in order to account for their different orders of magnitude.
 ```{r }
 MESOMICS_CN$Asbestos.Score.log10 = log(MESOMICS_CN$Asbestos.Score+1,10)
 
@@ -92,11 +99,39 @@ w.asb = sapply(quantile(MESOMICS_CN$Asbestos.Score.log10,c(0,1)), function(x) dn
 w.asb = sweep(w.asb,2, colSums(w.asb),"/")
 ```
 
-We compute weighted statistics using bootstrapping for each group and merge the results
+## Computing within- and between-sample variability
+We compute the Gini-Simpson index of all individuals with regards to their CN signatures to quantify intra-patient variability. We use FST to quantify the inter-patient variability of mutational signatures. We compute weighted statistics using bootstrapping for each group and merge the results.
+
+### 20 Known and suspected carcinogens
 ```{r }
 set.seed(0)
-MESOMICS_bootstrap_fava.low            = bootstrap_fava(MESOMICS_CN[,c(3:9)],S=sig_cossim,n_replicates = 1000,w = w.asb[,1])
-MESOMICS_bootstrap_fava.high           = bootstrap_fava(MESOMICS_CN[,c(3:9)],S=sig_cossim,n_replicates = 1000,w = w.asb[,2])
+Riva_bootstrap_fava.lung  = bootstrap_fava(mutsig_carcinogens_mice_SBS[mutsig_carcinogens_mice_SBS$Tissue=="lung",c(25,2:12)],
+                                          S=SBSmm_cossim,n_replicates = 1000,group = "chemical")
+Riva_bootstrap_fava.liver = bootstrap_fava(mutsig_carcinogens_mice_SBS[mutsig_carcinogens_mice_SBS$Tissue=="liver",c(25,2:12)],
+                                          S=SBSmm_cossim,n_replicates = 1000,group = "chemical")
+Riva_bootstrap_fava.kidney = bootstrap_fava(mutsig_carcinogens_mice_SBS[mutsig_carcinogens_mice_SBS$Tissue=="kidney",c(2:12)],
+                                          S=SBSmm_cossim,n_replicates = 1000)
+Riva_bootstrap_fava.stomach = bootstrap_fava(mutsig_carcinogens_mice_SBS[mutsig_carcinogens_mice_SBS$Tissue=="stomach",c(2:12)],
+                                          S=SBSmm_cossim,n_replicates = 1000)
+
+Riva_bootstrap_fava.lung$statistics$Tissue    = "Lung"
+Riva_bootstrap_fava.liver$statistics$Tissue   = "Liver"
+Riva_bootstrap_fava.kidney$statistics$Tissue  = "Kidney"
+Riva_bootstrap_fava.stomach$statistics$Tissue = "Forestomach"
+Riva_bootstrap_fava.kidney$statistics$chemical  = "vinylidene chloride"
+Riva_bootstrap_fava.stomach$statistics$chemical = "1,2,3-Trichloropropane"
+
+Riva_bootstrap_fava.res = bind_rows(Riva_bootstrap_fava.lung$statistics, Riva_bootstrap_fava.liver$statistics,
+                                    Riva_bootstrap_fava.kidney$statistics,Riva_bootstrap_fava.stomach$statistics) 
+Riva_bootstrap_fava.res.mean = Riva_bootstrap_fava.res %>% group_by(chemical) %>%
+  summarize(FAVA=mean(FAVA),gini_simpson_mean=mean(gini_simpson_mean))
+```
+
+### MESOMICS
+```{r }
+set.seed(0)
+MESOMICS_bootstrap_fava.low            = bootstrap_fava(MESOMICS_CN[,c(3:9)],S=SBSmm_cossim,n_replicates = 1000,w = w.asb[,1])
+MESOMICS_bootstrap_fava.high           = bootstrap_fava(MESOMICS_CN[,c(3:9)],S=SBSmm_cossim,n_replicates = 1000,w = w.asb[,2])
 
 MESOMICS_bootstrap_fava.low$statistics$group = "Weak asbestos exposure"
 MESOMICS_bootstrap_fava.high$statistics$group = "Strong asbestos exposure"
