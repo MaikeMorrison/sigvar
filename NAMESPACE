@@ -3,6 +3,8 @@
 export(import_SigProfiler)
 export(plot_dots)
 export(sigFAVA)
+export(sigvar)
+import(FAVA)
 importFrom(dplyr,"%>%")
 importFrom(dplyr,across)
 importFrom(dplyr,mutate)
