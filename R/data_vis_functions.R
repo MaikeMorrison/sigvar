@@ -124,7 +124,7 @@ plot_signature_prop <- function(Q){
 #' @param pivot Optional; set \code{pivot=TRUE} if you would like to plot groups
 #'   on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.
 #' @param max_dotsize Optional; a number specifying the maximum size for each dot.
-#' @return A ggplot object containing a dor plot visualization of the mean
+#' @return A ggplot object containing a dot plot visualization of the mean
 #'   mutational signature contributions
 #' @examples
 #'   # Make an example matrix.
@@ -240,3 +240,70 @@ plot_dots <- function(Q, group = colnames(Q)[1],
 
     ggplot2::xlab(group)
 }
+
+
+
+
+# plot_SBS_spectrum -----------------------------------------------------------------
+#' Plot an SBS mutational spectrum
+#'
+#' @param SBS_table A matrix with rows corresponding to the 96 single-base substitutions and columns corresponding to distinct mutational spectra you wish to plot.
+#' @return A ggplot2 bar chart depicting SBS mutational spectra
+#' @examples
+#' SBS_table = dplyr::select(COSMIC3.3.1_SBS, SBS1, SBS5)
+#' plot_SBS_spectrum(SBS_table)
+#'
+#' @importFrom dplyr %>%
+#' @importFrom dplyr across
+#' @importFrom dplyr mutate
+#' @importFrom rlang .data
+#' @export
+plot_SBS_spectrum <- function(SBS_table) {
+
+  sbs <- COSMIC3.3.1_SBS %>%
+    dplyr::select(Type)
+  sbs$Sub = stringr::str_split(sbs$Type, "\\[|\\]", simplify = TRUE)[,2]
+
+  sbs$Context =  stringr::str_split(sbs$Type, "\\[|\\]|>") %>% lapply(function(x) paste0(x[1], x[2], x[4])) %>% unlist
+
+  sub_pal = c("#02BCED", "#010101", "#E22926",
+              "#CAC8C9", "#A0CE62", "#ECC6C5") %>%
+    `names<-`(unique(sort(sbs$Sub)))
+
+  sbs = left_join(sbs,
+                  data.frame(Sub = names(sub_pal),
+                             color = sub_pal))
+
+
+  strip <- ggh4x::strip_themed(background_x = ggh4x::elem_list_rect(fill = sub_pal, color = sub_pal),
+                               text_x = ggh4x::elem_list_text(color = c("black", "white", "white", rep("black", 3))))
+
+  plot_data_wide = cbind(sbs, SBS_table) %>%
+      dplyr::mutate(name = glue::glue("<b style='color:#BEBEBE'>{stringr::str_sub(Context, 1,1)}<b style='color:{color}'>{stringr::str_sub(Context, 2, 2)}<b style='color:#BEBEBE'>{stringr::str_sub(Context, 3,3)}"), .before = 5)
+
+  plot_data_long = pivot_longer(plot_data_wide, cols = colnames(SBS_table),
+                                names_to = "Spectrum", values_to = "Relative_abundance")
+
+  ggplot2::ggplot(plot_data_long, ggplot2::aes(x = name, y = Relative_abundance, fill = Sub)) +
+    ggplot2::geom_bar(stat = "identity") +
+    ggh4x::facet_grid2(Spectrum ~ Sub, strip = strip, scales = "free")  +
+    ggplot2::theme_minimal() +
+    # scale_x_discrete(expand = c(0, 0))+
+    # scale_y_continuous(expand = c(0, 0)) +
+    ggplot2::theme(#axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0,
+      # size = 6, family = "mono"),
+      axis.text.x = ggtext::element_markdown(angle = 90, vjust = 0.5, hjust = 0, size = 4,
+                                             family = "mono", margin=ggplot2::margin(0)),
+      # axis.title.y = ggplot2::element_blank(),
+      axis.title.x = ggplot2::element_blank(),
+      strip.text.x = ggplot2::element_text(size = 8),
+      strip.text.y = ggplot2::element_text(size = 12),
+      legend.position = "none",
+      panel.grid.major.x = ggplot2::element_blank())+
+    ggplot2::scale_fill_manual(values = sub_pal) +
+    ggplot2::ylab("Relative abundance") +
+    ggplot2::scale_y_continuous(labels = scales::percent_format(accuracy = 1), n.breaks = 3)
+
+
+}
+
