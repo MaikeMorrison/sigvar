@@ -5,6 +5,7 @@ mutsig_carcinogens_relab = mutsig_carcinogens_mice_SBS %>%
 
 test_that("bootstrapping works: no groups", {
   expect_no_error(sigboot(mutsig_carcinogens_relab, K = 11, n_replicates = 10))
+  expect_no_error(sigboot(ESCC_sig_activity, K = 43, n_replicates = 10))
 })
 
 test_that("bootstrapping works: groups", {
@@ -13,9 +14,16 @@ test_that("bootstrapping works: groups", {
                                  group = c("Tissue"),
                                  seed = 1,
                                  n_replicates = 100))
+
+  expect_no_error(sigboot(ESCC_sig_activity, group = "Country", K = 43, n_replicates = 10))
+
   expect_warning(bootstrap_fava(matrices = mutsig_carcinogens_relab,
                                  K = 11,
                                  group = c("Tissue", "chemical"),
                                  seed = 1,
                                  n_replicates = 100))
+})
+
+test_that("bootstrapping works: similarity and group", {
+  expect_no_error(sigboot(ESCC_sig_activity, group = "Country", K = 43, n_replicates = 10, S = ESCC_sig_similarity))
 })

@@ -146,3 +146,37 @@
 #' }
 #' @source <https://doi.org/10.1038/s41588-021-00928-6>
 "ESCC_sig_similarity"
+
+
+
+
+
+#' Activity of Smoking, APOBEC, and Ageing mutational signatures in a sample of East Asian lung adenocarcinoma patients.
+#'
+#' Data from: Chen, J., Yang, H., Teo, A.S.M. et al. Genomic landscape of lung adenocarcinoma in East Asians. Nat Genet 52, 177–186 (2020).
+#'
+#' @format ## `smoker_sigs_chen`
+#' A dataframe with 88 rows and 20 columns:
+#' \describe{
+#' \item{Patient.ID}{Unique identifier for each patient}
+#' \item{Smoker}{Smoking status for each patient: "Smoker" or "Non-smoker"}
+#' \item{Cohort, Stage, Age, Gender}{Patient metadata}
+#' \item{Smoking}{Activity of smoking mutational signature}
+#' \item{APOBEC}{Activity of APOBEC mutational signature}
+#' \item{Ageing}{Activity of ageing mutational signature}
+#' }
+#' @source <https://doi.org/10.1038/s41588-019-0569-6>
+"smoker_sigs_chen"
+
+
+#' Cosine similarity of smoking, APOBEC, and ageing mutational signatures found in a sample of East Asian lung adenocarcinoma patients.
+#'
+#' Data from: Chen, J., Yang, H., Teo, A.S.M. et al. Genomic landscape of lung adenocarcinoma in East Asians. Nat Genet 52, 177–186 (2020).
+#'
+#' @format ## `ESCC_sig_similarity`
+#' A dataframe with 3 rows and 3 columns:
+#' \describe{
+#' \item{Smoking, ..., Ageing}{Pairwise cosine similarities between mutational signatures.}
+#' }
+#' @source <https://doi.org/10.1038/s41588-019-0569-6>
+"ESCC_sig_similarity"
