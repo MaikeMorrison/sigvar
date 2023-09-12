@@ -1,0 +1,24 @@
+---
+title: "sigFAVA analysis of Mutographs data:"
+subtitle: "Global distributions ESCC and RCC mutational signatures"
+author:
+  - name: "Maike Morrison"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{geography_incidence_figure}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(sigFAVA)
+library(FAVA)
+```

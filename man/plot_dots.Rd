@@ -39,7 +39,7 @@ on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.}
 you would like to facet your plot.}
 }
 \value{
-A ggplot object containing a dor plot visualization of the mean
+A ggplot object containing a dot plot visualization of the mean
 mutational signature contributions
 }
 \description{

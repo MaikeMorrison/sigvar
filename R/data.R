@@ -116,3 +116,67 @@
 #' }
 #' @source <https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples>
 "sbs_palette"
+
+
+
+#' Activity of SBS, DBS, and ID mutational signatures in a global sample of esophageal squamous cell carcinoma cases.
+#'
+#' Data from: Moody, S., Senkin, S., Islam, S.M.A. et al. Mutational signatures in esophageal squamous cell carcinoma from eight countries with varying incidence. Nat Genet 53, 1553–1563 (2021).
+#'
+#' @format ## `ESCC_sig_activity`
+#' A dataframe with 552 rows and 46 columns:
+#' \describe{
+#' \item{Country}{Country where each sample was collected}
+#' \item{Incidence_Level}{Incidence level (High or Low) of ESCC in the region where the sample was collected}
+#' \item{Sample}{Unique sample ID}
+#' \item{SBS1, ..., ID17}{Relative abundance of mutational signatures in each sample. These columns sum to 1 for each row.}
+#' }
+#' @source <https://doi.org/10.1038/s41588-021-00928-6>
+"ESCC_sig_activity"
+
+
+#' Cosine similarity of SBS, DBS, and ID mutational signatures found in a global sample of esophageal squamous cell carcinoma cases.
+#'
+#' Data from: Moody, S., Senkin, S., Islam, S.M.A. et al. Mutational signatures in esophageal squamous cell carcinoma from eight countries with varying incidence. Nat Genet 53, 1553–1563 (2021).
+#'
+#' @format ## `ESCC_sig_similarity`
+#' A dataframe with 43 rows and 43 columns:
+#' \describe{
+#' \item{SBS1, ..., ID17}{Pairwise cosine similarities between mutational signatures.}
+#' }
+#' @source <https://doi.org/10.1038/s41588-021-00928-6>
+"ESCC_sig_similarity"
+
+
+
+
+
+#' Activity of Smoking, APOBEC, and Ageing mutational signatures in a sample of East Asian lung adenocarcinoma patients.
+#'
+#' Data from: Chen, J., Yang, H., Teo, A.S.M. et al. Genomic landscape of lung adenocarcinoma in East Asians. Nat Genet 52, 177–186 (2020).
+#'
+#' @format ## `smoker_sigs_chen`
+#' A dataframe with 88 rows and 20 columns:
+#' \describe{
+#' \item{Patient.ID}{Unique identifier for each patient}
+#' \item{Smoker}{Smoking status for each patient: "Smoker" or "Non-smoker"}
+#' \item{Cohort, Stage, Age, Gender}{Patient metadata}
+#' \item{Smoking}{Activity of smoking mutational signature}
+#' \item{APOBEC}{Activity of APOBEC mutational signature}
+#' \item{Ageing}{Activity of ageing mutational signature}
+#' }
+#' @source <https://doi.org/10.1038/s41588-019-0569-6>
+"smoker_sigs_chen"
+
+
+#' Cosine similarity of smoking, APOBEC, and ageing mutational signatures found in a sample of East Asian lung adenocarcinoma patients.
+#'
+#' Data from: Chen, J., Yang, H., Teo, A.S.M. et al. Genomic landscape of lung adenocarcinoma in East Asians. Nat Genet 52, 177–186 (2020).
+#'
+#' @format ## `ESCC_sig_similarity`
+#' A dataframe with 3 rows and 3 columns:
+#' \describe{
+#' \item{Smoking, ..., Ageing}{Pairwise cosine similarities between mutational signatures.}
+#' }
+#' @source <https://doi.org/10.1038/s41588-019-0569-6>
+"ESCC_sig_similarity"
