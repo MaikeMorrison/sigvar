@@ -1,5 +1,5 @@
 #' sigvar
-#' Compute the within- and across-sample variability of a set of
+#' Compute the within- and across-sample variability of mutational signature activity in one or multiple populations of samples.
 #'
 #' #' @param sig_activity A matrix or data frame with rows containing non-negative entries that sum to 1. Each row represents a sample, each column represents a mutational signature, and each entry represents the abundance of that signature in the sample. If \code{sig_activity} contains any metadata, it must be on the left-hand side of the matrix, the right \code{K} entries of each row must sum to 1, and \code{K} must be specified. Otherwise, all entries of each row must sum to 1.
 #' @param K Optional; an integer specifying the number of mutational signatures included in \code{sig_activity}. Default is \code{K=ncol(sig_activity)}.
@@ -35,9 +35,9 @@ sigvar <- function(sig_activity,
 }
 
 #' sigboot
-#' Generate and analyze bootstrap replicates of one or more tables of mutational signature activity
+#' Estimate uncertainty in the within- and across-sample variability of mutational signature activity in one or multiple populations of samples.
 #'
-#'
+#' Generate bootstrap replicates of one or more tables of mutational signature activity. Compute within-and mean across-sample variability of each replicate table. Visualize the resulting distributions of variability values and compare populations with statistical tests.
 #'
 #' #' @param sig_activity A matrix or data frame with rows containing non-negative entries that sum to 1. Each row represents a sample, each column represents a mutational signature, and each entry represents the abundance of that signature in the sample. If \code{sig_activity} contains any metadata, it must be on the left-hand side of the matrix, the right \code{K} entries of each row must sum to 1, and \code{K} must be specified. Otherwise, all entries of each row must sum to 1.
 #' @param n_replicates The number of bootstrap replicate matrices to generate for each provided relative abundance matrix.
@@ -52,39 +52,17 @@ sigvar <- function(sig_activity,
 #'
 #' @return A named list containing the following entries:
 #' \itemize{
-#' \item \code{bootstrap_replicates}: A named list of lists. Each element is named for a relative abundance matrix provided in \code{matrices} and contains a list of \code{n_replicates} bootstrap replicates of the provided matrix. E.g., if \code{n_replicates = 100} and the first relative abundance matrix in \code{matrices} is named \code{A}, then the first element of \code{bootstrap_replicates}, \code{bootstrap_replicates$bootstrap_matrices_A}, is itself a list of 100 matrices, each representing a bootstrap replicate of matrix A.
-#' \item \code{statistics}: A dataframe containing the desired statistic (FAVA, normalized FAVA, or weighted FAVA), computed for each bootstrap replicate matrix in \code{bootstrap_replicates}. The first column, titled \code{group}, is a factor indicating which provided relative abundance matrix the row corresponds to (the matrix name if \code{matrices} is a named list, or a number otherwise). The row names are of the form \code{stats_matrix.replicate} where \code{matrix} is the name of one of the provided relative abundance matrices (or the entry number if the list elements were not named) and replicate is the number of bootstrap replicate (rep takes values from 1 to \code{n_replicates}).
-#' \item \code{plot_boxplot}: A ggplot2 box plot depicting the bootstrap distribution of FAVA for each matrix in \code{matrices}.
-#' \item \code{plot_violin}: A ggplot2 violin plot depicting the bootstrap distribution of FAVA for each matrix in \code{matrices}.
-#' \item \code{plot_ecdf}: A ggplot2 empirical cumulative distribution function plot depicting the bootstrap distribution of FAVA for each matrix in \code{matrices}.
+#' \item \code{bootstrap_replicates}: If \code{save_replicates = TRUE}, a named list of lists. Each element is named for a group provided in \code{sig_activity} and contains a list of \code{n_replicates} bootstrap replicates of the provided matrix. E.g., if \code{n_replicates = 100} and the first group in \code{sig_activity} is named \code{A}, then the first element of \code{bootstrap_replicates} is itself a list of 100 matrices, each representing a bootstrap replicate of matrix A.
+#' \item \code{statistics}: A dataframe containing \code{Across_sample_variability} and \code{Mean_within_sample_variability} computed for each bootstrap replicate matrix in \code{bootstrap_replicates}. If \code{group} is specified, the preceding columns indicate which group, or combination of groups, the row corresponds to.
+#' \item \code{plot_variability}: A ggplot2 scatter plot depicting the bootstrap distributions of mean within-sample variability (x-axis) and across-sample variability (y-axis) for each group in \code{sig_activity}. Ellipses provide 95% confidence
+#' \item \code{plot_violin}: A ggplot2 violin plot depicting the bootstrap distribution of FAVA for each matrix in \code{sig_activity}.
+#' \item \code{plot_ecdf}: A ggplot2 empirical cumulative distribution function plot depicting the bootstrap distribution of FAVA for each matrix in \code{sig_activity}.
 #' \item \code{test_kruskal_wallis}: Results of a Kruskal-Wallis test performed on the bootstrap distributions of FAVA. This test is a non-parametric statistical test of whether all provided bootstrap distributions are identically distributed.
 #' \item \code{test_pairwise_wilcox}: Results of a Wilcoxon rank-sum test performed on the bootstrap distributions of FAVA. This test is a non-parameteric statistical test of whether \emph{each pairwise combination} of provided bootstrap distributions is identically distributed. The result is a matrix of p-values whose entries correspond to each pair of relative abundance matrices.
 #' }
 #' @examples
 #'
-#' # Generate 100 bootstrap replicates for each of the
-#' # 3 subjects included in the example data, xue_microbiome_sample.
-#' # In this example, we:
-#' # use the group argument so that each subject is analyzed,
-#' # provide a species similarity matrix to incorporate phylogenetic information,
-#' # and use the time argument so that samples are weighted by the amount of
-#' # time between the samples before and after it.
-#' boot_out = bootstrap_fava(matrices = xue_microbiome_sample,
-#'                n_replicates = 100,
-#'                seed = 1,
-#'                group = "subject",
-#'                time = "timepoint",
-#'                S = xue_species_similarity,
-#'                save_replicates = TRUE)
 #'
-#' # To look at a plot of the distribution of
-#' # FAVA for each Q matrix:
-#' boot_out$plot_violin
-#'
-#' # To determine if each of the 4 distibutions of
-#' # FAVA is significantly different from
-#' # each of the other distributions:
-#' boot_out$test_pairwise_wilcox
 #'
 #' @import FAVA
 sigboot <- function(sig_activity, n_replicates,
@@ -96,7 +74,9 @@ sigboot <- function(sig_activity, n_replicates,
                    group = NULL,
                    normalized = FALSE,
                    save_replicates = FALSE){
-  boot_out = bootstrap_fava(matrices = sig_activity, K = K, S = S,
+
+  boot_out = bootstrap_fava(sig_activity,
+                            K = K, S = S,
                  n_replicates = n_replicates, seed = seed, group = group,
                  time = time, w = w, normalized = normalized, save_replicates = save_replicates)
 
@@ -147,7 +127,10 @@ sigboot <- function(sig_activity, n_replicates,
   }
 
 
-  return(list(bootstrap_replicates = boot_out$bootstrap_replicates,
+  return(list(bootstrap_replicates =
+                ifelse(save_replicates,
+                       boot_out$bootstrap_replicates,
+                       "Set save_replicates = TRUE if you would like to save the bootstrap replicate matrices."),
               statistics = statistics,
               plot_variability = plot_ellipses,
               plot_boxplot = plot_boxplot,

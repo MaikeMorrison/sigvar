@@ -116,3 +116,33 @@
 #' }
 #' @source <https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples>
 "sbs_palette"
+
+
+
+#' Activity of SBS, DBS, and ID mutational signatures in a global sample of esophageal squamous cell carcinoma cases.
+#'
+#' Data from: Moody, S., Senkin, S., Islam, S.M.A. et al. Mutational signatures in esophageal squamous cell carcinoma from eight countries with varying incidence. Nat Genet 53, 1553–1563 (2021).
+#'
+#' @format ## `ESCC_sig_activity`
+#' A dataframe with 552 rows and 46 columns:
+#' \describe{
+#' \item{Country}{Country where each sample was collected}
+#' \item{Incidence_Level}{Incidence level (High or Low) of ESCC in the region where the sample was collected}
+#' \item{Sample}{Unique sample ID}
+#' \item{SBS1, ..., ID17}{Relative abundance of mutational signatures in each sample. These columns sum to 1 for each row.}
+#' }
+#' @source <https://doi.org/10.1038/s41588-021-00928-6>
+"ESCC_sig_activity"
+
+
+#' Cosine similarity of SBS, DBS, and ID mutational signatures found in a global sample of esophageal squamous cell carcinoma cases.
+#'
+#' Data from: Moody, S., Senkin, S., Islam, S.M.A. et al. Mutational signatures in esophageal squamous cell carcinoma from eight countries with varying incidence. Nat Genet 53, 1553–1563 (2021).
+#'
+#' @format ## `ESCC_sig_similarity`
+#' A dataframe with 43 rows and 43 columns:
+#' \describe{
+#' \item{SBS1, ..., ID17}{Pairwise cosine similarities between mutational signatures.}
+#' }
+#' @source <https://doi.org/10.1038/s41588-021-00928-6>
+"ESCC_sig_similarity"
