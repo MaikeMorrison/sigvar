@@ -1,0 +1,205 @@
+---
+title: "sigFAVA analysis of the mutational signatures of driver alterations"
+author:
+  - name: "Nicolas Alcala"
+    affiliation: "Rare Cancers Genomics Team, International Agency for Research on Cancer / World Health Organization"
+    email: "alcalan@iarc.who.int"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Mutational signatures of carcinogens}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(sigFAVA)
+library(FAVA)
+library(ggplot2)
+library(stringr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(patchwork)
+```
+
+# Introduction
+
+This vignette details an example of using sigFAVA to analyse the relationship between variability of mutational signatures and driver alterations. 
+
+# Dataset
+This vignettes analyses the intogen dataset included in the sigFAVA package.
+
+```{r }
+head(EGFR_drivers_intogen_SBS96)
+```
+
+We will compare this profile with that of lung adenocarcinoma from the PCAWG cohort and lung squamous cell carcinoma from the Sherlock-Lung study
+```{r }
+PCAWG_SigProfiler_COSMIC_SBS_LUAD = PCAWG_SigProfiler_COSMIC_SBS %>% filter(`Cancer Types`=="Lung-AdenoCA")
+head(PCAWG_SigProfiler_COSMIC_SBS_LUAD)
+
+Sherlock_SBS.tib  = read_tsv("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/sherlock_232_SBS_Signature_Ratio.txt")
+Sherlock.muts     = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=4,skip=1)
+Sherlock.refs     = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=7,skip=2) %>% arrange(Type,Subtype)
+Sherlock.metadata = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=1,skip=1)
+```
+
+## Data preparation
+We compute the mutational profiles of each LUAD sample based on their signature attributions, separating samples with and without SBS4 (smoking signature):
+```{r}
+sigs_LUAD = colnames(PCAWG_SigProfiler_COSMIC_SBS_LUAD[,4:68])
+
+PCAWG_SBS_LUAD       = as.matrix(PCAWG_SigProfiler_COSMIC_SBS_LUAD[,4:68])
+COSMIC3.3.1_SBS_LUAD = as.matrix(COSMIC3.3.1_SBS[,sigs_LUAD])
+
+PCAWG_MutProf_LUAD = PCAWG_SBS_LUAD%*%t(COSMIC3.3.1_SBS_LUAD)
+
+PCAWG_MutProf_LUAD.prop = sweep(PCAWG_SBS_LUAD,1,rowSums(PCAWG_SBS_LUAD),"/")%*%t(COSMIC3.3.1_SBS_LUAD)
+
+# Sherlock samples
+sigs_LUAD.S = colnames(Sherlock_SBS.tib[,-1])
+MutType = Sherlock.refs %>% dplyr::select(Type,Subtype)
+
+Sherlock_SBS       = as.matrix(Sherlock_SBS.tib[,-1])
+rownames(Sherlock_SBS) = Sherlock_SBS.tib$Sample
+Sherlock.refs = as.matrix(Sherlock.refs[,sigs_LUAD.S])
+colnames(Sherlock.refs) = sigs_LUAD.S
+rownames(Sherlock.refs) = paste0(MutType$Type,",",MutType$Subtype)
+
+Sherlock_MutProf_LUAD = Sherlock_SBS%*%t(Sherlock.refs)
+```
+
+# Computing the probability of driver mutations
+## EGFR
+```{r}
+#prob_PCAWG_EGFR_drivers = sapply(1:nrow(PCAWG_MutProf_LUAD), function(i) PCAWG_MutProf_LUAD.prop[i,]%*%(EGFR_drivers_intogen_SBS96$EGFR_LUAD_intogen/EGFR_context_counts_ordered) )
+
+prob_Sherlock_EGFR_drivers = sapply(1:nrow(Sherlock_MutProf_LUAD), function(i) Sherlock_MutProf_LUAD[i,]%*%(EGFR_drivers_intogen_SBS96$EGFR_LUAD_intogen/EGFR_context_counts_ordered) )
+```
+
+## TP53
+```{r}
+#prob_PCAWG_TP53_drivers = sapply(1:nrow(PCAWG_MutProf_LUAD), function(i) PCAWG_MutProf_LUAD.prop[i,]%*%(TP53_drivers_intogen_SBS96$TP53_LUAD_intogen/TP53_context_counts_ordered) )
+
+prob_Sherlock_TP53_drivers = sapply(1:nrow(Sherlock_MutProf_LUAD), function(i) Sherlock_MutProf_LUAD[i,]%*%(TP53_drivers_intogen_SBS96$TP53_LUAD_intogen/TP53_context_counts_ordered) )
+```
+
+# Computing variability statistics for LUAD samples
+We first compute the cosine similarities between mutational signatures, which we will use to weight the differences between signature such that profiles with plenty of similar signatures are not deemed diverse.
+```{r }
+#SBS_LUAD_cossim <- lsa::cosine(x = COSMIC3.3.1_SBS_LUAD %>% as.matrix)
+
+SBS_LUAD_S_cossim <- lsa::cosine(x = Sherlock.refs)
+```
+
+```{r }
+#PCAWG_SBS_LUAD.prop  = bind_cols( Smoker = case_when(PCAWG_SBS_LUAD[,4]>0~"Yes", TRUE~"No"), 
+#                                  as_tibble( sweep(PCAWG_SBS_LUAD,1,rowSums(PCAWG_SBS_LUAD),"/") ) )
+
+#GS_PCAWG_LUAD = sapply(1:nrow(PCAWG_SBS_LUAD.prop), function(i) gini_simpson(as.numeric(PCAWG_SBS_LUAD.prop[i,-1]), S=SBS_LUAD_cossim) )
+
+GS_Sherlock_LUAD = sapply(1:nrow(Sherlock_SBS), function(i) gini_simpson(Sherlock_SBS[i,], S=SBS_LUAD_S_cossim) )
+
+#set.seed(0)
+#PCAWG_bootstrap_fava.LUAD.nonsmokers  = bootstrap_fava(PCAWG_SBS_LUAD.prop,
+#                                          S=SBS_LUAD_cossim,n_replicates = 1000,group = "Smoker")
+
+#PCAWG_bootstrap_fava.LUAD.nonsmokers.mean = PCAWG_bootstrap_fava.LUAD.nonsmokers$statistics %>% group_by(Smoker) %>%
+#  summarize(FAVA=mean(FAVA),gini_simpson_mean=mean(gini_simpson_mean))
+```
+
+# Testing
+
+Test the relationship between probability of driver and within-tumor variability
+```{r }
+#res = tibble(prob.EGFR=prob_PCAWG_EGFR_drivers, prob.TP53=prob_PCAWG_TP53_drivers, GS=GS_PCAWG_LUAD,Smoker = case_when(PCAWG_SBS_LUAD[,4]>0~"Yes",
+#                                                     TRUE~"No") )
+
+#summary(lm(prob.EGFR~GS*Smoker,data=res))
+#summary(lm(prob.EGFR~GS,data=res[res$Smoker=="No",]))
+#summary(lm(prob.TP53~GS*Smoker,data=res))
+#summary(lm(prob.TP53~GS,data=res[res$Smoker=="No",]))
+
+res.S = tibble(prob.EGFR=prob_Sherlock_EGFR_drivers, prob.TP53=prob_Sherlock_TP53_drivers  ,GS=GS_Sherlock_LUAD)
+
+lm_EGFR_GS = summary(lm(prob.EGFR~GS,data=res.S))
+lm_TP53_GS = summary(lm(prob.TP53~GS,data=res.S))
+```
+
+# Plotting
+
+## Relationship between Within-sample variability and probability of driver alteration
+```{r }
+#ggplot(data=res,aes(y=prob.EGFR,x=GS,col=Smoker) ) + geom_point()+ stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+  #geom_point(alpha=0.1) + geom_point(data=MESOMICS_bootstrap_fava.res.mean,size=4) + stat_ellipse(level=0.90) + 
+#  xlab("Within-sample variability") + ylab("Probability of EGFR driver alteration") + theme_classic()
+
+#ggplot(data=res,aes(y=prob.TP53,x=GS,col=Smoker) ) + geom_point()+ stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+  #geom_point(alpha=0.1) + geom_point(data=MESOMICS_bootstrap_fava.res.mean,size=4) + stat_ellipse(level=0.90) + 
+#  xlab("Within-sample variability") + ylab("Probability of EGFR driver alteration") + theme_classic()
+
+gg_EGFR_GS <- ggplot(data=res.S,aes(y=prob.EGFR,x=GS) ) + geom_point()+ stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+  annotate("text",x = 0.1,y=0.002,label=paste0("t-test P=",format(lm_EGFR_GS$coefficients[2,4],digits=2)) ) + 
+  #geom_point(alpha=0.1) + geom_point(data=MESOMICS_bootstrap_fava.res.mean,size=4) + stat_ellipse(level=0.90) + 
+  xlab("Within-sample variability") + ylab("Probability of EGFR driver alteration") + theme_classic()
+
+gg_TP53_GS <- ggplot(data=res.S,aes(y=prob.TP53,x=GS) ) + geom_point()+ stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+    annotate("text",x = 0.1,y=0.045,label=paste0("t-test P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  #geom_point(alpha=0.1) + geom_point(data=MESOMICS_bootstrap_fava.res.mean,size=4) + stat_ellipse(level=0.90) + 
+  xlab("Within-sample variability") + ylab("Probability of TP53 driver alteration") + theme_classic()
+```
+
+## Spectra of driver mutations
+```{r}
+EGFR_drivers_intogen_SBS96$EGFR_LUAD_intogen.norm = EGFR_drivers_intogen_SBS96$EGFR_LUAD_intogen/EGFR_context_counts_ordered
+
+gg_EGFR_spectrum = ggplot(EGFR_drivers_intogen_SBS96,aes(x=paste0(Type,Subtype),y= EGFR_LUAD_intogen.norm,fill=Type) ) + geom_col() +
+  theme_classic() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type") + ylab("Proportion of drivers")
+
+TP53_drivers_intogen_SBS96$TP53_LUAD_intogen.norm = TP53_drivers_intogen_SBS96$TP53_LUAD_intogen/TP53_context_counts_ordered
+
+gg_TP53_spectrum = ggplot(TP53_drivers_intogen_SBS96,aes(x=paste0(Type,Subtype),y= TP53_LUAD_intogen.norm,fill=Type) ) + geom_col() +
+  theme_classic() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type") + ylab("Proportion of drivers")
+```
+
+## Average spectra of low- and high-diversity samples
+```{r}
+
+GSspectra = tibble(MutationType=paste0(MutType$Type,",",MutType$Subtype) , Type=MutType$Type, Subtype=MutType$Subtype,
+       Proportion.lowGS  = Sherlock_MutProf_LUAD[which.min(GS_Sherlock_LUAD),], #colMeans(Sherlock_MutProf_LUAD.prop[GS_Sherlock_LUAD<quantile(GS_Sherlock_LUAD,0.5),]),
+       Proportion.highGS = Sherlock_MutProf_LUAD[which.max(GS_Sherlock_LUAD),] )#colMeans(Sherlock_MutProf_LUAD.prop[GS_Sherlock_LUAD>=quantile(GS_Sherlock_LUAD,0.5),]) )
+
+gg_lowGS_spectrum = ggplot(GSspectra,aes(x=MutationType,y= Proportion.lowGS,fill=Type) ) + 
+  geom_col() + theme_classic()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type")+ ylab("Proportion of alterations")
+
+gg_highGS_spectrum = ggplot(GSspectra,aes(x=MutationType,y= Proportion.highGS,fill=Type) ) + 
+  geom_col() + theme_classic()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type")+ ylab("Proportion of alterations")
+```
+
+
+## Look at protein structure and position of drivers
+
+
+## Assembling all panels
+```{r }
+(gg_EGFR_GS + gg_EGFR_spectrum  + gg_lowGS_spectrum +  gg_TP53_GS + gg_TP53_spectrum + gg_highGS_spectrum) +  plot_annotation(tag_levels = 'a') + plot_layout(widths = c(1, 2,2)) & theme(plot.tag = element_text(face = 'bold'))
+
+```
+
+# Session information
+
+```{r }
+sessionInfo()
+```
+
