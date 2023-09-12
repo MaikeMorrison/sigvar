@@ -181,19 +181,52 @@ GSspectra = tibble(MutationType=paste0(MutType$Type,",",MutType$Subtype) , Type=
        Proportion.highGS = Sherlock_MutProf_LUAD[which.max(GS_Sherlock_LUAD),] )#colMeans(Sherlock_MutProf_LUAD.prop[GS_Sherlock_LUAD>=quantile(GS_Sherlock_LUAD,0.5),]) )
 
 gg_lowGS_spectrum = ggplot(GSspectra,aes(x=MutationType,y= Proportion.lowGS,fill=Type) ) + 
-  geom_col() + theme_classic()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type")+ ylab("Proportion of alterations")
+  geom_col() + theme_classic()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type")+ ylab("Proportion of alterations") + ggtitle("Lowest diversity sample") + ylim(c(0,0.11))
+
+SBSpie_lowGS = tibble(SBS=colnames(Sherlock_SBS),Proportions=Sherlock_SBS[which.min(GS_Sherlock_LUAD),])[Sherlock_SBS[which.min(GS_Sherlock_LUAD),]>0,]
+SBSpie_lowGS$Pos = SBSpie_lowGS$Proportions/2+cumsum(c(0,SBSpie_lowGS$Proportions[-2]) )
+SBSpie_lowGS$SBS = factor(SBSpie_lowGS$SBS,levels=rev(SBSpie_lowGS$SBS))
+
+gg_lowGS_props = ggplot(SBSpie_lowGS, aes(x="",y=Proportions,fill=SBS) ) + 
+  geom_bar(stat="identity", width=1, color="white") +  coord_polar("y", start=0) + 
+  geom_label_repel(aes(y=Pos,label = SBS), nudge_x = 1, 
+                   size = 3, show.legend = FALSE) + 
+  theme_void() + scale_fill_manual(values = sbs_palette[]) + guides(fill="none")
+
+# creating layout
+layout <- c(
+  area(t = 1, l = 1, b = 4, r = 6),
+  area(t = 1, l = 5, b = 3, r = 6)
+)
+
+gg_lowGS_spectrum_props = gg_lowGS_spectrum + gg_lowGS_props + plot_layout(design = layout)
+
 
 gg_highGS_spectrum = ggplot(GSspectra,aes(x=MutationType,y= Proportion.highGS,fill=Type) ) + 
-  geom_col() + theme_classic()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type")+ ylab("Proportion of alterations")
+  geom_col() + theme_classic()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type")+ ylab("Proportion of alterations") + ggtitle("Highest diversity sample") + ylim(c(0,0.11))
+
+SBSpie_highGS = tibble(SBS=colnames(Sherlock_SBS),Proportions=Sherlock_SBS[which.max(GS_Sherlock_LUAD),])[Sherlock_SBS[which.max(GS_Sherlock_LUAD),]>0,]
+SBSpie_highGS$Pos = SBSpie_highGS$Proportions/2+cumsum(c(0,SBSpie_highGS$Proportions[-6]) )
+SBSpie_highGS$SBS = factor(SBSpie_highGS$SBS,levels=rev(SBSpie_highGS$SBS))
+
+gg_highGS_props = ggplot(SBSpie_highGS, aes(x="",y=Proportions,fill=SBS) ) + 
+  geom_col(width=1, color="white") +  coord_polar("y",start=0) + 
+  geom_label_repel(aes(y=Pos,label = SBS), nudge_x = 1, 
+                   size = 3, show.legend = FALSE,label.padding = 0.1,box.padding = 0.1,force = 5) + 
+  theme_void() + scale_fill_manual(values = sbs_palette[]) + guides(fill="none")
+
+gg_highGS_spectrum_props = gg_highGS_spectrum + gg_highGS_props + plot_layout(design = layout)
 ```
 
 
 ## Look at protein structure and position of drivers
+```{r}
 
+```
 
 ## Assembling all panels
 ```{r }
-(gg_EGFR_GS + gg_EGFR_spectrum  + gg_lowGS_spectrum +  gg_TP53_GS + gg_TP53_spectrum + gg_highGS_spectrum) +  plot_annotation(tag_levels = 'a') + plot_layout(widths = c(1, 2,2)) & theme(plot.tag = element_text(face = 'bold'))
+(gg_EGFR_GS + (gg_EGFR_spectrum + ggtitle("EGFR driver mutations"))  + gg_lowGS_spectrum_props +  gg_TP53_GS + (gg_TP53_spectrum+ggtitle("TP53 driver mutations")) + gg_highGS_spectrum_props ) +  plot_annotation(tag_levels = 'a') + plot_layout(widths = c(1, 2,2)) & theme(plot.tag = element_text(face = 'bold'))
 
 ```
 
