@@ -1,4 +1,4 @@
-Package: sigFAVA
+Package: sigvar
 Title: Quantify and visualize variability of mutational signatures within and across samples
 Version: 0.0.1
 Authors@R: 
