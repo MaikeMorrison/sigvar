@@ -1,22 +1,22 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# sigFAVA
+# sigvar
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-SigFAVA is a R package to quantify, visualize, and test the variability
+Sigvar is a R package to conduct signature variability analysis (SVS), that is, quantify, visualize, and test the variability
 of mutational signatures within and across samples
 
 ## Installation
 
-You can install the development version of sigFAVA from
+You can install the development version of sigvar from
 [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("MaikeMorrison/sigFAVA")
+devtools::install_github("MaikeMorrison/sigvar")
 ```
 
 ## Example
@@ -25,9 +25,9 @@ This is a basic example which shows you how to import results from
 SigProfiler and plot the signature attributions:
 
 ``` r
-library(sigFAVA)
+library(sigvar)
 
-SPfolder = system.file("extdata", "example_SigProfiler_results", package = "sigFAVA")
+SPfolder = system.file("extdata", "example_SigProfiler_results", package = "sigvar")
 Qlist = import_SigProfiler(SPfolder)
 #> Rows: 10 Columns: 5
 #> ── Column specification ────────────────────────────────────────────────────────
