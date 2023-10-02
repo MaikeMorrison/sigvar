@@ -44,13 +44,13 @@
 #'
 #' @import FAVA
 sigboot <- function(sig_activity,
-                     n_replicates,
-                     K = ncol(sig_activity),
-                     group,
-                     S = NULL, normalized = FALSE,
-                     seed = NULL,
-                     save_replicates = FALSE,
-                     alternative = "two.sided"){
+                    n_replicates,
+                    K = ncol(sig_activity),
+                    group,
+                    S = NULL, normalized = FALSE,
+                    seed = NULL,
+                    save_replicates = FALSE,
+                    alternative = "two.sided"){
 
   # Set random seed (optional)
   if(!is.null(seed)){
@@ -62,8 +62,8 @@ sigboot <- function(sig_activity,
   if(length(group)>1){
     multiple_groups = TRUE
     sig_activity = dplyr::mutate(sig_activity,
-                  group =  apply( sig_activity[ , group ] , 1 , paste , collapse = "_" ),
-    .before = 1)
+                                 group =  apply( sig_activity[ , group ] , 1 , paste , collapse = "_" ),
+                                 .before = 1)
     group_multiple = group
     group = "group"
 
@@ -73,9 +73,19 @@ sigboot <- function(sig_activity,
   # How many groups are there in the data? Do we need to do multiple pairwise comparisons?
   groups = as.character(unique(sig_activity[[group]]))
   if(length(groups) == 2){
-    return(pairwise_comparison(sig_activity = sig_activity, n_replicates = n_replicates, K = K,
-                               group = group, S = S,normalized = normalized,
-                               save_replicates = save_replicates, alternative =  alternative))
+    out = pairwise_comparison(sig_activity = sig_activity, n_replicates = n_replicates, K = K,
+                              group = group, S = S,normalized = normalized,
+                              save_replicates = save_replicates, alternative =  alternative)
+
+    out$P_values = out$P_values %>% data.frame() %>% t() %>%
+      cbind(group_1 = groups[[1]], group_2 = groups[[2]],.)
+    rownames( out$P_values ) = NULL
+
+    if(multiple_groups){
+      out$observed_stats = dplyr::left_join(group_table, out$observed_stats)
+      out$bootstrap_stats = dplyr::left_join(group_table, out$bootstrap_stats)
+    }
+    return(out)
   }else{
     # Make a list of all unique pairs of groups
     group_pairs = t(combn(groups, 2))
@@ -98,21 +108,26 @@ sigboot <- function(sig_activity,
 
     # 1 - P-values
     p_values = cbind(data.frame(t(combn(groups, 2))) %>% `colnames<-`(c("group_1", "group_2")),
-          lapply(bootstrap_list, function(list) list$P_values) %>%
-      do.call(rbind, .))
+                     lapply(bootstrap_list, function(list) list$P_values) %>%
+                       do.call(rbind, .))
 
     # 2 - bootstrap_distribution_plot
     bootstrap_distribution_plots = lapply(bootstrap_list, function(list)
       list$bootstrap_distribution_plot) %>% `names<-`(apply(group_pairs, 1, paste0, collapse = "--"))
 
     # 3 - observed_stats
-    observed_stats = left_join(group_table, lapply(bootstrap_list, function(list) list$observed_stats) %>%
-      do.call(rbind, .) %>% dplyr::distinct()) %>%
+    observed_stats = lapply(bootstrap_list, function(list) list$observed_stats) %>%
+      do.call(rbind, .) %>% dplyr::distinct() %>%
       dplyr::arrange(group)
 
+    if(multiple_groups){ observed_stats = left_join(group_table, observed_stats) }
+
+
     # 4 - bootstrap_stats
-    bootstrap_stats = left_join(group_table, lapply(bootstrap_list, function(list) list$bootstrap_stats) %>%
-      do.call(rbind, .))
+    bootstrap_stats = lapply(bootstrap_list, function(list) list$bootstrap_stats) %>%
+      do.call(rbind, .)
+
+    if(multiple_groups){ bootstrap_stats = left_join(group_table, bootstrap_stats) }
 
     # 5 - bootstrap_replicates
 
@@ -204,7 +219,7 @@ pairwise_comparison <- function(sig_activity,
 
   diff_label = paste0("Difference (", groups[[1]], " - ", groups[[2]], ")")
 
-# COMPUTE P-VALUES
+  # COMPUTE P-VALUES
   if(alternative == "greater"){
     p_values = sapply(colnames(bootstrap_difference), function(stat) mean((bootstrap_difference[[stat]] >= observed_difference[[stat]])) )
   } else if(alternative == "less"){
@@ -240,7 +255,7 @@ pairwise_comparison <- function(sig_activity,
     ggplot2::theme_bw() +
     ggplot2::scale_x_discrete(labels = c("FAVA" = "Across-sample\nheterogeneity",
                                          "gini_simpson_mean" = "Mean within-\nsample diversity",
-                                        "gini_simpson_pooled" =  "Diversity of\npooled samples"))
+                                         "gini_simpson_pooled" =  "Diversity of\npooled samples"))
   # plot
   bootstrap_replicates = rep_list
 

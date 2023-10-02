@@ -3,12 +3,12 @@ library(dplyr)
 sig_activity = ESCC_sig_activity %>% filter(Country %in% c("UK", "China"))
 n_replicates=100
 K = 43
-group = "Country"
+group = c("Country", "Incidence_Level")
 S = NULL
 normalized = FALSE
 seed = NULL
 save_replicates = FALSE
-alternative = "lesser"
+alternative = "less"
 
 test_that("bootstrapping works with just two groups", {
   expect_no_error(sig_boot(sig_activity = smoker_sigs_chen, n_replicates = 10, K = 3, group = "Smoker"))
