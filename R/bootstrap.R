@@ -171,8 +171,8 @@ pairwise_comparison <- function(sig_activity,
   # Generate bootstrap replicates of the pooled groups
   rep_list = list()
   for(rep in 1:n_replicates){
-    A_rep = pooled[sample(1:N, m),]
-    B_rep = pooled[sample(1:N, n),]
+    A_rep = pooled[sample(1:N, m, replace = TRUE),]
+    B_rep = pooled[sample(1:N, n, replace = TRUE),]
 
     rep_list[[rep]] = list(A = A_rep, B = B_rep)
   }
@@ -277,5 +277,4 @@ pairwise_comparison <- function(sig_activity,
               observed_stats = observed_stats,
               bootstrap_stats = bootstrap_stats,
               bootstrap_replicates = bootstrap_replicates))
-
 }
