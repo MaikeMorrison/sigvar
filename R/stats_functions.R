@@ -33,7 +33,7 @@ sigvar <- function(sig_activity,
                  FAVA::gini_simpson_mean(relab_matrix = sig_activity, K = K, S = S, w = w,
                  time = time, group = group))
   cols = ncol(var_table)
-  colnames(var_table)[(cols-1):cols] = c("Across_sample_variability", "Mean_within_sample_variability")
+  colnames(var_table)[(cols-1):cols] = c("across_sample_heterogeneity", "mean_within_sample_diversity")
   return(var_table)
 }
 
@@ -55,7 +55,7 @@ sigvar <- function(sig_activity,
 #' #' @return A named list containing the following entries:
 #' #' \itemize{
 #' #' \item \code{bootstrap_replicates}: If \code{save_replicates = TRUE}, a list of lists. Each element is named for a group provided in \code{sig_activity} and contains a list of \code{n_replicates} bootstrap replicates of the provided matrix. E.g., if \code{n_replicates = 100} and the first group in \code{sig_activity} is named \code{A}, then the first element of \code{bootstrap_replicates} is itself a list of 100 matrices, each representing a bootstrap replicate of matrix A.
-#' #' \item \code{statistics}: A dataframe containing \code{Across_sample_variability} and \code{Mean_within_sample_variability} computed for each bootstrap replicate matrix in \code{bootstrap_replicates}. If \code{group} is specified, the preceding columns indicate which group, or combination of groups, the row corresponds to.
+#' #' \item \code{statistics}: A dataframe containing \code{across_sample_heterogeneity} and \code{mean_within_sample_diversity} computed for each bootstrap replicate matrix in \code{bootstrap_replicates}. If \code{group} is specified, the preceding columns indicate which group, or combination of groups, the row corresponds to.
 #' #' \item \code{plot_variability}: A ggplot2 scatter plot depicting the bootstrap distributions of mean within-sample variability (x-axis) and across-sample variability (y-axis) for each group in \code{sig_activity}. Ellipses provide 95% confidence regions.
 #' #' \item \code{plot_boxplot}: A ggplot2 boxplot separately depicting the bootstrap distribution of each type of variability for each group.
 #' #' \item \code{test_kruskal_wallis_across}: Results of a Kruskal-Wallis test performed on the bootstrap distributions of across-sample variability. This test is a non-parametric statistical test of whether all provided bootstrap distributions are identically distributed.
@@ -102,11 +102,11 @@ sigvar <- function(sig_activity,
 #'
 #'   statistics = boot_out$statistics %>% dplyr::select(-gini_simpson_pooled)
 #'   colnames(statistics)[(ncol(statistics)-2):ncol(statistics)] = c("group",
-#'                                                                   "Across_sample_variability",
-#'                                                                   "Mean_within_sample_variability")
+#'                                                                   "across_sample_heterogeneity",
+#'                                                                   "mean_within_sample_diversity")
 #'
-#'   plot_ellipses = ggplot2::ggplot(statistics, ggplot2::aes(x = Mean_within_sample_variability,
-#'                                            y = Across_sample_variability,
+#'   plot_ellipses = ggplot2::ggplot(statistics, ggplot2::aes(x = mean_within_sample_diversity,
+#'                                            y = across_sample_heterogeneity,
 #'                                            color = group)) +
 #'     ggplot2::geom_point(alpha = 0.5) +
 #'     ggplot2::stat_ellipse(size = 1) +
@@ -114,8 +114,8 @@ sigvar <- function(sig_activity,
 #'
 #'
 #'   plot_boxplot = ggplot2::ggplot(tidyr::pivot_longer(statistics,
-#'                                                      cols = c(Across_sample_variability,
-#'                                                               Mean_within_sample_variability),
+#'                                                      cols = c(across_sample_heterogeneity,
+#'                                                               mean_within_sample_diversity),
 #'                                                      names_to = "Statistic", values_to = "Variability"),
 #'                                  ggplot2::aes(x = group,
 #'                                               y = Variability)) +
@@ -126,14 +126,14 @@ sigvar <- function(sig_activity,
 #'     ggplot2::theme(legend.position = "none")
 #'
 #'   if(!is.null(group)){
-#'     test_kruskal_wallis_across = kruskal.test(x = statistics$Across_sample_variability,
+#'     test_kruskal_wallis_across = kruskal.test(x = statistics$across_sample_heterogeneity,
 #'                                               g = statistics$group)
-#'     test_pairwise_wilcox_across = pairwise.wilcox.test(x = statistics$Across_sample_variability,
+#'     test_pairwise_wilcox_across = pairwise.wilcox.test(x = statistics$across_sample_heterogeneity,
 #'                                                        g = statistics$group)
 #'
-#'     test_kruskal_wallis_within = kruskal.test(x = statistics$Mean_within_sample_variability,
+#'     test_kruskal_wallis_within = kruskal.test(x = statistics$mean_within_sample_diversity,
 #'                                               g = statistics$group)
-#'     test_pairwise_wilcox_within = pairwise.wilcox.test(x = statistics$Mean_within_sample_variability,
+#'     test_pairwise_wilcox_within = pairwise.wilcox.test(x = statistics$mean_within_sample_diversity,
 #'                                                        g = statistics$group)
 #'   }else{
 #'     test_kruskal_wallis_across =
