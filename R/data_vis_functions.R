@@ -106,17 +106,11 @@ plot_signature_prop <- function(Q){
 #' corresponding to the mean relative contribution of mutations to that
 #' signature.
 #'
-#' @param Q A dataframe, matrix, or array representing mutational signature
-#'   relative contributions.
-#'   Each row represents a sample. The first \code{ncol(Q)-K} columns may
-#'   contain other information about the sample, and must contain the grouping
-#'   variable. When restricted to the last \code{K} columns, the rows of this
-#'   matrix must sum to 1.
-#' @param group A string specifying the name of the column that describes which
-#'   group/population each sample belongs to. Default is the first column name.
+#' @param sig_activity A matrix or data frame with rows containing non-negative entries that sum to 1. Each row represents a sample, each column represents a mutational signature, and each entry represents the abundance of that signature in the sample. If \code{sig_activity} contains any metadata, it must be on the left-hand side of the matrix, the right \code{K} entries of each row must sum to 1, and \code{K} must be specified. Otherwise, all entries of each row must sum to 1.
+#' @param group A string (or vector of strings) specifying the name(s) of the column(s) that describes which group(s) each sample belongs to. Default is the first column of \code{sig_activity}: \code{colnames(sig_activity)[1]}.
 #' @param K Optional; the number of signatures in the matrix. Default is
-#'   \code{K=ncol(Q)-1-as.numeric(!missing(facet))}, the number of columns in
-#'    \code{Q} minus either 1 (since one column must specify the group) or 2 if
+#'   \code{K=ncol(sig_activity)-1-as.numeric(!missing(facet))}, the number of columns in
+#'    \code{sig_activity} minus either 1 (since one column must specify the group) or 2 if
 #'   \code{facet} is provided, since one column must specify the variable on
 #'   which to facet.
 #' @param facet Optional; a string specifying the name of the column by which
@@ -124,12 +118,13 @@ plot_signature_prop <- function(Q){
 #' @param pivot Optional; set \code{pivot=TRUE} if you would like to plot groups
 #'   on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.
 #' @param max_dotsize Optional; a number specifying the maximum size for each dot.
+#' @param threshold Optional; a number between 0 and 1 specifying the minimum mean activity of a signature in order for it to be shown as a dot. Default is \code{threshold = 0}.
 #' @return A ggplot object containing a dot plot visualization of the mean
 #'   mutational signature contributions
 #' @examples
 #'   # Make an example matrix.
 #'   # Each row is a sample. Rows sum to 1.
-#' Q = matrix(c(
+#' sig_activity = matrix(c(
 #'     "A", .4, .2, .4,
 #'     "A", .5, .3, .2,
 #'     "A", .5, .4, .1,
@@ -140,11 +135,11 @@ plot_signature_prop <- function(Q){
 #'   byrow = TRUE
 #'   )
 #'
-#'   colnames(Q) = c("pop", "SBS1", "SBS2", "SBS3")
-#'   Q = dplyr::mutate(data.frame(Q), dplyr::across(c(SBS1, SBS2, SBS3),
+#'   colnames(sig_activity) = c("pop", "SBS1", "SBS2", "SBS3")
+#'   sig_activity = dplyr::mutate(data.frame(sig_activity), dplyr::across(c(SBS1, SBS2, SBS3),
 #'                                                  as.numeric))
 #'
-#' plot_dots(Q,
+#' plot_dots(sig_activity,
 #'  K = 3, # How many categories per vector?
 #'   group = "pop"
 #' )
@@ -153,37 +148,52 @@ plot_signature_prop <- function(Q){
 #' @importFrom dplyr mutate
 #' @importFrom rlang .data
 #' @export
-plot_dots <- function(Q, group = colnames(Q)[1],
-                      K=ncol(Q)-1-as.numeric(!missing(facet)),
+plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
+                      K=ncol(sig_activity)-1-as.numeric(!missing(facet)),
                       max_dotsize = 5,
                       pivot = FALSE,
-                      facet) {
+                      facet, threshold = 0) {
+
+  # If multiple groups are provided, make a new grouping column
+  multiple_groups = FALSE
+  if(length(group)>1){
+    multiple_groups = TRUE
+    sig_activity = dplyr::mutate(sig_activity,
+                                 group =  apply( sig_activity[ , group ] , 1 , paste , collapse = "_" ),
+                                 .before = 1)
+    group_multiple = group
+    group = "group"
+
+    group_table = dplyr::distinct(dplyr::select(sig_activity, dplyr::all_of(c("group", group_multiple))))
+  }
 
   facet_true = !missing(facet)
   # will there be a few facet panels, or many? used to determine # of columns
-  facets_few = ifelse(facet_true, length(unique(unlist(Q[facet])))<=4, FALSE)
+  facets_few = ifelse(facet_true, length(unique(unlist(sig_activity[facet])))<=4, FALSE)
 
-  if(length(K)>0){ if(K>(ncol(Q)-1) ) warning(paste0("K too large, not enough columns in K; K reduced to ncol(Q)-1=",ncol(Q)-1))}
+  if(length(K)>0){ if(K>(ncol(sig_activity)-1) ) warning(paste0("K too large, not enough columns in K; K reduced to ncol(sig_activity)-1=",ncol(sig_activity)-1))}
 
-   if(facet_true){
-    signatures = colnames(Q)[colnames(Q)!=group & colnames(Q)!=facet ][1:min(K,ncol(Q)-1)]
-  }else{
-    signatures = colnames(Q)[colnames(Q)!=group][1:min(K,ncol(Q)-1)]
-  }
+  signatures = colnames(sig_activity)[(ncol(sig_activity) - K + 1):ncol(sig_activity)]
+
+  #  if(facet_true){
+  #   signatures = colnames(sig_activity)[colnames(sig_activity)!=group & colnames(sig_activity)!=facet ][1:min(K,ncol(sig_activity)-1)]
+  # }else{
+  #   signatures = colnames(sig_activity)[colnames(sig_activity)!=group][1:min(K,ncol(sig_activity)-1)]
+  # }
 
 
-  Q_sigs = cbind(data.frame("group" = Q[[group]]),
-                 Q_checker(Q %>% dplyr::select(-group), K)) %>%
+  sig_activity_sigs = cbind(data.frame("group" = sig_activity[[group]]),
+                 Q_checker(sig_activity %>% dplyr::select(-group), K)) %>%
     `colnames<-`(c("group", signatures))
 
-  Q_present = Q_sigs %>%
+  sig_activity_present = sig_activity_sigs %>%
     dplyr::group_by(group) %>%
     dplyr::summarise(dplyr::across(dplyr::all_of(signatures),
-                                   function(x) sum(x > 0)/dplyr::n())) %>%
+                                   function(x) sum(x > threshold)/dplyr::n())) %>%
     tidyr::pivot_longer(cols = dplyr::all_of(signatures), names_to = "Signature",
                         values_to = "Proportion_present")
 
-  Q_means = Q_sigs %>%
+  sig_activity_means = sig_activity_sigs %>%
     dplyr::group_by(group) %>%
     dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) mean(col[col>0]))) %>%
     tidyr::pivot_longer(cols = dplyr::all_of(signatures),
@@ -191,11 +201,11 @@ plot_dots <- function(Q, group = colnames(Q)[1],
                         values_to = "Mean_contribution")
 
 
-  plot_data = dplyr::inner_join(Q_present, Q_means) %>%
+  plot_data = dplyr::inner_join(sig_activity_present, sig_activity_means) %>%
     dplyr::mutate(Signature = factor(Signature, ordered = TRUE,
                                      levels = (signatures))) %>%
     {if(facet_true){dplyr::left_join(.,
-                                     Q %>%
+                                     sig_activity %>%
                                        dplyr::transmute(group = get(group),
                                                         facet = get(facet)) %>%
                                        dplyr::distinct())
@@ -209,7 +219,7 @@ plot_dots <- function(Q, group = colnames(Q)[1],
     ggplot2::scale_size_continuous(guide = ggplot2::guide_legend(title.position = "top",
                                                         direction = "horizontal"),
                                    #max_size = max_dotsize,
-                                   limits = c(0,1), range = c(-1, max_dotsize),
+                                   limits = c(threshold,1), range = c(-1, max_dotsize),
                                    breaks = c(0.5, 1),
                                    name = "Proportion of\ntumors with\nsignature") +
     ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
@@ -231,9 +241,9 @@ plot_dots <- function(Q, group = colnames(Q)[1],
     # {if(pivot & !facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barwidth = 3))}+
     # {if(pivot & facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}+
 
-    {if(facet_true & pivot & facets_few)ggplot2::facet_wrap(~facet, scales = "free_y", ncol = 1)}+
-    {if(facet_true & pivot & !facets_few)ggplot2::facet_wrap(~facet, scales = "free_y")}+
-    {if(facet_true & !pivot)ggplot2::facet_wrap(~facet, scales = "free_x")}+
+    {if(facet_true & pivot & facets_few)ggforce::facet_col(dplyr::vars(facet), scales = "free_y", space = "free")}+ # This used to have ncol = 1 when it was facet_wrap
+    {if(facet_true & pivot & !facets_few)ggplot2::facet_grid(.~facet, scales = "free_y", space = "free_y")}+
+    {if(facet_true & !pivot)ggplot2::facet_grid(.~facet, scales = "free_x", space = "free_x")}+
 
     {if(facet_true)ggplot2::theme(strip.background = ggplot2::element_blank(),
                                   strip.text = ggplot2::element_text(size = 12))}+
