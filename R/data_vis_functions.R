@@ -36,7 +36,7 @@ Q_checker <- function(Q, K, rep) {
     }
     na.pos.format.string <- as.character(na.pos.format) %>% paste(collapse = ", ")
 
-    stop(paste0("There is at least one NA value in your Q matrix. The missing entries are found in the following positions: ",
+    stop(paste0("There is at least one NA value in your signature activity matrix. The missing entries are found in the following positions: ",
                 na.pos.format.string))
   }
 
@@ -44,10 +44,10 @@ Q_checker <- function(Q, K, rep) {
   sums <- rowSums(Q) %>% round(5)
   if (any(sums != 1)) {
     if (missing(rep)) {
-      warning("At least one Q matrix has rows which do not sum to exactly 1. Rounding the sum of each row to 1 by dividing all entries by the sum of the row.")
+      warning("At least one signature activity matrix has rows which do not sum to exactly 1. Rounding the sum of each row to 1 by dividing all entries by the sum of the row.")
     } else {
       warning(paste0(
-        "At least one of the rows of Q matrix number ", rep,
+        "At least one of the rows of signature activity matrix number ", rep,
         " (restricted to the last K columns) does not sum to 1. Rounding the sum of each row to 1 by dividing all entries by the sum of the row."
       ))
     }
