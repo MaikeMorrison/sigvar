@@ -59,7 +59,9 @@ sbs_palette = c(
   "mSBS29" = "#F5B7B1", # soft pink
   "mSBS41" = "#B39DDB", #periwinkle
 
-  "mSBS42" = "#FD6CFD" #Ultra pink
+  "mSBS42" = "#FD6CFD", #Ultra pink
+
+  mSBS_N1 = "#4D4D4D"
 )
 
 sbs_palette = sbs_palette[order(names(sbs_palette))]
@@ -92,10 +94,169 @@ mexposure.tib$Sample[!mexposure.tib$Sample %in% mice_metadata$Sample] # all here
 mutsig_carcinogens_mice_SBS = left_join(mexposure.tib,mice_metadata)
 
 # clean dose
-mutsig_carcinogens_mice_SBS$dose_numeric = as.numeric( str_remove(mutsig_carcinogens_mice$dose," ppm| mg/m3| MG/KG| PPM| MG/L| mg/L| mg/kg| m.9ful|mg/m3| mg/l| MG/M3") )
+mutsig_carcinogens_mice_SBS$dose_numeric = as.numeric( str_remove(mutsig_carcinogens_mice_SBS$dose," ppm| mg/m3| MG/KG| PPM| MG/L| mg/L| mg/kg| m.9ful|mg/m3| mg/l| MG/M3") )
 
 # reorder columns
-mutsig_carcinogens_mice_SBS = mutsig_carcinogens_mice %>% dplyr::relocate(.after = Sample, mSBS1,mSBS5,mSBS12,mSBS17,mSBS18,mSBS19,mSBS40, mSBS42, mSBS_N1, mSBS_N2, mSBS_N3)
+mutsig_carcinogens_mice_SBS = mutsig_carcinogens_mice_SBS %>% dplyr::relocate(.after = Sample, mSBS1,mSBS5,mSBS12,mSBS17,mSBS18,mSBS19,mSBS40, mSBS42, mSBS_N1, mSBS_N2, mSBS_N3)
 
 # save
 usethis::use_data(mutsig_carcinogens_mice_SBS,overwrite = TRUE)
+
+## get references for mSBS
+mutsig_carcinogens_mice_SBS.refs = readRDS("../data/mouse-mutatation-signatures/figure1/mSBSs.rds")
+
+barplot( mutsig_carcinogens_mice_SBS.refs[,1] ) # to check order. Seems to be the same as in fig 1d (C>A, C>G, C>T, T>A, etc)
+
+mutsig_carcinogens_mice_SBS.refs = bind_cols( Type=Sherlock.refs$Type,  Subtype=Sherlock.refs$Subtype, as_tibble(mutsig_carcinogens_mice_SBS.refs))
+
+## save
+usethis::use_data(mutsig_carcinogens_mice_SBS.refs,overwrite = TRUE)
+
+## read mutational spectra data
+mutprof_carcinogens_mice_SBS = read_tsv("../data/signatures/COSMIC/SPinput_split_mice_carcinogens/output/SBS/Mice_Carcinogens.SBS96.all") %>%
+  mutate(Type =  str_extract(MutationType,"[ACGT]>[ACGT]"),
+         Subtype = paste0(str_sub(MutationType,1,1),str_sub(MutationType,3,3),str_sub(MutationType,7,7)) ) %>%
+  arrange(Type,Subtype) %>% relocate(Type,Subtype,.after= MutationType)
+
+### save
+usethis::use_data(mutprof_carcinogens_mice_SBS,overwrite = TRUE)
+
+## transcripts
+### get sequences
+Hras.trans = read_tsv("../data/Ensembl/Mus_musculus_Hras_ENSMUST00000026572_11_sequence.fa")
+Hras.trans = unlist( str_split(Hras.trans$`>Hras-201 ENSMUSE00000480008 exon:protein_coding`[!str_detect(Hras.trans$`>Hras-201 ENSMUSE00000480008 exon:protein_coding`,">")],"") )
+
+Kras.trans = read_tsv("../data/Ensembl/Mus_musculus_Kras_ENSMUST00000111710_8_sequence.fa")
+Kras.trans = unlist( str_split(Kras.trans$`>Kras-202 ENSMUSE00000380468 exon:protein_coding`[!str_detect(Kras.trans$`>Kras-202 ENSMUSE00000380468 exon:protein_coding`,">")],"") )
+
+Fgfr2.trans = read_tsv("../data/Ensembl/Mus_musculus_Fgfr2_ENSMUST00000122054_8_sequence.fa")
+Fgfr2.trans = unlist( str_split(Fgfr2.trans$`>Fgfr2-215 ENSMUSE00000721980 exon:protein_coding`[!str_detect(Fgfr2.trans$`>Fgfr2-215 ENSMUSE00000721980 exon:protein_coding`,">")],"") )
+
+Braf.trans = read_tsv("../data/Ensembl/Mus_musculus_Braf_ENSMUST00000002487_15_sequence.fa")
+Braf.trans = unlist( str_split(Braf.trans$`>Braf-201 ENSMUSE00000889921 exon:protein_coding`[!str_detect(Braf.trans$`>Braf-201 ENSMUSE00000889921 exon:protein_coding`,">")],"") )
+
+compute_SBS96_context <- function(trans){
+### create contexts
+trans.contexts  = sapply(2:(length(trans)-1),  function(i) paste0(trans[i+(-1):1],collapse = "") )
+
+### Convert to SBS96
+reverse <- function(X){
+  res = str_split(X,"")[[1]]
+  res = sapply(res, function(x){
+    if(x=="A") return("T")
+    if(x=="T") return("A")
+    if(x=="C") return("G")
+    if(x=="G") return("C")
+  })
+  return(paste0(res,collapse = ""))
+}
+
+### apply when necessary
+trans.contexts.96 = sapply(2:(length(trans)-1), function(i){
+  if(trans[i] %in% c("G","A") ){
+    reverse(trans.contexts[i-1])
+  }else{
+    trans.contexts[i-1]
+    }
+  } )
+
+return( table(trans.contexts.96)[MutType$Subtype] )
+}
+
+Braf.trans.SBS96.context  = compute_SBS96_context(Braf.trans)
+Kras.trans.SBS96.context  = compute_SBS96_context(Kras.trans)
+Hras.trans.SBS96.context  = compute_SBS96_context(Hras.trans)
+Fgfr2.trans.SBS96.context = compute_SBS96_context(Fgfr2.trans)
+
+# code to create mice mutsig files
+#Mice_Carcinogens.SBS96.input0 = read_tsv("../data/signatures/mice_carcinogens/41588_2020_692_MOESM2_ESM.xlsx")
+Mice_Carcinogens.SBS96.input = read_tsv("../data/signatures/COSMIC/SPinput_split_mice_carcinogens/Mice_carcinogens_driver_SPformat.txt")
+Mice_Carcinogens.SBS96 = read_tsv("../data/signatures/COSMIC/SPinput_split_mice_carcinogens/output/SBS/Mice_Carcinogens.SBS96.all") # contexts looks ok compared to UCSC
+
+# drivers
+## reduced list
+drivers = read_xlsx("../data/mice_carcinogens/41588_2020_692_MOESM2_ESM.xlsx",sheet = 12,skip=2)
+# whole table of Fig. 4
+drivers_fig4  = read_tsv("../data/mouse-mutatation-signatures/figure4/snvsindrivers.txt",col_names = NA) # subset only to the ones above 3% as in Fig4a
+drivers_fig4a = read_tsv("../data/mouse-mutatation-signatures/figure4/drivers_lung.txt",col_names = NA)
+drivers_fig4b = read_tsv("../data/mouse-mutatation-signatures/figure4/drivers_liver.txt",col_names = NA)
+
+drivers_fig4.lung = drivers_fig4a %>% filter(X6%in%c("Kras","Fgfr2","Braf","Ctnnb1","Zfhx3","Trp53","Epha3","Cnot3"))
+drivers_fig4.liver = drivers_fig4b %>% filter(X6%in%c("Hras","Ctnnb1","Egfr","Lrp1b","Braf","Kras"))
+
+drivers_fig4.lung = drivers_fig4.lung %>% mutate(mutation_ID=paste(str_replace_all(X1," ","_"),X2,X3,X4,X5,sep="_"))
+drivers_fig4.liver = drivers_fig4.liver %>% mutate(mutation_ID=paste(str_replace_all(X1," ","_"),X2,X3,X4,X5,sep="_"))
+
+# read sig outputs
+mut_profs_all_drivers = read_tsv("../data/signatures/COSMIC/SPinput_split_mice_carcinogens/output/SBS/Mice_Carcinogens.SBS96.all")
+
+mut_profs_all_drivers.t = t(mut_profs_all_drivers[,-(1:2)])
+mut_profs_all_drivers.t = bind_cols(mutation_ID= rownames(mut_profs_all_drivers.t), as_tibble(mut_profs_all_drivers.t) )
+
+drivers_fig4.lung.spectra  = left_join(drivers_fig4.lung,mut_profs_all_drivers.t)
+drivers_fig4.liver.spectra = left_join(drivers_fig4.liver,mut_profs_all_drivers.t)
+
+# ESCC signatures
+read_xlsx("../data/signatures/Mutographs_signatures/MoodyEtAl2021_suptables.xlsx",skip=2,sheet=)
+
+# ESCC drivers
+ESCC_drivers = read_xlsx("../data/signatures/Mutographs_signatures/MoodyEtAl2021_suptables.xlsx",sheet=12,skip=2)
+ESCC_drivers.SBS = ESCC_drivers %>% filter(Type=="Sub")
+
+sort(table(ESCC_drivers.SBS$Gene),decreasing=T) # TP53 overwhelmingly greater
+
+# write in SP format: Project	Sample	ID	Genome	mut_type	chrom	pos_start	pos_end	ref	alt	Type
+ESCC_drivers.SBS.SPformat = ESCC_drivers.SBS %>%
+  mutate(Project="ESCC",Sample= paste(Sample,Chrom,Pos,Ref,Alt,sep="_"), ID=Gene,Genome="GRCh37",mut_type=Type,chrom=Chrom,pos_start=Pos,	pos_end=Pos,
+         ref=Ref,	alt=Alt,	Type="SOMATIC") %>%
+  dplyr::select(Project	,Sample,	ID,	Genome,	mut_type,	chrom,	pos_start,	pos_end,	ref,	alt,Type)
+
+write_tsv(ESCC_drivers.SBS.SPformat,file="../data/signatures/COSMIC/SPinput_ESCC/ESCC_drivers_SPformat.txt")
+
+# read driver spectra
+ESCC_drivers.SBS.spectra = read_tsv("../data/signatures/COSMIC/SPinput_ESCC/output/SBS/COSMIC_EGFR.SBS96.all")
+
+ESCC_drivers.SBS.spectra = left_join(MutType , ESCC_drivers.SBS.spectra %>% mutate(Type = str_extract(MutationType,"[ACGT]>[ACGT]"),
+                                                        Subtype= paste0(str_sub(MutationType,1,1),
+                                                                        str_sub(MutationType,3,3),
+                                                                        str_sub(MutationType,7,7))
+                                                        ) )
+ESCC_drivers.SBS.spectra[,-(1:3)] = ESCC_drivers.SBS.spectra[,-(1:3)][sort(colnames(ESCC_drivers.SBS.spectra)[-(1:3)])]
+ESCC_drivers.SBS.SPformat = ESCC_drivers.SBS.SPformat %>% arrange(Sample)
+#check match
+all(ESCC_drivers.SBS.SPformat$Sample==colnames(ESCC_drivers.SBS.spectra)[-(1:3)])
+## get TP53 spectrum
+
+ESCC_TP53drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="TP53")+3]))
+ESCC_CDKN2Adrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="CDKN2A")+3]))
+ESCC_PIK3CAdrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="PIK3CA")+3]))
+ESCC_KMT2Ddrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="KMT2D")+3]))
+
+ESCC_EP300drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="EP300")+3]))
+ESCC_NFE2L2drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="NFE2L2")+3]))
+ESCC_NOTCH1drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="NOTCH1")+3]))
+
+# Compute contexts
+TP53.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_TP53_ENST00000269305_9_sequence.fa",comment = ">",col_names = NA)[[1]],""))
+TP53.trans.SBS96.context  = compute_SBS96_context(TP53.trans)
+
+EGFR.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_EGFR_ENST00000275493_7_sequence.fa",comment = ">",col_names = NA)[[1]],""))
+EGFR.trans.SBS96.context  = compute_SBS96_context(EGFR.trans)
+
+CDKN2A.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_CDKN2A_ENST00000304494_10_sequence.fa",comment = ">",col_names = NA)[[1]],""))
+CDKN2A.trans.SBS96.context  = compute_SBS96_context(CDKN2A.trans)
+
+PIK3CA.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_PIK3CA_ENST00000263967_4_sequence.fa",comment = ">",col_names = NA)[[1]],""))
+PIK3CA.trans.SBS96.context  = compute_SBS96_context(PIK3CA.trans)
+
+KMT2D.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_KMT2D_ENST00000301067_12_sequence.fa",comment = ">",col_names = NA)[[1]],""))
+KMT2D.trans.SBS96.context  = compute_SBS96_context(KMT2D.trans)
+
+EP300.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_EP300_ENST00000263253_9_sequence.fa",comment = ">",col_names = NA)[[1]],""))
+EP300.trans.SBS96.context  = compute_SBS96_context(EP300.trans)
+
+NFE2L2.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_NFE2L2_ENST00000397062_8_sequence.fa",comment = ">",col_names = NA)[[1]],""))
+NFE2L2.trans.SBS96.context  = compute_SBS96_context(NFE2L2.trans)
+
+NOTCH1.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_NOTCH1_ENST00000651671_1_sequence.fa",comment = ">",col_names = NA)[[1]],""))
+NOTCH1.trans.SBS96.context  = compute_SBS96_context(NOTCH1.trans)
