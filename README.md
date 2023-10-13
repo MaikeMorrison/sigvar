@@ -6,8 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-Sigvar is a R package to conduct signature variability analysis (SVS), that is, quantify, visualize, and test the variability
-of mutational signatures within and across samples
+Sigvar is a R package to conduct signature variability analysis (SVS), that is, quantify, visualize, and test the variability of mutational signatures within and across samples. It works on all operating systems supporting R.
 
 ## Installation
 
@@ -18,6 +17,8 @@ You can install the development version of sigvar from
 # install.packages("devtools")
 devtools::install_github("MaikeMorrison/sigvar")
 ```
+
+The package requires packages dplyr,    ggplot2,    rlang,    tidyr,    readr, and    FAVA. They will all be installed automatically by the command above. Installation time ranges from 1 to 5 minutes depending on whether dependencies also need to be installed.
 
 ## Example
 
@@ -85,3 +86,9 @@ plot_dots(Qlist[[1]])
 ```
 
 <img src="man/figures/README-example-1.png" width="100%" />
+
+Run time is expected to be a few minutes on a typical desktop computer.
+
+See vignettes for detailed examples of using sigvar on real datasets.
+
+The package has been tested on R version 4.1.2 on a redhat linux platform, and a windows 10 pro platform.
