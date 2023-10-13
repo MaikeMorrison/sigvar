@@ -92,3 +92,6 @@ Run time is expected to be a few minutes on a typical desktop computer.
 See vignettes for detailed examples of using sigvar on real datasets.
 
 The package has been tested on R version 4.1.2 on a redhat linux platform, and a windows 10 pro platform.
+
+# License
+The package is available under the MIT license
