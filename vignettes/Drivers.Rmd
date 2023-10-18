@@ -31,6 +31,7 @@ library(dplyr)
 library(readr)
 library(readxl)
 library(patchwork)
+library(ggpubr)
 ```
 
 # Introduction
@@ -78,16 +79,16 @@ Sherlock_MutProf_LUAD = Sherlock_SBS%*%t(Sherlock.refs)
 
 ## ESCC across continents
 ```{r}
-sigs_ESCC.S = colnames(Sherlock_SBS.tib[,-1])
-MutType = Sherlock.refs %>% dplyr::select(Type,Subtype)
+sigs_ESCC.S = colnames(mutprof_ESCC_SBS)[-(1:3)]
 
-Sherlock_SBS       = as.matrix(Sherlock_SBS.tib[,-1])
-rownames(Sherlock_SBS) = Sherlock_SBS.tib$Sample
-Sherlock.refs = as.matrix(Sherlock.refs[,sigs_LUAD.S])
-colnames(Sherlock.refs) = sigs_LUAD.S
-rownames(Sherlock.refs) = paste0(MutType$Type,",",MutType$Subtype)
+ESCC_SBS       = as.matrix(mutprof_ESCC_SBS[,-(1:3)])
+rownames(ESCC_SBS) = mutprof_ESCC_SBS$Sample
 
-Sherlock_MutProf_LUAD = Sherlock_SBS%*%t(Sherlock.refs)
+ESCC.refs = as.matrix(ESCC.refs[,sigs_ESCC.S])
+colnames(ESCC.refs) = sigs_ESCC.S
+rownames(ESCC.refs) = paste0(MutType$Type,",",MutType$Subtype)
+
+ESCC_MutProf = ESCC_SBS%*%t(ESCC.refs)
 ```
 
 ## Riva et al. samples
@@ -134,6 +135,16 @@ prob_Sherlock_TP53_drivers = sapply(1:nrow(Sherlock_MutProf_LUAD), function(i) S
 ## ESCC across continents
 ```{r}
 prob_ESCC_TP53_drivers = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_TP53drivers.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_TP53_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_TP53driverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_TP53_drivers.posdam = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_TP53driverposdam.SBS.spectra$n/TP53.trans.SBS96.context) )
+
+prob_ESCC_CDKN2A_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_CDKN2Adriverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_EP300_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_EP300driverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_KMT2D_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_KMT2Ddriverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_NFE2L2_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_NFE2L2driverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+
+prob_ESCC_NOTCH1_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_NOTCH1driverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_PIK3CA_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_PIK3CAdriverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
 ```
 
 ## Mice exposed to 20 carcinogens
@@ -155,7 +166,6 @@ prob_Riva_drivers.Fgfr22 = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf
 prob_Riva_drivers.Hras2 = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix((colSums((bind_rows(drivers_fig4.lung.spectra,drivers_fig4.liver.spectra) %>% filter(X6=="Hras",!duplicated(paste0(X2,X3,X4,X5))) )[,-(1:10)] ))/Kras.trans.SBS96.context))
 
 prob_Riva_drivers.Braf2 = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix((colSums((bind_rows(drivers_fig4.lung.spectra,drivers_fig4.liver.spectra) %>% filter(X6=="Braf",!duplicated(paste0(X2,X3,X4,X5))) )[,-(1:10)] ))/Kras.trans.SBS96.context))
-
 ```
 
 
@@ -179,6 +189,10 @@ SBS_mice_S_cossim <- lsa::cosine(x = Riva.refs)
 GS_Riva = sapply(1:nrow(Riva_SBS), function(i) gini_simpson(Riva_SBS[i,], S=SBS_mice_S_cossim) )
 ```
 
+## ESCC across continents samples
+```{r}
+GS_ESCC = sapply(1:nrow(ESCC_SBS), function(i) gini_simpson(ESCC_SBS[i,]) )
+```
 
 # Testing the relationship
 
@@ -256,6 +270,63 @@ fisher.test(Spont.Kras.liver.tab) # Braf liver a bit more likely in unexposed (n
 fisher.test(Spont.Kras.lung.tab)  # Braf lung more likely in exposed (signif)
 ```
 
+## ESCC across continents
+```{r}
+res.S.ESCC = tibble(prob.TP53=prob_ESCC_TP53_drivers.pos,
+                    prob.CDKN2A=prob_ESCC_CDKN2A_drivers.pos, 
+                    prob.EP300=prob_ESCC_EP300_drivers.pos, 
+                    prob.KMT2D=prob_ESCC_KMT2D_drivers.pos, 
+                    prob.NFE2L2=prob_ESCC_NFE2L2_drivers.pos, 
+                    prob.NOTCH1=prob_ESCC_NOTCH1_drivers.pos,
+                    prob.PIK3CA=prob_ESCC_PIK3CA_drivers.pos, 
+                    GS=GS_ESCC,
+                    Country=mutprof_ESCC_SBS$Country,
+                    Incidence_group=mutprof_ESCC_SBS$Incidence_Level)
+
+lm_TP53_GS = summary(lm(prob.TP53~GS,data=res.S.ESCC)) # no signif. increases in low, decreases in high
+lm_CDKN2A_GS = summary(lm(prob.CDKN2A~GS,data=res.S.ESCC)) # decreases overall, increases in low, decreases in high
+lm_EP300_GS = summary(lm(prob.EP300~GS,data=res.S.ESCC)) # increases in general
+lm_KMT2D_GS = summary(lm(prob.KMT2D~GS,data=res.S.ESCC)) # increases in general
+lm_NFE2L2_GS = summary(lm(prob.NFE2L2~GS,data=res.S.ESCC)) # increases in general
+lm_NOTCH1_GS = summary(lm(prob.NOTCH1~GS,data=res.S.ESCC)) # no signif. decreases in high, increases in low
+lm_PIK3CA_GS = summary(lm(prob.PIK3CA~GS,data=res.S.ESCC)) # increases in general
+
+lm_TP53_GS.I   = summary(lm(prob.TP53~GS*Incidence_group,data=res.S.ESCC)) # no signif. increases in low, decreases in high
+lm_CDKN2A_GS.I = summary(lm(prob.CDKN2A~GS*Incidence_group,data=res.S.ESCC)) # decreases overall, increases in low, decreases in high
+lm_EP300_GS.I  = summary(lm(prob.EP300~GS*Incidence_group,data=res.S.ESCC)) # increases in general
+lm_KMT2D_GS.I  = summary(lm(prob.KMT2D~GS*Incidence_group,data=res.S.ESCC)) # increases in general
+lm_NFE2L2_GS.I = summary(lm(prob.NFE2L2~GS*Incidence_group,data=res.S.ESCC)) # increases in general
+lm_NOTCH1_GS.I = summary(lm(prob.NOTCH1~GS*Incidence_group,data=res.S.ESCC)) # no signif. decreases in high, increases in low
+lm_PIK3CA_GS.I = summary(lm(prob.PIK3CA~GS*Incidence_group,data=res.S.ESCC)) # increases in general
+
+lm_driver_GS = summary(lm( (prob.PIK3CA+prob.NOTCH1+prob.NFE2L2+prob.KMT2D+prob.EP300+prob.CDKN2A+prob.TP53)~GS,data=res.S.ESCC)) # increases in general
+
+summary(lm( GS~prob.PIK3CA+prob.NOTCH1+prob.NFE2L2+prob.KMT2D+prob.EP300+prob.CDKN2A+prob.TP53+Incidence_group,data=res.S.ESCC)) 
+
+# check if country enrichment for some drivers
+ESCC_drivers_SBS = left_join(mutprof_ESCC_SBS,ESCC_drivers.SBS)
+
+ESCC_drivers_SBS.tab = table( addNA(ESCC_drivers_SBS$Incidence_Level[ESCC_drivers_SBS$Gene%in%c("TP53","PIK3CA")]), 
+       addNA(ESCC_drivers_SBS$Gene[ESCC_drivers_SBS$Gene%in%c("TP53","PIK3CA")]) ) #PIK3CA and CDKN2A more frequent than TP53 in High incidence regions
+
+tT = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="TP53"))[,2]>0
+tC = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="CDKN2A"))[,2]>0
+tE = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="EP300"))[,2]>0
+tK = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="KMT2D"))[,2]>0
+tNF = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="NFE2L2"))[,2]>0
+tNO = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="NOTCH1"))[,2]>0
+tP = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="PIK3CA"))[,2]>0
+all( names(tT)==mutprof_ESCC_SBS$Sample )
+
+fisher.test( table(tT,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tC,mutprof_ESCC_SBS$Incidence_Level) ) # CDKN2A more frequent in high incidence
+fisher.test( table(tE,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tK,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tNF,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tNO,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tP,mutprof_ESCC_SBS$Incidence_Level) ) # morePIK3CA more frequent in high incidence
+```
+
 # Plotting
 
 ## Relationship between within-sample diversity and probability of driver alteration
@@ -299,6 +370,100 @@ ggsave( gg_RIVA_GS.liver.Hras+ gg_RIVA_GS.liver.Braf + gg_RIVA_GS.lung.Fgfr2 + g
         filename = "../../Fig4c_mice_probs_draft.svg",height = 2.5*2,width = 3*2)
 ```
 
+### LCINS
+```{r }
+col_incidence = c("Low"="#199cc9ff","High"="#d86600ff")
+
+gg_ESCC_GS.TP53 <- ggplot(data=res.S.ESCC,aes(y=prob.TP53,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("Probability of driver alteration") + theme_classic() + ggtitle(expression(italic(TP53)) )  + guides(col="none")
+
+gg_ESCC_GS.CDKN2A <- ggplot(data=res.S.ESCC,aes(y=prob.CDKN2A,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(CDKN2A)) + guides(col="none")
+
+gg_ESCC_GS.EP300 <- ggplot(data=res.S.ESCC,aes(y=prob.EP300,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("Probability of driver alteration") + theme_classic() + ggtitle(expression(EP300)) + guides(col="none")
+
+gg_ESCC_GS.KMT2D <- ggplot(data=res.S.ESCC,aes(y=prob.KMT2D,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(KMT2D)) + guides(col="none")
+
+gg_ESCC_GS.NFE2L2 <- ggplot(data=res.S.ESCC,aes(y=prob.NFE2L2,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(NFE2L2)) + guides(col="none")
+
+gg_ESCC_GS.NOTCH1 <- ggplot(data=res.S.ESCC,aes(y=prob.NOTCH1,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(NOTCH1)) + guides(col="none")
+
+gg_ESCC_GS.PIK3CA <- ggplot(data=res.S.ESCC,aes(y=prob.PIK3CA,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(PIK3CA)) + guides(col="none")
+
+# association with country and incidence
+res.S.ESCC$Incidence_group = factor(res.S.ESCC$Incidence_group,levels = c("Low","High"))
+
+gg_ESCC_country.TP53 <- ggplot(data=res.S.ESCC,aes(y=prob.TP53,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.TP53,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(TP53)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.CDKN2A <- ggplot(data=res.S.ESCC,aes(y=prob.CDKN2A,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.CDKN2A,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  scale_fill_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(CDKN2A)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.EP300 <- ggplot(data=res.S.ESCC,aes(y=prob.EP300,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.EP300,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(EP300)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.PIK3CA <- ggplot(data=res.S.ESCC,aes(y=prob.PIK3CA,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.PIK3CA,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(PIK3CA)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.KMT2D <- ggplot(data=res.S.ESCC,aes(y=prob.KMT2D,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.KMT2D,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(KMT2D)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.NFE2L2 <- ggplot(data=res.S.ESCC,aes(y=prob.NFE2L2,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.NFE2L2,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(NFE2L2)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.NOTCH1 <- ggplot(data=res.S.ESCC,aes(y=prob.NOTCH1,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.NOTCH1,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(NOTCH1)) )  + guides(col="none",fill="none")
+
+gg_ESCC_all = gg_ESCC_GS.TP53 + gg_ESCC_country.TP53+
+  gg_ESCC_GS.CDKN2A + gg_ESCC_country.CDKN2A+
+  gg_ESCC_GS.PIK3CA + gg_ESCC_country.PIK3CA+ 
+  gg_ESCC_GS.KMT2D + gg_ESCC_country.KMT2D+
+  gg_ESCC_GS.EP300  + gg_ESCC_country.EP300+ 
+  gg_ESCC_GS.NFE2L2 + gg_ESCC_country.NFE2L2+ 
+  gg_ESCC_GS.NOTCH1 + gg_ESCC_country.NOTCH1 +  plot_layout(ncol = 8)
+
+ggsave(gg_ESCC_all,filename = "../../FigS_ESCC_drivers_raw.svg",height=3*2,width=3*8)
+```
+
+
 ## Spectra of driver mutations
 
 ### LCINS
@@ -325,6 +490,7 @@ gg_Riva_drivers_spectrum = sigvar::plot_SBS_spectrum(tibble(Drivers=rowSums(mutp
 
 ###
 ```{r}
+library(ggrepel)
 GSspectra = tibble(MutationType=paste0(MutType$Type,",",MutType$Subtype) , Type=MutType$Type, Subtype=MutType$Subtype,
        Proportion.lowGS  = Sherlock_MutProf_LUAD[which.min(GS_Sherlock_LUAD),],
        Proportion.highGS = Sherlock_MutProf_LUAD[which.max(GS_Sherlock_LUAD),] )
@@ -395,13 +561,13 @@ gg_drivers_riva_mut.lung  = ggplot(driver.tib.lung, aes(x=GS_group,y=Activity,fi
 ggsave( gg_drivers_riva_mut.liver+ gg_drivers_riva_mut.lung ,filename = "../../Fig4a_draft.svg",h=3,w=3*2)
 
 ## diversity of responsible signatures
-driver.tib.liver = driver.tib %>% filter(!is.na(driver.tib$signature ),Tissue=="liver") %>% group_by(GS>=median(GS),signature) %>% summarize(n=n()) %>% 
+driver.tib.liver = driver.tib %>% filter(!is.na(driver.tib$signature ),Tissue.y=="liver") %>% group_by(GS>=median(GS),signature) %>% summarize(n=n()) %>% 
   ungroup() %>% pivot_wider(names_from=signature,values_from = n,values_fill = 0) 
 fisher.test( as.matrix(driver.tib.liver[,-1]) ) 
 #age vs other
 fisher.test( cbind(driver.tib.liver[,2],rowSums(driver.tib.liver[,3:5])) ) 
 
-driver.tib.lung  = driver.tib %>% filter(!is.na(driver.tib$signature ),Tissue=="lung") %>% group_by(GS>=median(GS),signature) %>% summarize(n=n()) %>% 
+driver.tib.lung  = driver.tib %>% filter(!is.na(driver.tib$signature ),Tissue.y=="lung") %>% group_by(GS>=median(GS),signature) %>% summarize(n=n()) %>% 
   ungroup() %>% pivot_wider(names_from=signature,values_from = n,values_fill = 0)
 
 fisher.test( as.matrix(driver.tib.lung[,-1]) )
@@ -460,6 +626,35 @@ summary( lm(GS~Tissue+gene + !str_detect(sample,"SPONTANEOUS"),data = driver.tib
 ```{r }
 (gg_EGFR_GS + (gg_EGFR_spectrum + ggtitle("EGFR driver mutations"))  + gg_lowGS_spectrum_props +  gg_TP53_GS + (gg_TP53_spectrum+ggtitle("TP53 driver mutations")) + gg_highGS_spectrum_props ) +  plot_annotation(tag_levels = 'a') + plot_layout(widths = c(1, 2,2)) & theme(plot.tag = element_text(face = 'bold'))
 
+```
+
+## Save tables
+```{r }
+TableS_drivers.LCINS = res.S
+colnames(TableS_drivers.LCINS)[1:2] = c("Probability_EGFR_driver","Probability_TP53_driver")
+colnames(TableS_drivers.LCINS)[3] = c("Within-sample_diversity")
+TableS_drivers.LCINS = bind_cols(Subject=Sherlock.metadata$Subject,TableS_drivers.LCINS)
+
+write_tsv(TableS_drivers.LCINS,file = "../../TableS_drivers_LCINS.tsv")
+
+
+TableS_drivers.Riva = res.Riva.S
+colnames(TableS_drivers.Riva)[1:4] = c("Probability_Hras_driver","Probability_Braf_driver",
+                                  "Probability_Fgfr2_driver","Probability_Kras_driver")
+colnames(TableS_drivers.Riva)[8] = c("Within-sample_diversity")
+TableS_drivers.Riva = bind_cols(Sample=mutsig_carcinogens_mice_SBS$Sample,TableS_drivers.Riva)
+
+write_tsv(TableS_drivers.Riva,file = "../../TableS_drivers_Riva.tsv")
+
+TableS_drivers.ESCC = res.S.ESCC
+colnames(TableS_drivers.ESCC)[1:7] = c("Probability_TP53_driver","Probability_CDKN2A_driver",
+                                  "Probability_EP300_driver","Probability_KMT2D_driver",
+                                  "Probability_NFE2L2_driver","Probability_NOTCH1_driver",
+                                  "Probability_PIK3CA_driver")
+colnames(TableS_drivers.ESCC)[8] = c("Within-sample_diversity")
+TableS_drivers.ESCC = bind_cols(Sample=mutprof_ESCC_SBS$Sample,TableS_drivers.ESCC)
+
+write_tsv(TableS_drivers.ESCC,file = "../../TableS_drivers_ESCC.tsv")
 ```
 
 # Session information

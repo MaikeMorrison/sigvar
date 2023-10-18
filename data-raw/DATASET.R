@@ -197,7 +197,33 @@ drivers_fig4.lung.spectra  = left_join(drivers_fig4.lung,mut_profs_all_drivers.t
 drivers_fig4.liver.spectra = left_join(drivers_fig4.liver,mut_profs_all_drivers.t)
 
 # ESCC signatures
-read_xlsx("../data/signatures/Mutographs_signatures/MoodyEtAl2021_suptables.xlsx",skip=2,sheet=)
+load("data/tab15.rda")
+
+mutprof_ESCC_SBS = tab15[,!str_detect(colnames(tab15),"ID|DBS")]
+# renormalize
+mutprof_ESCC_SBS[,-c(1:3)] = sweep(mutprof_ESCC_SBS[,-c(1:3)] , 1, rowSums(mutprof_ESCC_SBS[,-c(1:3)]), "/")
+
+all_sigs = colnames(mutprof_ESCC_SBS)[-(1:3)]
+
+escc_stats.SBS = sigvar::sigvar(sig_activity = mutprof_ESCC_SBS, K = length(all_sigs), group = "Country"#, S = ESCC_sim
+) %>%
+  mutate(incidence = ifelse(Country %in% c("UK", "Japan", "Brazil"),
+                            "Low incidence", "High incidence"))
+
+# References
+SBS_ref = read_tsv("../data/signatures/COSMIC/COSMIC_v3.2_SBS_GRCh37.txt")
+SBS_denovo = readxl::read_xlsx("../data/signatures/Mutographs_signatures/MoodyEtAl2021_suptables.xlsx",
+                               sheet = "Supplementary Table 2", skip = 2)
+SBS_all = left_join(SBS_ref, SBS_denovo %>%
+                      mutate(MutationsType = stringr::str_remove(MutationsType, "N\\:")),
+                    by = c("Type" = "MutationsType")) %>%
+  mutate(MutationType=Type,
+         Type = str_extract(MutationType,"[ACGT]>[ACGT]"),
+         Subtype= paste0(str_sub(MutationType,1,1),
+                         str_sub(MutationType,3,3),
+                         str_sub(MutationType,7,7)))
+
+ESCC.refs = left_join(MutType,SBS_all)
 
 # ESCC drivers
 ESCC_drivers = read_xlsx("../data/signatures/Mutographs_signatures/MoodyEtAl2021_suptables.xlsx",sheet=12,skip=2)
@@ -226,15 +252,38 @@ ESCC_drivers.SBS.SPformat = ESCC_drivers.SBS.SPformat %>% arrange(Sample)
 #check match
 all(ESCC_drivers.SBS.SPformat$Sample==colnames(ESCC_drivers.SBS.spectra)[-(1:3)])
 ## get TP53 spectrum
+ESCC_TP53driverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="TP53" &
+                                                                                                                         !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
+
+ESCC_TP53driverposdam.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="TP53" &
+                                                                                                                         ESCC_drivers.SBS$Effect%in% c("nonsense","start_lost","stop_lost")&
+                                                                                                                         !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
 
 ESCC_TP53drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="TP53")+3]))
 ESCC_CDKN2Adrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="CDKN2A")+3]))
+ESCC_CDKN2Adriverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="CDKN2A" &
+                                                                                                                         !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
+
 ESCC_PIK3CAdrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="PIK3CA")+3]))
+ESCC_PIK3CAdriverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="PIK3CA" &
+                                                                                                                           !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
+
 ESCC_KMT2Ddrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="KMT2D")+3]))
+ESCC_KMT2Ddriverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="KMT2D" &
+                                                                                                                           !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
+
 
 ESCC_EP300drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="EP300")+3]))
+ESCC_EP300driverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="EP300" &
+                                                                                                                           !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
+
 ESCC_NFE2L2drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="NFE2L2")+3]))
+ESCC_NFE2L2driverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="NFE2L2" &
+                                                                                                                           !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
+
 ESCC_NOTCH1drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="NOTCH1")+3]))
+ESCC_NOTCH1driverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="NOTCH1" &
+                                                                                                                           !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
 
 # Compute contexts
 TP53.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_TP53_ENST00000269305_9_sequence.fa",comment = ">",col_names = NA)[[1]],""))
