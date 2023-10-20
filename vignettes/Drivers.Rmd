@@ -1,0 +1,665 @@
+---
+title: "Signature Variability Analysis of the mutational signatures of driver alterations with sigvar"
+author:
+  - name: "Nicolas Alcala"
+    affiliation: "Rare Cancers Genomics Team, International Agency for Research on Cancer / World Health Organization"
+    email: "alcalan@iarc.who.int"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Mutational signatures of carcinogens}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(FAVA)
+library(sigvar)
+library(ggplot2)
+library(stringr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(patchwork)
+library(ggpubr)
+```
+
+# Introduction
+
+This vignette details an example of using sigvar to analyse the relationship between variability of mutational signatures and driver alterations. 
+
+# Dataset
+This vignettes analyses the intogen dataset included in the sigvar package.
+
+```{r }
+head(EGFR_drivers_intogen_SBS96)
+```
+
+We will compare this profile with that of lung adenocarcinoma from the PCAWG cohort and lung squamous cell carcinoma from the Sherlock-Lung study
+```{r }
+Sherlock_SBS.tib  = read_tsv("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/sherlock_232_SBS_Signature_Ratio.txt")
+Sherlock.muts     = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=4,skip=1)
+Sherlock.refs     = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=7,skip=2) %>% arrange(Type,Subtype)
+Sherlock.metadata = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=1,skip=1)
+```
+
+We will also investigate the mutational spectra of drivers from mice exposed or non-exposed to carcinogens from Riva et al. 2020
+```{r }
+mutsig_carcinogens_mice_SBS
+mutsig_carcinogens_mice_SBS.refs
+drivers
+```
+
+## Data preparation
+We compute the mutational profiles of each sample based on their signature attributions
+
+## Sherlock samples
+```{r}
+sigs_LUAD.S = colnames(Sherlock_SBS.tib[,-1])
+MutType = Sherlock.refs %>% dplyr::select(Type,Subtype)
+
+Sherlock_SBS       = as.matrix(Sherlock_SBS.tib[,-1])
+rownames(Sherlock_SBS) = Sherlock_SBS.tib$Sample
+Sherlock.refs = as.matrix(Sherlock.refs[,sigs_LUAD.S])
+colnames(Sherlock.refs) = sigs_LUAD.S
+rownames(Sherlock.refs) = paste0(MutType$Type,",",MutType$Subtype)
+
+Sherlock_MutProf_LUAD = Sherlock_SBS%*%t(Sherlock.refs)
+```
+
+## ESCC across continents
+```{r}
+sigs_ESCC.S = colnames(mutprof_ESCC_SBS)[-(1:3)]
+
+ESCC_SBS       = as.matrix(mutprof_ESCC_SBS[,-(1:3)])
+rownames(ESCC_SBS) = mutprof_ESCC_SBS$Sample
+
+ESCC.refs = as.matrix(ESCC.refs[,sigs_ESCC.S])
+colnames(ESCC.refs) = sigs_ESCC.S
+rownames(ESCC.refs) = paste0(MutType$Type,",",MutType$Subtype)
+
+ESCC_MutProf = ESCC_SBS%*%t(ESCC.refs)
+```
+
+## Riva et al. samples
+```{r}
+sigs_mice.S = colnames(mutsig_carcinogens_mice_SBS[,2:12])
+#MutType = Sherlock.refs %>% dplyr::select(Type,Subtype)
+
+Riva_SBS       = as.matrix(mutsig_carcinogens_mice_SBS[,2:12])
+rownames(Riva_SBS) = mutsig_carcinogens_mice_SBS$Sample
+Riva.refs = as.matrix(mutsig_carcinogens_mice_SBS.refs[,sigs_mice.S])
+colnames(Riva.refs) = sigs_mice.S
+rownames(Riva.refs) = paste0(mutsig_carcinogens_mice_SBS.refs$Type,",",mutsig_carcinogens_mice_SBS.refs$Subtype)
+
+Riva_MutProf = Riva_SBS%*%t(Riva.refs)
+
+drivers = drivers %>% mutate(Tissue = str_extract(sample,"[A-Z]+"), 
+                             Chemical = str_remove_all(str_extract(sample,"_[A-Z_]+"),"^_|_$"), 
+                             Type=str_extract(context,"[ATCG]>[ATCG]"),
+                             Subtype=paste0(str_sub(context,1,1),str_sub(context,3,3),str_sub(context,7,7)) )
+
+drivers.spectrum.lung.mice = drivers[!duplicated(drivers[,2:5]),] %>% filter(Tissue=="LUNG") %>% group_by(gene,Type,Subtype) %>% summarize(n=n())
+drivers.spectrum.lung.mice.l = lapply(unique(drivers.spectrum.lung.mice$gene), function(x)  left_join(MutType,drivers.spectrum.lung.mice %>% filter(gene==x)) )
+for(i in 1:length(drivers.spectrum.lung.mice.l)) drivers.spectrum.lung.mice.l[[i]]$n[is.na(drivers.spectrum.lung.mice.l[[i]]$n)] = 0
+names(drivers.spectrum.lung.mice.l) = unique(drivers.spectrum.lung.mice$gene)
+
+drivers.spectrum.liver.mice = drivers[!duplicated(drivers[,2:5]),] %>% filter(Tissue=="LIVER") %>% group_by(gene,Type,Subtype) %>% summarize(n=n())
+drivers.spectrum.liver.mice.l = lapply(unique(drivers.spectrum.liver.mice$gene), function(x)  left_join(MutType,drivers.spectrum.liver.mice %>% filter(gene==x)) )
+for(i in 1:length(drivers.spectrum.liver.mice.l)) drivers.spectrum.liver.mice.l[[i]]$n[is.na(drivers.spectrum.liver.mice.l[[i]]$n)] = 0
+names(drivers.spectrum.liver.mice.l) = unique(drivers.spectrum.liver.mice$gene)
+```
+
+# Computing the probability of driver mutations
+## LCINS
+### EGFR
+```{r}
+prob_Sherlock_EGFR_drivers = sapply(1:nrow(Sherlock_MutProf_LUAD), function(i) Sherlock_MutProf_LUAD[i,]%*%(EGFR_drivers_intogen_SBS96$EGFR_LUAD_intogen/EGFR_context_counts_ordered) )
+```
+
+### TP53
+```{r}
+prob_Sherlock_TP53_drivers = sapply(1:nrow(Sherlock_MutProf_LUAD), function(i) Sherlock_MutProf_LUAD[i,]%*%(TP53_drivers_intogen_SBS96$TP53_LUAD_intogen/TP53_context_counts_ordered) )
+```
+
+## ESCC across continents
+```{r}
+prob_ESCC_TP53_drivers = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_TP53drivers.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_TP53_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_TP53driverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_TP53_drivers.posdam = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_TP53driverposdam.SBS.spectra$n/TP53.trans.SBS96.context) )
+
+prob_ESCC_CDKN2A_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_CDKN2Adriverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_EP300_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_EP300driverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_KMT2D_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_KMT2Ddriverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_NFE2L2_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_NFE2L2driverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+
+prob_ESCC_NOTCH1_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_NOTCH1driverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+prob_ESCC_PIK3CA_drivers.pos = sapply(1:nrow(ESCC_MutProf), function(i) ESCC_MutProf[i,]%*%(ESCC_PIK3CAdriverpos.SBS.spectra$n/TP53.trans.SBS96.context) )
+```
+
+## Mice exposed to 20 carcinogens
+Probability of mutation in 186 drivers for each of 181 individuals
+```{r}
+prob_Riva_drivers.lung.Kras = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix(drivers.spectrum.lung.mice.l$Kras$n/Kras.trans.SBS96.context))
+
+prob_Riva_drivers.lung.Fgfr2 = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix(drivers.spectrum.lung.mice.l$Fgfr2$n/Fgfr2.trans.SBS96.context))
+
+prob_Riva_drivers.liver.Hras = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix(drivers.spectrum.liver.mice.l$Hras$n/Hras.trans.SBS96.context))
+
+prob_Riva_drivers.liver.Braf = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix(drivers.spectrum.liver.mice.l$Braf$n/Braf.trans.SBS96.context))
+
+# with all drivers
+prob_Riva_drivers.Kras2 = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix((colSums((bind_rows(drivers_fig4.lung.spectra,drivers_fig4.liver.spectra) %>% filter(X6=="Kras",!duplicated(paste0(X2,X3,X4,X5))) )[,-(1:10)] ))/Kras.trans.SBS96.context))
+
+prob_Riva_drivers.Fgfr22 = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix((colSums((bind_rows(drivers_fig4.lung.spectra,drivers_fig4.liver.spectra) %>% filter(X6=="Fgfr2",!duplicated(paste0(X2,X3,X4,X5))) )[,-(1:10)] ))/Kras.trans.SBS96.context))
+
+prob_Riva_drivers.Hras2 = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix((colSums((bind_rows(drivers_fig4.lung.spectra,drivers_fig4.liver.spectra) %>% filter(X6=="Hras",!duplicated(paste0(X2,X3,X4,X5))) )[,-(1:10)] ))/Kras.trans.SBS96.context))
+
+prob_Riva_drivers.Braf2 = sapply(1:nrow(Riva_MutProf), function(i) Riva_MutProf[i,]%*% as.matrix((colSums((bind_rows(drivers_fig4.lung.spectra,drivers_fig4.liver.spectra) %>% filter(X6=="Braf",!duplicated(paste0(X2,X3,X4,X5))) )[,-(1:10)] ))/Kras.trans.SBS96.context))
+```
+
+
+# Computing variability statistics 
+We first compute the cosine similarities between mutational signatures, which we will use to weight the differences between signature such that profiles with plenty of similar signatures are not deemed diverse.
+## LCINS samples
+```{r }
+SBS_LUAD_S_cossim <- lsa::cosine(x = Sherlock.refs)
+```
+
+```{r }
+GS_Sherlock_LUAD = sapply(1:nrow(Sherlock_SBS), function(i) gini_simpson(Sherlock_SBS[i,], S=SBS_LUAD_S_cossim) )
+```
+
+## Mice samples
+```{r }
+SBS_mice_S_cossim <- lsa::cosine(x = Riva.refs)
+```
+
+```{r }
+GS_Riva = sapply(1:nrow(Riva_SBS), function(i) gini_simpson(Riva_SBS[i,], S=SBS_mice_S_cossim) )
+```
+
+## ESCC across continents samples
+```{r}
+GS_ESCC = sapply(1:nrow(ESCC_SBS), function(i) gini_simpson(ESCC_SBS[i,]) )
+```
+
+# Testing the relationship
+
+Test the relationship between probability of driver and within-tumor variability
+
+## LCINS
+```{r }
+res.S = tibble(prob.EGFR=prob_Sherlock_EGFR_drivers, prob.TP53=prob_Sherlock_TP53_drivers  ,GS=GS_Sherlock_LUAD)
+
+lm_EGFR_GS = summary(lm(prob.EGFR~GS,data=res.S))
+lm_TP53_GS = summary(lm(prob.TP53~GS,data=res.S))
+```
+
+## Mice exposed to carcinogens
+```{r }
+res.Riva.S = tibble(prob.liver.Hras=prob_Riva_drivers.Hras2,
+                    prob.liver.Braf=prob_Riva_drivers.Braf2,
+                    prob.lung.Fgfr2=prob_Riva_drivers.Fgfr22,
+                    prob.lung.Kras=prob_Riva_drivers.Kras2,
+                    Exposed = !str_detect(mutsig_carcinogens_mice_SBS$Sample,"SPONTANEOUS"),
+                    Chemical = mutsig_carcinogens_mice_SBS$chemical,
+                    Tissue=mutsig_carcinogens_mice_SBS$Tissue , 
+                    GS=GS_Riva)
+res.Riva.S$Chemical[!res.Riva.S$Exposed] = "None"
+res.Riva.S$Chemical = relevel(as.factor(res.Riva.S$Chemical),ref = "None")
+
+drivers.liver.chemicals = drivers %>% filter(Tissue=="LIVER") %>% pull(Chemical) %>% unique()
+drivers.lung.chemicals = drivers %>% filter(Tissue=="LUNG") %>% pull(Chemical) %>% unique()
+
+# test association cobalt -- Kras and isobutyl nitrite -- Fgfr2 in lung
+
+cor_Hras_GS.liver = (cor.test(res.Riva.S[res.Riva.S$Tissue%in%c("liver"),]$prob.liver.Hras,res.Riva.S[res.Riva.S$Tissue%in%c("liver"),]$GS,method = "spearman"))
+lm_Hras_GS.liver = summary(lm(prob.liver.Hras~GS,data=res.Riva.S[res.Riva.S$Tissue%in%c("liver"),])) # makes sense. Only driver in liver
+summary(lm(prob.liver.Hras~Exposed,data=res.Riva.S[res.Riva.S$Tissue%in%c("liver"),])) # no effect
+
+cor_Braf_GS.liver = (cor.test(res.Riva.S[res.Riva.S$Tissue%in%c("liver"),]$prob.liver.Braf,res.Riva.S[res.Riva.S$Tissue%in%c("liver"),]$GS,method = "spearman"))
+lm_Braf_GS.lung  = summary(lm(prob.liver.Braf~GS,data=res.Riva.S[res.Riva.S$Tissue%in%c("lung"),])) # driver in both. more likely in spontaneous in lung (makes sense with neg assoc), more likely in exposed in liver (makes sens with + assoc)
+lm_Braf_GS.liver = summary(lm(prob.liver.Braf~GS,data=res.Riva.S[res.Riva.S$Tissue%in%c("liver"),])) # driver in both. more likely in 
+summary(lm(prob.liver.Braf~Exposed+Tissue,data=res.Riva.S[res.Riva.S$Tissue%in%c("lung","liver"),]))
+
+lm_Fgfr2_GS.lung  = summary(lm(prob.lung.Fgfr2~GS,data=res.Riva.S[res.Riva.S$Tissue%in%c("lung"),])) # more likely with GS, makes sense
+
+lm_Kras_GS.lung  = summary(lm(prob.lung.Kras~GS,data=res.Riva.S[res.Riva.S$Tissue%in%c("lung"),])) # more likely in low GS spont liver (makes sense), and low GS lung (not sure if makes sense)
+summary(lm(prob.lung.Kras~Exposed+Tissue,data=res.Riva.S[res.Riva.S$Tissue%in%c("lung","liver"),])) 
+```
+
+Test association with exposure
+```{r}
+drivers_fig4.lung$X1 = paste0("LUNG_",str_replace_all(drivers_fig4.lung$X1," ","_"))
+drivers_fig4.liver$X1 = paste0("LIVER_",str_replace_all(drivers_fig4.liver$X1," ","_"))
+
+mutsig_carcinogens_mice_SBS.lung_drivers  = left_join(mutsig_carcinogens_mice_SBS,drivers_fig4.lung,by=c(Sample="X1"))
+mutsig_carcinogens_mice_SBS.liver_drivers = left_join(mutsig_carcinogens_mice_SBS,drivers_fig4.liver,by=c(Sample="X1"))
+
+# Hras in liver
+Spont.Hras.liver.tab = table(Exposed=!str_detect(mutsig_carcinogens_mice_SBS.liver_drivers$Sample[mutsig_carcinogens_mice_SBS.liver_drivers$Tissue=="liver"],"SPONT"),Hras=mutsig_carcinogens_mice_SBS.liver_drivers$X6[mutsig_carcinogens_mice_SBS.liver_drivers$Tissue=="liver"]=="Hras") # more frequent in 
+
+#Braf in both
+Spont.Braf.liver.tab = table(Exposed=!str_detect(mutsig_carcinogens_mice_SBS.liver_drivers$Sample[mutsig_carcinogens_mice_SBS.liver_drivers$Tissue=="liver"],"SPONT"), Braf=mutsig_carcinogens_mice_SBS.liver_drivers$X6[mutsig_carcinogens_mice_SBS.liver_drivers$Tissue=="liver"]=="Braf") # more frequent in 
+Spont.Braf.lung.tab = table(Exposed=!str_detect(mutsig_carcinogens_mice_SBS.lung_drivers$Sample[mutsig_carcinogens_mice_SBS.lung_drivers$Tissue=="lung"],"SPONT"), Braf=mutsig_carcinogens_mice_SBS.lung_drivers$X6[mutsig_carcinogens_mice_SBS.lung_drivers$Tissue=="lung"]=="Braf") # more frequent in 
+
+#Fgfr2 in lung
+Spont.Fgfr2.lung.tab = table(Exposed=!str_detect(mutsig_carcinogens_mice_SBS.lung_drivers$Sample[mutsig_carcinogens_mice_SBS.lung_drivers$Tissue=="lung"],"SPONT"), Braf=mutsig_carcinogens_mice_SBS.lung_drivers$X6[mutsig_carcinogens_mice_SBS.lung_drivers$Tissue=="lung"]=="Fgfr2") # more frequent in 
+
+#Kras in both
+Spont.Kras.liver.tab = table(Exposed=!str_detect(mutsig_carcinogens_mice_SBS.liver_drivers$Sample[mutsig_carcinogens_mice_SBS.liver_drivers$Tissue=="liver"],"SPONT"),Kras=mutsig_carcinogens_mice_SBS.liver_drivers$X6[mutsig_carcinogens_mice_SBS.liver_drivers$Tissue=="liver"]=="Kras") # more frequent in 
+Spont.Kras.lung.tab = table(Exposed=!str_detect(mutsig_carcinogens_mice_SBS.lung_drivers$Sample[mutsig_carcinogens_mice_SBS.lung_drivers$Tissue=="lung"],"SPONT"), Braf=mutsig_carcinogens_mice_SBS.lung_drivers$X6[mutsig_carcinogens_mice_SBS.lung_drivers$Tissue=="lung"]=="Kras") # more frequent in 
+
+# signif 
+fisher.test(Spont.Hras.liver.tab) # Hras a bit more likely in exposed (non signif) => makes sense with GS + corr with prob
+fisher.test(Spont.Braf.liver.tab) # Braf liver a bit more likely in unexposed (non signif) 
+fisher.test(Spont.Braf.lung.tab)  # Braf liver a more likely in unexposed (non signif)
+fisher.test(Spont.Fgfr2.lung.tab)  # Fgfr2 a bit more likely in exposed (non signif)
+fisher.test(Spont.Kras.liver.tab) # Braf liver a bit more likely in unexposed (non signif)
+fisher.test(Spont.Kras.lung.tab)  # Braf lung more likely in exposed (signif)
+```
+
+## ESCC across continents
+```{r}
+res.S.ESCC = tibble(prob.TP53=prob_ESCC_TP53_drivers.pos,
+                    prob.CDKN2A=prob_ESCC_CDKN2A_drivers.pos, 
+                    prob.EP300=prob_ESCC_EP300_drivers.pos, 
+                    prob.KMT2D=prob_ESCC_KMT2D_drivers.pos, 
+                    prob.NFE2L2=prob_ESCC_NFE2L2_drivers.pos, 
+                    prob.NOTCH1=prob_ESCC_NOTCH1_drivers.pos,
+                    prob.PIK3CA=prob_ESCC_PIK3CA_drivers.pos, 
+                    GS=GS_ESCC,
+                    Country=mutprof_ESCC_SBS$Country,
+                    Incidence_group=mutprof_ESCC_SBS$Incidence_Level)
+
+lm_TP53_GS = summary(lm(prob.TP53~GS,data=res.S.ESCC)) # no signif. increases in low, decreases in high
+lm_CDKN2A_GS = summary(lm(prob.CDKN2A~GS,data=res.S.ESCC)) # decreases overall, increases in low, decreases in high
+lm_EP300_GS = summary(lm(prob.EP300~GS,data=res.S.ESCC)) # increases in general
+lm_KMT2D_GS = summary(lm(prob.KMT2D~GS,data=res.S.ESCC)) # increases in general
+lm_NFE2L2_GS = summary(lm(prob.NFE2L2~GS,data=res.S.ESCC)) # increases in general
+lm_NOTCH1_GS = summary(lm(prob.NOTCH1~GS,data=res.S.ESCC)) # no signif. decreases in high, increases in low
+lm_PIK3CA_GS = summary(lm(prob.PIK3CA~GS,data=res.S.ESCC)) # increases in general
+
+lm_TP53_GS.I   = summary(lm(prob.TP53~GS*Incidence_group,data=res.S.ESCC)) # no signif. increases in low, decreases in high
+lm_CDKN2A_GS.I = summary(lm(prob.CDKN2A~GS*Incidence_group,data=res.S.ESCC)) # decreases overall, increases in low, decreases in high
+lm_EP300_GS.I  = summary(lm(prob.EP300~GS*Incidence_group,data=res.S.ESCC)) # increases in general
+lm_KMT2D_GS.I  = summary(lm(prob.KMT2D~GS*Incidence_group,data=res.S.ESCC)) # increases in general
+lm_NFE2L2_GS.I = summary(lm(prob.NFE2L2~GS*Incidence_group,data=res.S.ESCC)) # increases in general
+lm_NOTCH1_GS.I = summary(lm(prob.NOTCH1~GS*Incidence_group,data=res.S.ESCC)) # no signif. decreases in high, increases in low
+lm_PIK3CA_GS.I = summary(lm(prob.PIK3CA~GS*Incidence_group,data=res.S.ESCC)) # increases in general
+
+lm_driver_GS = summary(lm( (prob.PIK3CA+prob.NOTCH1+prob.NFE2L2+prob.KMT2D+prob.EP300+prob.CDKN2A+prob.TP53)~GS,data=res.S.ESCC)) # increases in general
+
+summary(lm( GS~prob.PIK3CA+prob.NOTCH1+prob.NFE2L2+prob.KMT2D+prob.EP300+prob.CDKN2A+prob.TP53+Incidence_group,data=res.S.ESCC)) 
+
+# check if country enrichment for some drivers
+ESCC_drivers_SBS = left_join(mutprof_ESCC_SBS,ESCC_drivers.SBS)
+
+ESCC_drivers_SBS.tab = table( addNA(ESCC_drivers_SBS$Incidence_Level[ESCC_drivers_SBS$Gene%in%c("TP53","PIK3CA")]), 
+       addNA(ESCC_drivers_SBS$Gene[ESCC_drivers_SBS$Gene%in%c("TP53","PIK3CA")]) ) #PIK3CA and CDKN2A more frequent than TP53 in High incidence regions
+
+tT = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="TP53"))[,2]>0
+tC = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="CDKN2A"))[,2]>0
+tE = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="EP300"))[,2]>0
+tK = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="KMT2D"))[,2]>0
+tNF = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="NFE2L2"))[,2]>0
+tNO = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="NOTCH1"))[,2]>0
+tP = table(ESCC_drivers_SBS$Sample , addNA(ESCC_drivers_SBS$Gene=="PIK3CA"))[,2]>0
+all( names(tT)==mutprof_ESCC_SBS$Sample )
+
+fisher.test( table(tT,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tC,mutprof_ESCC_SBS$Incidence_Level) ) # CDKN2A more frequent in high incidence
+fisher.test( table(tE,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tK,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tNF,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tNO,mutprof_ESCC_SBS$Incidence_Level) )
+fisher.test( table(tP,mutprof_ESCC_SBS$Incidence_Level) ) # morePIK3CA more frequent in high incidence
+```
+
+# Plotting
+
+## Relationship between within-sample diversity and probability of driver alteration
+### LCINS
+```{r }
+gg_EGFR_GS <- ggplot(data=res.S,aes(y=prob.EGFR,x=GS) ) + geom_point()+ stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+  annotate("text",x = 0.1,y=0.002,label=paste0("t-test P=",format(lm_EGFR_GS$coefficients[2,4],digits=2)) ) + 
+  #geom_point(alpha=0.1) + geom_point(data=MESOMICS_bootstrap_fava.res.mean,size=4) + stat_ellipse(level=0.90) + 
+  xlab("within-sample diversity") + ylab("Probability of EGFR driver alteration") + theme_classic()
+
+gg_TP53_GS <- ggplot(data=res.S,aes(y=prob.TP53,x=GS) ) + geom_point()+ stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+    annotate("text",x = 0.1,y=0.045,label=paste0("t-test P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  #geom_point(alpha=0.1) + geom_point(data=MESOMICS_bootstrap_fava.res.mean,size=4) + stat_ellipse(level=0.90) + 
+  xlab("within-sample diversity") + ylab("Probability of TP53 driver alteration") + theme_classic()
+```
+
+### Mice exposed to carcinogens
+```{r }
+gg_RIVA_GS.liver.Hras <- ggplot(data=res.Riva.S %>% filter(Tissue=="liver"),aes(y=prob.liver.Hras,x=GS) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+  annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_Hras_GS.liver$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("Probability of Hras driver alteration") + theme_classic() + ggtitle("Liver")
+
+gg_RIVA_GS.liver.Braf <- ggplot(data=res.Riva.S %>% filter(Tissue%in%c("liver") ),aes(y=prob.liver.Braf,x=GS) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+  annotate("text",x = 0.1,y=0.00065,label=paste0("P=",format(lm_Braf_GS.liver$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("Probability of Braf driver alteration") + theme_classic() + ggtitle("Liver")
+
+gg_RIVA_GS.lung.Fgfr2 <- ggplot(data=res.Riva.S %>% filter(Tissue%in%c("lung") ),aes(y=prob.lung.Fgfr2,x=GS) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+  annotate("text",x = 0.2,y=0.0020,label=paste0("P=",format(lm_Fgfr2_GS.lung$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("Probability of Fgfr2 driver alteration") + theme_classic() + ggtitle("Lung")
+
+gg_RIVA_GS.lung.Kras <- ggplot(data=res.Riva.S %>% filter(Tissue%in%c("lung") ),aes(y=prob.lung.Kras,x=GS) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+  annotate("text",x = 0.2,y=0.0020,label=paste0("P=",format(lm_Kras_GS.lung$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("Probability of Kras driver alteration") + theme_classic() + ggtitle("Lung")
+
+
+ggsave( gg_RIVA_GS.liver.Hras+ gg_RIVA_GS.liver.Braf + gg_RIVA_GS.lung.Fgfr2 + gg_RIVA_GS.lung.Kras ,
+        filename = "../../Fig4c_mice_probs_draft.svg",height = 2.5*2,width = 3*2)
+```
+
+### LCINS
+```{r }
+col_incidence = c("Low"="#199cc9ff","High"="#d86600ff")
+
+gg_ESCC_GS.TP53 <- ggplot(data=res.S.ESCC,aes(y=prob.TP53,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("Probability of driver alteration") + theme_classic() + ggtitle(expression(italic(TP53)) )  + guides(col="none")
+
+gg_ESCC_GS.CDKN2A <- ggplot(data=res.S.ESCC,aes(y=prob.CDKN2A,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(CDKN2A)) + guides(col="none")
+
+gg_ESCC_GS.EP300 <- ggplot(data=res.S.ESCC,aes(y=prob.EP300,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("Probability of driver alteration") + theme_classic() + ggtitle(expression(EP300)) + guides(col="none")
+
+gg_ESCC_GS.KMT2D <- ggplot(data=res.S.ESCC,aes(y=prob.KMT2D,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(KMT2D)) + guides(col="none")
+
+gg_ESCC_GS.NFE2L2 <- ggplot(data=res.S.ESCC,aes(y=prob.NFE2L2,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(NFE2L2)) + guides(col="none")
+
+gg_ESCC_GS.NOTCH1 <- ggplot(data=res.S.ESCC,aes(y=prob.NOTCH1,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(NOTCH1)) + guides(col="none")
+
+gg_ESCC_GS.PIK3CA <- ggplot(data=res.S.ESCC,aes(y=prob.PIK3CA,x=GS,col=Incidence_group) ) + geom_point(alpha=0.3)+ 
+  stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + scale_color_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("") + theme_classic() + ggtitle(expression(PIK3CA)) + guides(col="none")
+
+# association with country and incidence
+res.S.ESCC$Incidence_group = factor(res.S.ESCC$Incidence_group,levels = c("Low","High"))
+
+gg_ESCC_country.TP53 <- ggplot(data=res.S.ESCC,aes(y=prob.TP53,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.TP53,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(TP53)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.CDKN2A <- ggplot(data=res.S.ESCC,aes(y=prob.CDKN2A,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.CDKN2A,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  scale_fill_manual(values=col_incidence)+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(CDKN2A)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.EP300 <- ggplot(data=res.S.ESCC,aes(y=prob.EP300,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.EP300,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(EP300)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.PIK3CA <- ggplot(data=res.S.ESCC,aes(y=prob.PIK3CA,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.PIK3CA,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(PIK3CA)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.KMT2D <- ggplot(data=res.S.ESCC,aes(y=prob.KMT2D,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.KMT2D,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  #annotate("text",x = 0.1,y=0.00125,label=paste0("P=",format(lm_TP53_GS$coefficients[2,4],digits=2)) ) + 
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(KMT2D)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.NFE2L2 <- ggplot(data=res.S.ESCC,aes(y=prob.NFE2L2,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.NFE2L2,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(NFE2L2)) )  + guides(col="none",fill="none")
+
+gg_ESCC_country.NOTCH1 <- ggplot(data=res.S.ESCC,aes(y=prob.NOTCH1,x=Incidence_group,fill=Incidence_group) ) + geom_violin(col=NA)+  geom_boxplot(width=0.3,fill="white")+
+  geom_signif(mapping = aes(y=prob.NOTCH1,x=Incidence_group),comparisons = list(c("High","Low")),inherit.aes = F ,map_signif_level = T )+
+  scale_fill_manual(values=col_incidence)+
+  xlab("Incidence") + ylab("") + theme_classic() + ggtitle(expression(italic(NOTCH1)) )  + guides(col="none",fill="none")
+
+gg_ESCC_all = gg_ESCC_GS.TP53 + gg_ESCC_country.TP53+
+  gg_ESCC_GS.CDKN2A + gg_ESCC_country.CDKN2A+
+  gg_ESCC_GS.PIK3CA + gg_ESCC_country.PIK3CA+ 
+  gg_ESCC_GS.KMT2D + gg_ESCC_country.KMT2D+
+  gg_ESCC_GS.EP300  + gg_ESCC_country.EP300+ 
+  gg_ESCC_GS.NFE2L2 + gg_ESCC_country.NFE2L2+ 
+  gg_ESCC_GS.NOTCH1 + gg_ESCC_country.NOTCH1 +  plot_layout(ncol = 8)
+
+ggsave(gg_ESCC_all,filename = "../../FigS_ESCC_drivers_raw.svg",height=3*2,width=3*8)
+```
+
+
+## Spectra of driver mutations
+
+### LCINS
+```{r}
+EGFR_drivers_intogen_SBS96$EGFR_LUAD_intogen.norm = EGFR_drivers_intogen_SBS96$EGFR_LUAD_intogen/EGFR_context_counts_ordered
+
+gg_EGFR_spectrum = ggplot(EGFR_drivers_intogen_SBS96,aes(x=paste0(Type,Subtype),y= EGFR_LUAD_intogen.norm,fill=Type) ) + geom_col() +
+  theme_classic() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type") + ylab("Proportion of drivers")
+
+TP53_drivers_intogen_SBS96$TP53_LUAD_intogen.norm = TP53_drivers_intogen_SBS96$TP53_LUAD_intogen/TP53_context_counts_ordered
+
+gg_TP53_spectrum = ggplot(TP53_drivers_intogen_SBS96,aes(x=paste0(Type,Subtype),y= TP53_LUAD_intogen.norm,fill=Type) ) + geom_col() +
+  theme_classic() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type") + ylab("Proportion of drivers")
+```
+
+### Mice exposed to carcinogens
+```{r}
+mutprof_carcinogens_mice_SBS.norm = mutprof_carcinogens_mice_SBS #/EGFR_context_counts_ordered
+
+gg_Riva_drivers_spectrum = sigvar::plot_SBS_spectrum(tibble(Drivers=rowSums(mutprof_carcinogens_mice_SBS.norm[,-(1:3)])) )  + ylab("Proportion of drivers")
+```
+
+## Average spectra of low- and high-diversity samples
+
+###
+```{r}
+library(ggrepel)
+GSspectra = tibble(MutationType=paste0(MutType$Type,",",MutType$Subtype) , Type=MutType$Type, Subtype=MutType$Subtype,
+       Proportion.lowGS  = Sherlock_MutProf_LUAD[which.min(GS_Sherlock_LUAD),],
+       Proportion.highGS = Sherlock_MutProf_LUAD[which.max(GS_Sherlock_LUAD),] )
+
+gg_lowGS_spectrum = ggplot(GSspectra,aes(x=MutationType,y= Proportion.lowGS,fill=Type) ) + 
+  geom_col() + theme_classic()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type")+ ylab("Proportion of alterations") + ggtitle("Lowest diversity sample") + ylim(c(0,0.11))
+
+SBSpie_lowGS = tibble(SBS=colnames(Sherlock_SBS),Proportions=Sherlock_SBS[which.min(GS_Sherlock_LUAD),])[Sherlock_SBS[which.min(GS_Sherlock_LUAD),]>0,]
+SBSpie_lowGS$Pos = SBSpie_lowGS$Proportions/2+cumsum(c(0,SBSpie_lowGS$Proportions[-2]) )
+SBSpie_lowGS$SBS = factor(SBSpie_lowGS$SBS,levels=rev(SBSpie_lowGS$SBS))
+
+gg_lowGS_props = ggplot(SBSpie_lowGS, aes(x="",y=Proportions,fill=SBS) ) + 
+  geom_bar(stat="identity", width=1, color="white") +  coord_polar("y", start=0) + 
+  geom_label_repel(aes(y=Pos,label = SBS), nudge_x = 1, 
+                   size = 3, show.legend = FALSE) + 
+  theme_void() + scale_fill_manual(values = sbs_palette[]) + guides(fill="none")
+
+# creating layout
+layout <- c(
+  area(t = 1, l = 1, b = 4, r = 6),
+  area(t = 1, l = 5, b = 3, r = 6)
+)
+
+gg_lowGS_spectrum_props = gg_lowGS_spectrum + gg_lowGS_props + plot_layout(design = layout)
+
+
+gg_highGS_spectrum = ggplot(GSspectra,aes(x=MutationType,y= Proportion.highGS,fill=Type) ) + 
+  geom_col() + theme_classic()+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type")+ ylab("Proportion of alterations") + ggtitle("Highest diversity sample") + ylim(c(0,0.11))
+
+SBSpie_highGS = tibble(SBS=colnames(Sherlock_SBS),Proportions=Sherlock_SBS[which.max(GS_Sherlock_LUAD),])[Sherlock_SBS[which.max(GS_Sherlock_LUAD),]>0,]
+SBSpie_highGS$Pos = SBSpie_highGS$Proportions/2+cumsum(c(0,SBSpie_highGS$Proportions[-6]) )
+SBSpie_highGS$SBS = factor(SBSpie_highGS$SBS,levels=rev(SBSpie_highGS$SBS))
+
+gg_highGS_props = ggplot(SBSpie_highGS, aes(x="",y=Proportions,fill=SBS) ) + 
+  geom_col(width=1, color="white") +  coord_polar("y",start=0) + 
+  geom_label_repel(aes(y=Pos,label = SBS), nudge_x = 1, 
+                   size = 3, show.legend = FALSE,label.padding = 0.1,box.padding = 0.1,force = 5) + 
+  theme_void() + scale_fill_manual(values = sbs_palette[]) + guides(fill="none")
+
+gg_highGS_spectrum_props = gg_highGS_spectrum + gg_highGS_props + plot_layout(design = layout)
+```
+
+## Association with Riva et al. driver results
+
+```{r}
+driver.tib = left_join(bind_cols(sample=rownames(Riva_SBS),Riva_SBS,GS=GS_Riva),drivers)
+driver.tib = left_join(driver.tib,mice_metadata,by=c(sample="Sample"))
+driver.tib$chemical[str_detect(driver.tib$sample,"SPONTANEOUS")] = "spontaneous"
+
+library(ggbeeswarm)
+
+#summary( lm(GS~Tissue.x+!(signature=="mSBS1"|signature=="mSBS5"|signature=="mSBS40"),data = driver.tib %>% filter(Tissue.x%in%c("lung","liver")) ) )
+
+driver.tib$signature = factor(driver.tib$signature,levels=c("mSBS1","mSBS5","mSBS40","mSBS12","mSBS17","mSBS18","mSBS19","mSBS_N1"))
+
+driver.tib.liver = driver.tib %>% filter(!is.na(driver.tib$signature ),Tissue.x=="LIVER") %>% group_by(GS_group=GS>=median(GS),signature) %>% summarize(n=n()) %>% ungroup() %>% group_by(GS_group) %>% mutate(Activity=n/sum(n))
+
+gg_drivers_riva_mut.liver = ggplot(driver.tib.liver, aes(x=GS_group,y=Activity, fill=signature)) + geom_col() + 
+  geom_segment(data = driver.tib.liver[2,],aes(x=1.5,xend=2.5,y=1-Activity,yend=1-Activity),col="white",linewidth=2) + 
+  scale_fill_manual(values=sbs_palette) + theme_classic() + ylab("Mean activity") + scale_y_continuous(limits = c(0,1))
+
+driver.tib.lung = driver.tib %>% filter(!is.na(driver.tib$signature ),Tissue.x=="LUNG") %>% group_by(GS_group=GS>=median(GS),signature) %>% summarize(n=n()) %>% ungroup() %>% group_by(GS_group) %>% mutate(Activity=n/sum(n))
+
+gg_drivers_riva_mut.lung  = ggplot(driver.tib.lung, aes(x=GS_group,y=Activity,fill=signature)) + geom_col() + 
+  geom_segment(data = driver.tib.lung %>% filter(signature %in% c("mSBS1","mSBS5","mSBS40")) %>% summarize(Activity=sum(Activity)),aes(x=0:1 + .5,xend=0:1+1.5,y=1-Activity,yend=1-Activity),col="white",linewidth=2,inherit.aes = F) + 
+  scale_fill_manual(values=sbs_palette) + theme_classic() + scale_y_continuous(limits = c(0,1))
+
+ggsave( gg_drivers_riva_mut.liver+ gg_drivers_riva_mut.lung ,filename = "../../Fig4a_draft.svg",h=3,w=3*2)
+
+## diversity of responsible signatures
+driver.tib.liver = driver.tib %>% filter(!is.na(driver.tib$signature ),Tissue.y=="liver") %>% group_by(GS>=median(GS),signature) %>% summarize(n=n()) %>% 
+  ungroup() %>% pivot_wider(names_from=signature,values_from = n,values_fill = 0) 
+fisher.test( as.matrix(driver.tib.liver[,-1]) ) 
+#age vs other
+fisher.test( cbind(driver.tib.liver[,2],rowSums(driver.tib.liver[,3:5])) ) 
+
+driver.tib.lung  = driver.tib %>% filter(!is.na(driver.tib$signature ),Tissue.y=="lung") %>% group_by(GS>=median(GS),signature) %>% summarize(n=n()) %>% 
+  ungroup() %>% pivot_wider(names_from=signature,values_from = n,values_fill = 0)
+
+fisher.test( as.matrix(driver.tib.lung[,-1]) )
+#age vs other
+fisher.test( cbind(rowSums(driver.tib.lung[,2:4]),rowSums(driver.tib.lung[,5:7])) ) 
+
+## diversity
+driver.tib.lung.props  = sweep(driver.tib.lung[,-1],1,rowSums(driver.tib.lung[,-1]),"/")
+driver.tib.liver.props = sweep(driver.tib.liver[,-1],1,rowSums(driver.tib.liver[,-1]),"/")
+
+div.drivers.lung.lowGS = FAVA::gini_simpson_mean(driver.tib.lung.props[1,],S =SBS_mice_S_cossim[colnames(driver.tib.lung.props),colnames(driver.tib.lung.props)] )
+div.drivers.lung.highGS = FAVA::gini_simpson_mean(driver.tib.lung.props[2,],S =SBS_mice_S_cossim[colnames(driver.tib.lung.props),colnames(driver.tib.lung.props)] )
+
+div.drivers.liver.lowGS = FAVA::gini_simpson_mean(driver.tib.liver.props[1,],S =SBS_mice_S_cossim[colnames(driver.tib.liver.props),colnames(driver.tib.liver.props)] )
+div.drivers.liver.highGS = FAVA::gini_simpson_mean(driver.tib.liver.props[2,],S =SBS_mice_S_cossim[colnames(driver.tib.liver.props),colnames(driver.tib.liver.props)] )
+
+div.drivers.tib =tibble(Diversity=c(div.drivers.lung.lowGS,div.drivers.lung.highGS,div.drivers.liver.lowGS,div.drivers.liver.highGS),
+       Tissue=c("lung","lung","liver","liver"),WS_diversity.group=factor(rep(c("Low","High"),2) ,levels=c("Low","High")) )
+
+ggdivdiv = ggplot(div.drivers.tib,aes(x=WS_diversity.group,y=Diversity)) + geom_point() + geom_path(group=1) + facet_wrap(.~Tissue)  +
+  theme_classic() + xlab("Within-sample diversity") + ylab("Diversity of responsible signatures")
+
+
+ggsave( ggdivdiv ,filename = "../../Fig4b_divdiv_draft.svg",h=3,w=3*2)
+
+##### 
+driversigs = ggplot(driver.tib[str_detect(driver.tib$sample,"LIVER"),], aes(x=!str_detect(sample,"SPONT"),y=GS)) + geom_violin() + geom_beeswarm(aes(col=signature)) + coord_flip() + theme_classic() + ylab("Within-sample diversity") + xlab("Exposure")
+
+ggplot(driver.tib[str_detect(driver.tib$sample,"LIVER"),], aes(x=signature,y=GS)) + geom_violin() + geom_beeswarm(aes(col=signature)) + coord_flip() + theme_classic() + ylab("Within-sample diversity") + xlab("Exposure")
+
+ggplot(driver.tib[str_detect(driver.tib$sample,"LUNG"),], aes(x=!str_detect(sample,"SPONT"),y=GS)) + 
+  geom_violin() + geom_beeswarm(aes(col=signature)) + coord_flip() + theme_classic()
+
+ggplot(driver.tib[str_detect(driver.tib$sample,"LUNG"),], aes(x=!str_detect(sample,"SPONT"),y=GS)) + 
+  geom_violin() + geom_beeswarm(aes(col=signature)) + coord_flip() + theme_classic()
+
+ggplot(driver.tib[str_detect(driver.tib$sample,"LIVER"),], aes(x=gene,y=GS,col=!str_detect(sample,"SPONTANEOUS"))) + geom_boxplot() # diverse spontaneous are more likely to have a driver gene
+
+ggplot(driver.tib[str_detect(driver.tib$sample,"LUNG"),], aes(x=gene,y=GS,col=!str_detect(sample,"SPONTANEOUS"))) + geom_boxplot() # diverse spontaneous are more likely to have a driver gene
+
+
+glm_drivers_GS = glm(!is.na(gene)~GS+Tissue + !str_detect(sample,"SPONTANEOUS"),
+                     family=binomial(link='logit'), data = driver.tib %>% filter(Tissue%in%c("lung","liver")) )
+summary(glm_drivers_GS)
+
+summary( lm(GS~Tissue+gene + !str_detect(sample,"SPONTANEOUS"),data = driver.tib %>% filter(Tissue%in%c("lung","liver")) ) )
+
+```
+
+## Look at protein structure and position of drivers
+```{r}
+
+```
+
+## Assembling all panels
+```{r }
+(gg_EGFR_GS + (gg_EGFR_spectrum + ggtitle("EGFR driver mutations"))  + gg_lowGS_spectrum_props +  gg_TP53_GS + (gg_TP53_spectrum+ggtitle("TP53 driver mutations")) + gg_highGS_spectrum_props ) +  plot_annotation(tag_levels = 'a') + plot_layout(widths = c(1, 2,2)) & theme(plot.tag = element_text(face = 'bold'))
+
+```
+
+## Save tables
+```{r }
+TableS_drivers.LCINS = res.S
+colnames(TableS_drivers.LCINS)[1:2] = c("Probability_EGFR_driver","Probability_TP53_driver")
+colnames(TableS_drivers.LCINS)[3] = c("Within-sample_diversity")
+TableS_drivers.LCINS = bind_cols(Subject=Sherlock.metadata$Subject,TableS_drivers.LCINS)
+
+write_tsv(TableS_drivers.LCINS,file = "../../TableS_drivers_LCINS.tsv")
+
+
+TableS_drivers.Riva = res.Riva.S
+colnames(TableS_drivers.Riva)[1:4] = c("Probability_Hras_driver","Probability_Braf_driver",
+                                  "Probability_Fgfr2_driver","Probability_Kras_driver")
+colnames(TableS_drivers.Riva)[8] = c("Within-sample_diversity")
+TableS_drivers.Riva = bind_cols(Sample=mutsig_carcinogens_mice_SBS$Sample,TableS_drivers.Riva)
+
+write_tsv(TableS_drivers.Riva,file = "../../TableS_drivers_Riva.tsv")
+
+TableS_drivers.ESCC = res.S.ESCC
+colnames(TableS_drivers.ESCC)[1:7] = c("Probability_TP53_driver","Probability_CDKN2A_driver",
+                                  "Probability_EP300_driver","Probability_KMT2D_driver",
+                                  "Probability_NFE2L2_driver","Probability_NOTCH1_driver",
+                                  "Probability_PIK3CA_driver")
+colnames(TableS_drivers.ESCC)[8] = c("Within-sample_diversity")
+TableS_drivers.ESCC = bind_cols(Sample=mutprof_ESCC_SBS$Sample,TableS_drivers.ESCC)
+
+write_tsv(TableS_drivers.ESCC,file = "../../TableS_drivers_ESCC.tsv")
+```
+
+# Session information
+
+```{r }
+sessionInfo()
+```
+
