@@ -183,11 +183,11 @@ pairwise_comparison <- function(sig_activity,
                              lapply(rep,
                                     function(matrix){
                                       c("across_sample_heterogeneity" =
-                                          FAVA::fava(relab_matrix = matrix, K = K, S = S, normalized = normalized),
+                                          fst(relab_matrix = matrix, K = K, S = S, normalized = normalized),
                                         "mean_within_sample_diversity" =
-                                          FAVA::gini_simpson_mean(relab_matrix = matrix, K = K, S = S),
+                                          het_mean(relab_matrix = matrix, K = K, S = S),
                                         "pooled_diversity" =
-                                          FAVA::gini_simpson_pooled(relab_matrix = matrix, K = K, S = S))
+                                          het_pooled(relab_matrix = matrix, K = K, S = S))
                                     }) %>%
                                do.call(rbind, .) %>%
                                data.frame %>%
@@ -201,17 +201,17 @@ pairwise_comparison <- function(sig_activity,
 
 
   observed_stats_A = c("across_sample_heterogeneity" =
-                         FAVA::fava(relab_matrix = A, K = K, S = S, normalized = normalized),
+                         fst(relab_matrix = A, K = K, S = S, normalized = normalized),
                        "mean_within_sample_diversity" =
-                         FAVA::gini_simpson_mean(relab_matrix = A, K = K, S = S),
+                         het_mean(relab_matrix = A, K = K, S = S),
                        "pooled_diversity" =
-                         FAVA::gini_simpson_pooled(relab_matrix = A, K = K, S = S))
+                         het_pooled(relab_matrix = A, K = K, S = S))
   observed_stats_B = c("across_sample_heterogeneity" =
-                         FAVA::fava(relab_matrix = B, K = K, S = S, normalized = normalized),
+                         fst(relab_matrix = B, K = K, S = S, normalized = normalized),
                        "mean_within_sample_diversity" =
-                         FAVA::gini_simpson_mean(relab_matrix = B, K = K, S = S),
+                         het_mean(relab_matrix = B, K = K, S = S),
                        "pooled_diversity" =
-                         FAVA::gini_simpson_pooled(relab_matrix = B, K = K, S = S))
+                         het_pooled(relab_matrix = B, K = K, S = S))
 
   # Compute the difference between the two scrambled bootstrap populations
   bootstrap_difference = bootstrap_stats_A - bootstrap_stats_B

@@ -9,7 +9,7 @@ Statistically compare the within-sample diversity and across-sample heterogeneit
 sigboot(
   sig_activity,
   n_replicates,
-  K = ncol(sig_activity),
+  K = ncol(sig_activity) - length(group),
   group,
   S = NULL,
   normalized = FALSE,
@@ -23,7 +23,7 @@ sigboot(
 
 \item{n_replicates}{The number of bootstrap replicate matrices to generate for each provided relative abundance matrix.}
 
-\item{K}{Optional; an integer specifying the number of mutational signatures included in \code{sig_activity}. Default is \code{K=ncol(sig_activity)-1}.}
+\item{K}{Optional; an integer specifying the number of mutational signatures included in \code{sig_activity}. Default is \code{K=ncol(sig_activity)-length(group)}.}
 
 \item{group}{A string (or vector of strings) specifying the name(s) of the column(s) that describes which group(s) each sample belongs to.}
 

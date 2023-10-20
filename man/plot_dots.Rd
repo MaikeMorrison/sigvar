@@ -5,28 +5,23 @@
 \title{Plot the mean mutational signature contributions of each group of samples}
 \usage{
 plot_dots(
-  Q,
-  group = colnames(Q)[1],
-  K = ncol(Q) - 1 - as.numeric(!missing(facet)),
+  sig_activity,
+  group = colnames(sig_activity)[1],
+  K = ncol(sig_activity) - 1 - as.numeric(!missing(facet)),
   max_dotsize = 5,
   pivot = FALSE,
-  facet
+  facet,
+  threshold = 0
 )
 }
 \arguments{
-\item{Q}{A dataframe, matrix, or array representing mutational signature
-relative contributions.
-Each row represents a sample. The first \code{ncol(Q)-K} columns may
-contain other information about the sample, and must contain the grouping
-variable. When restricted to the last \code{K} columns, the rows of this
-matrix must sum to 1.}
+\item{sig_activity}{A matrix or data frame with rows containing non-negative entries that sum to 1. Each row represents a sample, each column represents a mutational signature, and each entry represents the abundance of that signature in the sample. If \code{sig_activity} contains any metadata, it must be on the left-hand side of the matrix, the right \code{K} entries of each row must sum to 1, and \code{K} must be specified. Otherwise, all entries of each row must sum to 1.}
 
-\item{group}{A string specifying the name of the column that describes which
-group/population each sample belongs to. Default is the first column name.}
+\item{group}{A string (or vector of strings) specifying the name(s) of the column(s) that describes which group(s) each sample belongs to. Default is the first column of \code{sig_activity}: \code{colnames(sig_activity)[1]}.}
 
 \item{K}{Optional; the number of signatures in the matrix. Default is
-\code{K=ncol(Q)-1-as.numeric(!missing(facet))}, the number of columns in
-\code{Q} minus either 1 (since one column must specify the group) or 2 if
+\code{K=ncol(sig_activity)-1-as.numeric(!missing(facet))}, the number of columns in
+\code{sig_activity} minus either 1 (since one column must specify the group) or 2 if
 \code{facet} is provided, since one column must specify the variable on
 which to facet.}
 
@@ -37,6 +32,8 @@ on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.}
 
 \item{facet}{Optional; a string specifying the name of the column by which
 you would like to facet your plot.}
+
+\item{threshold}{Optional; a number between 0 and 1 specifying the minimum mean activity of a signature in order for it to be shown as a dot. Default is \code{threshold = 0}.}
 }
 \value{
 A ggplot object containing a dot plot visualization of the mean
@@ -52,7 +49,7 @@ signature.
 \examples{
   # Make an example matrix.
   # Each row is a sample. Rows sum to 1.
-Q = matrix(c(
+sig_activity = matrix(c(
     "A", .4, .2, .4,
     "A", .5, .3, .2,
     "A", .5, .4, .1,
@@ -63,11 +60,11 @@ Q = matrix(c(
   byrow = TRUE
   )
 
-  colnames(Q) = c("pop", "SBS1", "SBS2", "SBS3")
-  Q = dplyr::mutate(data.frame(Q), dplyr::across(c(SBS1, SBS2, SBS3),
+  colnames(sig_activity) = c("pop", "SBS1", "SBS2", "SBS3")
+  sig_activity = dplyr::mutate(data.frame(sig_activity), dplyr::across(c(SBS1, SBS2, SBS3),
                                                  as.numeric))
 
-plot_dots(Q,
+plot_dots(sig_activity,
  K = 3, # How many categories per vector?
   group = "pop"
 )

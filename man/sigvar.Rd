@@ -28,13 +28,13 @@ sigvar(
 
 \item{time}{Optional; a string specifying the name of the column that describes the sampling time for each row. Include if you wish to weight the variability measures by the distance between adjacent samples in the matrix.}
 
-\item{normalized}{Optional; should normalized Fst be used as the measure of across-sample variability? Default is \code{normalized = FALSE}; use \code{normalized = TRUE} to compute normalized FAVA. FAVA can only be normalized if it is not weighted.}
+\item{normalized}{Optional; should normalized Fst be used as the measure of across-sample variability? Default is \code{normalized = FALSE}; use \code{normalized = TRUE} to compute normalized Fst. Fst can only be normalized if it is not weighted.}
 }
 \value{
 A data frame with columns corresponding to the across-sample variability and the mean within-sample variability for the provided samples.
 }
 \description{
-Across-sample variability is quantified by computing the population-genetic statistic Fst across the rows of the signature activity table. This method is based on the R package FAVA, which implements an Fst-based assessment of Variability across vectors of relative Abundances. Mean within-sample variability is quantified by computing the mean Gini-Simpson index across all samples. Specify \code{group} if your table of signature activities contains mutiple populations of samples which you wish to compare. Specifying \code{S} allows \code{sigvar} to account for the pairwise cosine similarity among signatures. Specifying \code{w} or \code{time} allows for uneven weighting of the samples.
+Across-sample variability is quantified by computing the population-genetic statistic Fst across the rows of the signature activity table. This method is based on the R package Fst, which implements an Fst-based assessment of Variability across vectors of relative Abundances. Mean within-sample variability is quantified by computing the mean Gini-Simpson index across all samples. Specify \code{group} if your table of signature activities contains mutiple populations of samples which you wish to compare. Specifying \code{S} allows \code{sigvar} to account for the pairwise cosine similarity among signatures. Specifying \code{w} or \code{time} allows for uneven weighting of the samples.
 }
 \examples{
 # Compute the across-sample and mean within-sample variability of  mutational signatures

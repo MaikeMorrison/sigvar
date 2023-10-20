@@ -63,7 +63,7 @@ Q_checker <- function(Q, K, rep) {
 #'
 #'
 #' @param Q A dataframe, matrix, or array representing mutational signature
-#'   relative contributions.
+#'   relative activities.
 #'   Each row represents a sample.
 plot_signature_prop <- function(Q){
   # convert to long format
@@ -76,10 +76,10 @@ plot_signature_prop <- function(Q){
   Q_long = Q_long %>% dplyr::mutate(Sample = factor(Sample,levels=Sample_order))
 
   # create color palette
-  sig_palette = sigFAVA::sbs_palette[levels(Q_long$Signature)[levels(Q_long$Signature)%in%names(sigFAVA::sbs_palette)]]
+  sig_palette = sigvar::sbs_palette[levels(Q_long$Signature)[levels(Q_long$Signature)%in%names(sigvar::sbs_palette)]]
   sig_palette = c(sig_palette,
                   PNWColors::pnw_palette("Sailboat",length(levels(Q_long$Signature))-length(sig_palette) ) %>%
-                    `names<-`(sort(levels(Q_long$Signature)[!levels(Q_long$Signature)%in%names(sigFAVA::sbs_palette)]) ))
+                    `names<-`(sort(levels(Q_long$Signature)[!levels(Q_long$Signature)%in%names(sigvar::sbs_palette)]) ))
   sig_palette = sig_palette[order(names(sig_palette))]
 
   ggplot2::ggplot(Q_long,
@@ -98,12 +98,12 @@ plot_signature_prop <- function(Q){
 }
 
 # plot_dots -----------------------------------------------------------------
-#' Plot the mean mutational signature contributions of each group of samples
+#' Plot the mean mutational signature activities of each group of samples
 #'
 #' This function generates a dot plot with signatures along the y-axis,
 #' group/populations along the x-axis, dot size corresponding to the fraction
 #' of samples in each population containing a signature, and dot color
-#' corresponding to the mean relative contribution of mutations to that
+#' corresponding to the mean relative activity of mutations to that
 #' signature.
 #'
 #' @param sig_activity A matrix or data frame with rows containing non-negative entries that sum to 1. Each row represents a sample, each column represents a mutational signature, and each entry represents the abundance of that signature in the sample. If \code{sig_activity} contains any metadata, it must be on the left-hand side of the matrix, the right \code{K} entries of each row must sum to 1, and \code{K} must be specified. Otherwise, all entries of each row must sum to 1.
@@ -120,7 +120,7 @@ plot_signature_prop <- function(Q){
 #' @param max_dotsize Optional; a number specifying the maximum size for each dot.
 #' @param threshold Optional; a number between 0 and 1 specifying the minimum mean activity of a signature in order for it to be shown as a dot. Default is \code{threshold = 0}.
 #' @return A ggplot object containing a dot plot visualization of the mean
-#'   mutational signature contributions
+#'   mutational signature activities
 #' @examples
 #'   # Make an example matrix.
 #'   # Each row is a sample. Rows sum to 1.
@@ -182,23 +182,41 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
   # }
 
 
-  sig_activity_sigs = cbind(data.frame("group" = sig_activity[[group]]),
-                 Q_checker(sig_activity %>% dplyr::select(-group), K)) %>%
-    `colnames<-`(c("group", signatures))
+  if(facet_true){
+    sig_activity_sigs = cbind(data.frame("group" = sig_activity[[group]],
+                                         "facet" = sig_activity[[facet]]),
+                              Q_checker(sig_activity %>% dplyr::select(-c(group, facet)), K)) %>%
+      `colnames<-`(c("group", "facet", signatures))
 
-  sig_activity_present = sig_activity_sigs %>%
-    dplyr::group_by(group) %>%
-    dplyr::summarise(dplyr::across(dplyr::all_of(signatures),
-                                   function(x) sum(x > threshold)/dplyr::n())) %>%
-    tidyr::pivot_longer(cols = dplyr::all_of(signatures), names_to = "Signature",
-                        values_to = "Proportion_present")
+    sig_activity_present = sig_activity_sigs %>%
+      dplyr::group_by(group, facet) %>%
+      dplyr::summarise(dplyr::across(dplyr::all_of(signatures),
+                                     function(x) mean(x > threshold))) %>%
+      tidyr::pivot_longer(cols = dplyr::all_of(signatures), names_to = "Signature",
+                          values_to = "Proportion_present")
+
+
+  }else{
+    sig_activity_sigs = cbind(data.frame("group" = sig_activity[[group]]),
+                              Q_checker(sig_activity %>% dplyr::select(-group), K)) %>%
+      `colnames<-`(c("group", signatures))
+
+    sig_activity_present = sig_activity_sigs %>%
+      dplyr::group_by(group) %>%
+      dplyr::summarise(dplyr::across(dplyr::all_of(signatures),
+                                     function(x) mean(x > threshold))) %>%
+      tidyr::pivot_longer(cols = dplyr::all_of(signatures), names_to = "Signature",
+                          values_to = "Proportion_present")
+  }
+
+
 
   sig_activity_means = sig_activity_sigs %>%
     dplyr::group_by(group) %>%
     dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) mean(col[col>0]))) %>%
     tidyr::pivot_longer(cols = dplyr::all_of(signatures),
                         names_to = "Signature",
-                        values_to = "Mean_contribution")
+                        values_to = "Mean_activity")
 
 
   plot_data = dplyr::inner_join(sig_activity_present, sig_activity_means) %>%
@@ -213,7 +231,7 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
 
   ggplot2::ggplot(plot_data,
                   ggplot2::aes(y = Signature, x = group,
-                               color = Mean_contribution,
+                               color = Mean_activity,
                                size = Proportion_present)) +
     ggplot2::geom_point() +
     ggplot2::scale_size_continuous(guide = ggplot2::guide_legend(title.position = "top",
@@ -227,7 +245,7 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                                                           direction = "horizontal"),
                                    colours = c("#E81F27", "#881F92", "#2419F9"),
                                    limits = c(0,1), breaks = c(0, 0.5, 1),
-                                   name = "Mean relative\ncontribution in\ntumors with\nsignature") +
+                                   name = "Mean relative\nactivity in\ntumors with\nsignature") +
     ggplot2::theme_bw()  +
     # ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3)) +
     # {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
