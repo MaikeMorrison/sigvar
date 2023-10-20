@@ -8,7 +8,7 @@ plot_signature_prop(Q)
 }
 \arguments{
 \item{Q}{A dataframe, matrix, or array representing mutational signature
-relative contributions.
+relative activities.
 Each row represents a sample.}
 }
 \description{

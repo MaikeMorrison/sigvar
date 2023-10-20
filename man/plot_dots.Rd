@@ -2,7 +2,7 @@
 % Please edit documentation in R/data_vis_functions.R
 \name{plot_dots}
 \alias{plot_dots}
-\title{Plot the mean mutational signature contributions of each group of samples}
+\title{Plot the mean mutational signature activities of each group of samples}
 \usage{
 plot_dots(
   sig_activity,
@@ -37,13 +37,13 @@ you would like to facet your plot.}
 }
 \value{
 A ggplot object containing a dot plot visualization of the mean
-mutational signature contributions
+mutational signature activities
 }
 \description{
 This function generates a dot plot with signatures along the y-axis,
 group/populations along the x-axis, dot size corresponding to the fraction
 of samples in each population containing a signature, and dot color
-corresponding to the mean relative contribution of mutations to that
+corresponding to the mean relative activity of mutations to that
 signature.
 }
 \examples{

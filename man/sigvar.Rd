@@ -3,7 +3,8 @@
 \name{sigvar}
 \alias{sigvar}
 \title{sigvar
-Compute the within- and across-sample variability of mutational signature activity in one or multiple populations of samples.}
+
+Compute the within-sample diversity and across-sample heterogeneity of mutational signature activity in one or multiple populations of samples.}
 \usage{
 sigvar(
   sig_activity,

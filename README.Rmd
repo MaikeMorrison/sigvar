@@ -6,37 +6,121 @@ output: github_document
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
+  # collapse = TRUE,
+  # comment = "#>",
+  # fig.path = "man/figures/README-",
+  # out.width = "100%",
+  warning = FALSE, 
+  message = FALSE,
+  fig.width = 6, fig.height = 3
 )
 ```
 
-# sigFAVA
+# sigvar
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-SigFAVA is a R package to quantify, visualize, and test the variability of mutational signatures within and across samples
+The R package *sigvar* implements Signature Variability Analysis (SVA), a framework for the analyis of mutational signature activities within and across cancer samples. The *sigvar* package contains the following core functions:
+
+* `sigvar`: Conduct signature variability analysis on a data set. That is, compute the within-sample diversity and across-sample heterogeneity  of mutational signature activity in one or multiple populations of samples.
+
+* `sigboot`: Statistically compare the within-sample diversity and across-sample heterogeneity of the mutational signature activity in two or more groups of tumor samples
+
+*sigvar* also includes accessory functions for the visualization of mutational signature data, such as: 
+
+* `plot_SBS_spectrum`: Plot the SBS mutational spectrum of one or more samples or mutational signatures
+
+* `plot_dots`: Plot the mean mutational signature contributions of one or more groups of samples
 
 ## Installation
 
-You can install the development version of sigFAVA from [GitHub](https://github.com/) with:
+You can install the development version of sigvar from [GitHub](https://github.com/MaikeMorrison/sigvar) with:
 
-``` r
+```{r, eval=FALSE}
 # install.packages("devtools")
-devtools::install_github("MaikeMorrison/sigFAVA")
+devtools::install_github("MaikeMorrison/sigvar")
 ```
 
-## Example
+<!-- ## Example -->
 
-This is a basic example which shows you how to import results from SigProfiler and plot the signature attributions:
+<!-- This is a basic example which shows you how to import results from SigProfiler and plot the signature attributions: -->
 
-```{r example}
-library(sigFAVA)
+<!-- ```{r example} -->
+<!-- library(sigvar) -->
 
-SPfolder = system.file("extdata", "example_SigProfiler_results", package = "sigFAVA")
-Qlist = import_SigProfiler(SPfolder)
-plot_dots(Qlist[[1]])
+<!-- SPfolder = system.file("extdata", "example_SigProfiler_results", package = "sigvar") -->
+<!-- Qlist = import_SigProfiler(SPfolder) -->
+<!-- plot_dots(Qlist[[1]]) -->
+<!-- ``` -->
+
+## Example - Esophageal squamous cell carcinoma
+
+In this simple example, we apply SVA to data from [Moody et al. (2021)](https://www.nature.com/articles/s41588-021-00928-6). This data set contains 552 esophageal squamous cell carcinoma (ESCC) samples collected across eight countries which vary dramatically in their incidence of ESCC. Moody et al. (2021) reported the activities of 43 SBS, DBS, and ID mutational signatures for each sample. Here, we reanalyze this data set using signature variability analysis.
+
+Each row of this data set reports the relative activity of each mutational signature for one sample. Because we are analyzing relative signature activities, each row sums to 1.
+
+```{r}
+library(sigvar)
+library(dplyr)
+library(ggplot2)
+
+head(ESCC_sig_activity)
 ```
+
+**Signature variability analysis can be conducted in one line of code:** 
+
+```{r}
+sva = sigvar(sig_activity = ESCC_sig_activity, K = 43, group = "Country")
+
+knitr::kable(sva)
+```
+
+Signature variability analysis quantifies both the mean signature diversity within each sample, as well as the heterogeneity in signature activities across samples. Both variability statistics range between 0 and 1. 
+
+If we add to our SVA results a column corresponding to the incidence of each country, we are able to determine if signature heterogeneity or diversity are associated with ESCC incidence. 
+
+```{r}
+sva_incidence = ESCC_sig_activity %>% 
+  transmute(Country = as.character(Country), 
+            Incidence_Level) %>%
+  distinct %>%
+  right_join(sva)
+  
+knitr::kable(sva_incidence)
+
+ggplot(sva_incidence,
+       aes(x = mean_within_sample_diversity, 
+           y = across_sample_heterogeneity, 
+           color = Incidence_Level)) + 
+  geom_point(size = 4) +
+  geom_text(aes(label = Country), 
+            hjust = 1, 
+            nudge_x = -0.002) +
+  theme_bw()
+```
+
+We see that high-ESCC-incidence countries have more within-sample signature diversity and less across-sample heterogeneity than low-incidence countries.
+
+<!-- ```{r} -->
+<!-- sva_incidence %>%  -->
+<!--   tidyr::pivot_longer(cols = c(across_sample_heterogeneity, mean_within_sample_diversity), -->
+<!--                       names_to = "Variability_statistic") %>% -->
+<!-- ggplot(aes(x = Incidence_Level, y = value, fill = Incidence_Level)) +  -->
+<!--   geom_violin(color = NA, alpha = 0.75) + -->
+<!--   ggbeeswarm::geom_beeswarm() + -->
+<!--   ggpubr::stat_compare_means(method = "t.test") +  -->
+<!--   facet_wrap(~ Variability_statistic, scales = "free") + -->
+<!--   theme_bw() -->
+<!-- ``` -->
+
+
+Note that this difference in diversity is missed when we analyze only country-level mean signature activities:
+
+```{r, fig.width=8}
+plot_dots(sig_activity = ESCC_sig_activity, 
+          K = 43, group = "Country", 
+          facet = "Incidence_Level", 
+          pivot = TRUE)
+```
+
