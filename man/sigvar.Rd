@@ -2,9 +2,7 @@
 % Please edit documentation in R/stats_functions.R
 \name{sigvar}
 \alias{sigvar}
-\title{sigvar
-
-Compute the within-sample diversity and across-sample heterogeneity of mutational signature activity in one or multiple populations of samples.}
+\title{Compute the within-sample diversity and across-sample heterogeneity of mutational signature activity in one or multiple populations of samples.}
 \usage{
 sigvar(
   sig_activity,

@@ -1,4 +1,4 @@
-#' # sigboot
+# sigboot
 #' Statistically compare the within-sample diversity and across-sample heterogeneity of the mutational signature activity in two or more groups of tumor samples.
 #'
 #' \code{sigboot} uses bootstrapping to evaluate differences in within-sample diversity and across-sample heterogeneity of mutational signature activity  between pairs of groups of tumor samples. \code{sigboot} takes the same options as \code{sigvar}, so, as with \code{sigvar}, you can separately analyze multiple populations or groups of samples (specify \code{group}), and account for cosine similarity among signatures (specify \code{S}). \code{sigboot} follows the bootstrapping procedure defined by Efron and Tibshirani (1993). Details on the bootstrapping procedure are available in the Methods section of the accompanying paper.
@@ -11,7 +11,7 @@
 #' @param normalized Optional; should the across-sample variability (Fst) be normalized by its upper bound conditional on the mean activity of the most abundant signature be used as the measure of across-sample variability? Default is \code{normalized = FALSE}; use \code{normalized = TRUE} to compute normalized Fst. Fst can only be normalized if it is not weighted.
 #' @param seed Optional; an integer to be used as a random seed for the simulations.
 #' @param save_replicates Optional; should all of the bootstrap replicate matrices be included in the output? Default is \code{save_replicates = FALSE};  \code{save_replicates = FALSE} savea memory when analyzing large datasets.
-#' @param alternative Optional; do you want to do a one- or two.sided test? Default is \code{alternative = "two.sided"}. If you wish to do a one-sided test, specify either \code{alternative = "lesser"} or \code{alternative = "greater"}.
+#' @param alternative Optional; do you want to do a one- or two.sided test? Default is \code{alternative = "two.sided"}. If you wish to do a one-sided test, specify either \code{alternative = "less"} or \code{alternative = "greater"}.
 #'
 #' @return A named list containing the following entries:
 #' \itemize{

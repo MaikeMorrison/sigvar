@@ -2,9 +2,7 @@
 % Please edit documentation in R/bootstrap.R
 \name{sigboot}
 \alias{sigboot}
-\title{sigboot
-
-Statistically compare the within-sample diversity and across-sample heterogeneity of the mutational signature activity in two or more groups of tumor samples.}
+\title{Statistically compare the within-sample diversity and across-sample heterogeneity of the mutational signature activity in two or more groups of tumor samples.}
 \usage{
 sigboot(
   sig_activity,
@@ -35,7 +33,7 @@ sigboot(
 
 \item{save_replicates}{Optional; should all of the bootstrap replicate matrices be included in the output? Default is \code{save_replicates = FALSE};  \code{save_replicates = FALSE} savea memory when analyzing large datasets.}
 
-\item{alternative}{Optional; do you want to do a one- or two.sided test? Default is \code{alternative = "two.sided"}. If you wish to do a one-sided test, specify either \code{alternative = "lesser"} or \code{alternative = "greater"}.}
+\item{alternative}{Optional; do you want to do a one- or two.sided test? Default is \code{alternative = "two.sided"}. If you wish to do a one-sided test, specify either \code{alternative = "less"} or \code{alternative = "greater"}.}
 }
 \value{
 A named list containing the following entries:
