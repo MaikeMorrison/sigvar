@@ -35,6 +35,18 @@ You can install the development version of sigvar from
 devtools::install_github("MaikeMorrison/sigvar")
 ```
 
+The package requires packages `dplyr`, `ggplot2`, `rlang`, `tidyr`, and
+`readr`. They will all be installed automatically by the command above.
+Installation time ranges from 1 to 5 minutes depending on whether
+dependencies also need to be installed. Run time is expected to be a few
+minutes on a typical desktop computer.
+
+<!-- See vignettes for detailed examples of using sigvar on real datasets. -->
+
+The package has been tested on R version 4.1.2 on a redhat linux
+platform and a windows 10 pro platform. The package is available under
+the MIT license.
+
 <!-- ## Example -->
 <!-- This is a basic example which shows you how to import results from SigProfiler and plot the signature attributions: -->
 <!-- ```{r example} -->
