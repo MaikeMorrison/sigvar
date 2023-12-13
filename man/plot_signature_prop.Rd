@@ -2,15 +2,146 @@
 % Please edit documentation in R/data_vis_functions.R
 \name{plot_signature_prop}
 \alias{plot_signature_prop}
-\title{Plot the signature proportion for a set of samples}
+\title{plot_signature_prop -----------------------------------------------------------------
+
+#' Plot the signature proportion for a set of samples
+#'
+#'
+#' @param Q A dataframe, matrix, or array representing mutational signature
+#'   relative activities.
+#'   Each row represents a sample.
+plot_signature_prop <- function(Q){convert to long format
+
+Q_long <- Q \%>\% mutate(Sample=paste0("P",1:nrow(Q))) \%>\%
+tidyr::pivot_longer(-Sample,names_to = "Signature",values_to = "Proportion") \%>\%
+mutate(Signature = factor(Signature, ordered = TRUE, levels=colnames(Q)\link{order(colMeans(Q),decreasing = F)}) )}
 \usage{
-plot_signature_prop(Q)
+plot_signature_prop(
+  relab_matrix,
+  group = NULL,
+  time = NULL,
+  w = NULL,
+  K = NULL,
+  arrange = FALSE
+)
 }
 \arguments{
-\item{Q}{A dataframe, matrix, or array representing mutational signature
-relative activities.
-Each row represents a sample.}
+\item{relab_matrix}{A matrix with \code{I=nrow(relab_matrix)} rows, each containing \code{K=ncol(relab_matrix)} non-negative entries that sum to 1.
+If \code{relab_matrix} contains any metadata, it must be on the left-hand side of the matrix and the number of entries
+that sum to 1 (\code{K}) must be specified.}
+
+\item{group}{Optional; a string specifying the name of the column that describes which group each row (sample) belongs to. Use if \code{matrices} is a single matrix containing multiple groups of samples you wish to compare.}
+
+\item{time}{Optional; a string specifying the name of the column that describes the sampling time for each row. Include if you wish to weight FAVA by the distance between samples.}
+
+\item{w}{Optional; a vector of length \code{I} with non-negative entries that sum to 1. Entry \code{w[i]} represents the weight placed on row \code{i} in the computation of the mean abundance of each category across rows. The default value is \code{w = rep(1/nrow(relab_matrix), nrow(relab_matrix))}.}
+
+\item{K}{Optional; an integer specifying the number of categories in the data. Default is \code{K=ncol(relab_matrix)}.}
+
+\item{arrange}{Optional; controls horizontal ordering of samples and vertical ordering of categories.
+If \code{arrange = TRUE} or \code{arrange = "both"}, samples are ordered by the categories of greatest
+abundance and categories are ordered in decreasing abundance. If \code{arrange = "vertical"}, sample
+order is unchanged but categories are ordered in decreasing abundance. If \code{arrange = "horizontal"},
+samples are ordered by the most abundant categories, but category order is unchanged. If \code{arrange} is missing
+or \code{arrange = FALSE}, neither order is changed.}
+}
+\value{
+A ggplot object containing a bar plot visualization of the relative abundance matrix.
 }
 \description{
-Plot the signature proportion for a set of samples
+plot_signature_prop -----------------------------------------------------------------
+
+#' Plot the signature proportion for a set of samples
+#'
+#'
+#' @param Q A dataframe, matrix, or array representing mutational signature
+#'   relative activities.
+#'   Each row represents a sample.
+plot_signature_prop <- function(Q){convert to long format
+
+Q_long <- Q \%>\% mutate(Sample=paste0("P",1:nrow(Q))) \%>\%
+tidyr::pivot_longer(-Sample,names_to = "Signature",values_to = "Proportion") \%>\%
+mutate(Signature = factor(Signature, ordered = TRUE, levels=colnames(Q)\link{order(colMeans(Q),decreasing = F)}) )
+}
+\section{order samples}{
+Sample_order = Q_long \%>\% dplyr::group_by(Signature) \%>\% dplyr::arrange(desc(Signature),Proportion) \%>\% dplyr::pull(Sample) \%>\% unique()
+Q_long = Q_long \%>\% dplyr::mutate(Sample = factor(Sample,levels=Sample_order))
+}
+
+\section{create color palette}{
+
+}
+
+\examples{
+
+# Make an example matrix of compositional data
+# Each row is an individual. Rows sum to 1.
+population_A = matrix(c(
+    .5, .3, .2,
+    .4, .2, .4,
+    .5, .4, .1,
+    .6, .1, .3,
+    .2, 0, .8
+  ),
+  nrow = 5,
+  byrow = TRUE
+  )
+
+  plot_signature_prop(relab_matrix = population_A,
+              K = 3, # How many categories per vector?
+              arrange = FALSE
+              )
+  plot_signature_prop(relab_matrix = population_A,
+              K = 3, # How many categories per vector?
+              arrange = "horizontal"
+              )
+  plot_signature_prop(relab_matrix = population_A,
+              K = 3, # How many categories per vector?
+              arrange = "vertical"
+              )
+   plot_signature_prop(relab_matrix = population_A,
+              K = 3, # How many categories per vector?
+              arrange = TRUE  # could also be "both"
+              )
+
+
+# You can modify the plot as you would any ggplot2 object
+plot_signature_prop(relab_matrix = population_A,
+              K = 3, # How many categories per vector?
+              arrange = TRUE
+              ) +
+  # Below are example, optional modifications to the default plot
+  ggplot2::ggtitle("Population A") +
+  ggplot2::scale_fill_brewer("Blues") +
+  ggplot2::scale_color_brewer("Blues") +
+  ggplot2::xlab("Individuals")
+  # Note that both scale_fill and scale_color are needed to change the color of the bars.
+
+
+  # Plot a dataset which has 2 populations
+
+  population_B = matrix(c(
+    .9, 0, .1,
+    .6, .4, 0,
+    .7, 0, .3,
+    .3, .4, .3,
+    .5, .3, .2
+  ),
+  nrow = 5,
+  byrow = TRUE
+  )
+
+
+  populations_AB = cbind(data.frame(c("A", "A", "A", "A", "A",
+                                     "B", "B", "B", "B", "B")),
+                         rbind(population_A, population_B))
+  colnames(populations_AB) = c("population", "category_1", "category_2", "category_3")
+
+
+ plot_signature_prop(relab_matrix = populations_AB, group = "population")
+ plot_signature_prop(relab_matrix = populations_AB, group = "population", arrange = "vertical")
+ plot_signature_prop(relab_matrix = populations_AB, group = "population", arrange = "horizontal")
+ plot_signature_prop(relab_matrix = populations_AB, group = "population", arrange = "both")
+
+
 }
