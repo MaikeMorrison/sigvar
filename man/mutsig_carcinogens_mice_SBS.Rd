@@ -10,8 +10,7 @@
 A tibble with 181 rows and 46 columns:
 \describe{
 \item{Sample}{Identifier of the tumor}
-\item{mSBS1, mSBS5}{Number of mutations for each signature}
-...
+\item{mSBS1, mSBS5, ..., mSBS_N3}{Number of mutations for each signature}
 \item{Tissue}{Tissue of origin}
 \item{DIAGNOSIS}{Type of cancer}
 \item{dose}{Treatment dose}

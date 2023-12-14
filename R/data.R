@@ -56,8 +56,7 @@
 #' A tibble with 181 rows and 46 columns:
 #' \describe{
 #'   \item{Sample}{Identifier of the tumor}
-#'   \item{mSBS1, mSBS5}{Number of mutations for each signature}
-#'   ...
+#'   \item{mSBS1, mSBS5, ..., mSBS_N3}{Number of mutations for each signature}
 #'   \item{Tissue}{Tissue of origin}
 #'   \item{DIAGNOSIS}{Type of cancer}
 #'   \item{dose}{Treatment dose}
@@ -117,6 +116,17 @@
 #' @source <https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples>
 "sbs_palette"
 
+#' Color palette for mutational signatures analyzed in the study by Morrison et al.
+#'
+#' Vector of named colors for use in plotting the relative activities of mutational
+#' signatures.
+#'
+#' @format ## `all_sig_pal`
+#' A vector of colors for mutational signature activities
+#' \describe{
+#' Hex color codes for mutational signatures
+#' }
+"all_sig_pal"
 
 
 #' Activity of SBS, DBS, and ID mutational signatures in a global sample of esophageal squamous cell carcinoma cases.
