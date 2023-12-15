@@ -168,6 +168,36 @@
 "ESCC_sig_activity"
 
 
+
+#' Activity of SBS, DBS, and ID mutational signatures in a global sample of renal cell carcinoma cases.
+#'
+#' Data from: Senkin et al. (2023). Geographic variation of mutagenic exposures in kidney cancer genomes. MedRxiv, 14, 2023.06.20.23291538. https://doi.org/10.1101/2023.06.20.23291538
+#'
+#' @format ## `rcc_sig_activity`
+#' A dataframe with 962 rows and 31 columns:
+#' \describe{
+#' \item{Sample}{Unique sample ID}
+#' \item{Country}{Country where each sample was collected}
+#' \item{ASR}{Age-standardized rate (ASR) of RCC incidence in each country}
+#' \item{SBS1, ..., ID_C}{Relative abundance of mutational signatures in each sample. These columns sum to 1 for each row.}
+#' }
+#' @source <https://doi.org/10.1101/2023.06.20.23291538>
+"rcc_sig_activity"
+
+
+#' Activity of SBS, DBS, and ID mutational signatures in a global sample of renal cell carcinoma cases.
+#'
+#' Data from: Senkin et al. (2023). Geographic variation of mutagenic exposures in kidney cancer genomes. MedRxiv, 14, 2023.06.20.23291538. https://doi.org/10.1101/2023.06.20.23291538
+#'
+#' @format ## `rcc_sim`
+#' A dataframe with 28 rows and 28 columns:
+#' \describe{
+#' \item{SBS1, ..., ID_C}{Cosine similarity between mutational signatures.}
+#' }
+#' @source <https://doi.org/10.1101/2023.06.20.23291538>
+"rcc_sim"
+
+
 #' Cosine similarity of SBS, DBS, and ID mutational signatures found in a global sample of esophageal squamous cell carcinoma cases.
 #'
 #' Data from: Moody, S., Senkin, S., Islam, S.M.A. et al. Mutational signatures in esophageal squamous cell carcinoma from eight countries with varying incidence. Nat Genet 53, 1553–1563 (2021).
