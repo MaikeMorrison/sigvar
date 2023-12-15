@@ -52,7 +52,10 @@ sigvar <- function(sig_activity,
 #'  cossim(ref_sigs = as.matrix(Sherlock_LCINS_SBS.refs[,1:14]))
 #'
 cossim <- function(ref_sigs){
-  res = t(ref_sigs)%*%ref_sigs/matrix(sqrt(colSums(ref_sigs**2)),nrow = ncol(ref_sigs),ncol=ncol(ref_sigs))/matrix(sqrt(colSums(ref_sigs**2)),nrow = ncol(ref_sigs),ncol=ncol(ref_sigs),byrow = T)
+  res = t(ref_sigs)%*%ref_sigs/matrix(sqrt(colSums(ref_sigs**2)),
+                                      nrow = ncol(ref_sigs),ncol=ncol(ref_sigs))/matrix(sqrt(colSums(ref_sigs**2)),
+                                                                                        nrow = ncol(ref_sigs),
+                                                                                        ncol=ncol(ref_sigs),byrow = T)
   diag(res)=1
   return(res)
 }
