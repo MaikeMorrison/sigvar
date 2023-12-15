@@ -16,10 +16,12 @@ A list of tibbles containing the SigProfiler activity matrices
 import_SigProfiler
 }
 \examples{
-##Import dummy SigProfilerExtractor output results
-#SPfolder = system.file("extdata", "example_SigProfiler_results", package = "sigFAVA")
-#Qlist = import_SigProfiler(SPfolder)
+#Import dummy SigProfilerExtractor output results
+SPfolder = system.file("extdata", "SP", package = "sigvar")
+Qlist = import_SigProfiler(SPfolder)
+print(Qlist)
+for(i in 1:length(Qlist)) Qlist[[i]][,-1] = sweep(Qlist[[i]][,-1],1,rowSums(Qlist[[i]][,-1]),"/")
 
-##Plot imported signatures
-#plot_dots(Qlist[[1]])
+#Plot imported signatures
+plot_dots(Qlist[[1]])
 }
