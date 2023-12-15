@@ -11,8 +11,8 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
-URL: https://github.com/MaikeMorrison/sigFAVA
-BugReports: https://github.com/MaikeMorrison/sigFAVA/issues
+URL: https://github.com/MaikeMorrison/sigvar
+BugReports: https://github.com/MaikeMorrison/sigvar/issues
 Imports:
     dplyr,
     ggplot2,
