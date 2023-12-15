@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE,
   comment = "#>",
-  fig.width = 8
+  fig.width = 10
 )
 ```
 

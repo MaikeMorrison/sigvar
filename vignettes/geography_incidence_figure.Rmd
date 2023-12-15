@@ -1,10 +1,13 @@
 ---
-title: "sigFAVA analysis of Mutographs data:"
+title: "sigvar analysis of Mutographs data:"
 subtitle: "Global distributions ESCC and RCC mutational signatures"
 author:
   - name: "Maike Morrison"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
 vignette: >
   %\VignetteIndexEntry{geography_incidence_figure}
   %\VignetteEngine{knitr::rmarkdown}

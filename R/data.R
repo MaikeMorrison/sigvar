@@ -66,6 +66,29 @@
 "mutsig_carcinogens_mice_SBS"
 
 
+
+
+#' Bootstrap p-values comparing SVA results for carcinogen-exposed murine tumors to spontaneous tumors
+#'
+#' Data on single Base Substitution mutational signature attributions
+#' from Riva et al. Nat Genet 52, 1189–1197 (2020). https://doi.org/10.1038/s41588-020-0692-4
+#'
+#' @format ## `mutsig_carcinogens_mice_bootstrap_p_vals`
+#' A tibble with 29 rows and 7 columns:
+#' \describe{
+#'   \item{group}{Organ of tumor and exposure status}
+#'   \item{chemical}{Exposure substance}
+#'   \item{Tissue}{Tissue of origin}
+#'   \item{group_2}{Tumor/exposure reference each tumor/exposure group was compared to (either "Spontaneous_liver"  or"Spontaneous_lung" )}
+#'   \item{across_sample_heterogeneity}{P-values comparing values of across-sample heterogeneity between group and group_2}
+#'   \item{mean_within_sample_diversity}{P-values comparing values of within-sample diversity between group and group_2}
+#'   \item{pooled_diversity}{P-values comparing the pooled diversity between group and group_2}
+#' }
+"mutsig_carcinogens_mice_bootstrap_p_vals"
+
+
+
+
 #' Copy Number and Single Base Substitution mutational signatures for 120 malignant pleural mesothelioma from the MESOMICS cohort
 #'
 #' Copy Number and Single Base Substitution mutational signature attributions
@@ -158,6 +181,38 @@
 "ESCC_sig_similarity"
 
 
+
+
+
+#' Activity of SBS mutational signatures in samples of lung cancer in never smokers
+#'
+#' Data from: Zhang et al. (2021). Genomic and evolutionary classification of lung cancer in never smokers. Nature Genetics, 53(9), 1348–1359. https://doi.org/10.1038/s41588-021-00920-0
+#'
+#' @format ## `zhang_sig_activity `
+#' A dataframe with 39 rows and 213 columns:
+#' \describe{
+#' \item{Subject}{Unique ID for each subject}
+#' ...
+#' \item{passive_smoking}{Subject smoking status ("Non-smoker" or "Passive smoker")}
+#' ...
+#' \item{SBS1, ..., SBS40}{Relative abundance of mutational signatures in each sample. These columns sum to 1 for each row.}
+#' }
+#' @source <https://doi.org/10.1038/s41588-021-00920-0>
+"zhang_sig_activity "
+
+
+#' Cosine similarity of SBS mutational signatures found in samples of lung cancer in never smokers
+#'
+#' Data from: Zhang et al. (2021). Genomic and evolutionary classification of lung cancer in never smokers. Nature Genetics, 53(9), 1348–1359. https://doi.org/10.1038/s41588-021-00920-0
+
+#'
+#' @format ## `zhang_sig_similarity`
+#' A dataframe with 14 rows and 14 columns:
+#' \describe{
+#' \item{SBS1, ..., SBS40}{Pairwise cosine similarities between mutational signatures.}
+#' }
+#' @source <https://doi.org/10.1038/s41588-021-00920-0>
+"zhang_sig_similarity"
 
 
 
