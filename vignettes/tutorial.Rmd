@@ -26,7 +26,9 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The R package *sigvar* implements **sig**nature **var**iability analysis, a framework for the analysis of mutational signature activities within and across cancer samples. The *sigvar* package contains two core functions to perform signature variability analysis:
+The R package *sigvar* implements **sig**nature **var**iability analysis, a framework for the analysis of mutational signature activities within and across cancer samples. This R package accompanies the paper [``Variability of mutational signatures is a footprint of carcinogens'' by Morrison et al.](https://doi.org/10.1101/2023.11.23.23298821); please refer to the paper for more details on the methods presented in this package.  
+
+The *sigvar* package contains two core functions to perform signature variability analysis:
 
 * `sigvar`: Compute the within-sample diversity and across-sample heterogeneity of mutational signature activity in one or multiple populations of samples
 
@@ -83,11 +85,11 @@ knitr::kable(sigvar::COSMIC3.3.1_SBS %>% mutate(across(SBS1:SBS95, function(col)
     kableExtra::scroll_box(width = "600px", height = "300px")
 ```
 
-We recommend using the `cosine` function in the R package `lsa` to compute the pairwise cosine similarity of all mutational signature definitions. Below we provide example code to both generate a similarity matrix from a matrix of mutational signature definitions and verify that its entries are between 0 and 1, and that its diagonal elements equal 1. 
+We recommend using the `cossim` function in the *sigvar* R package to compute the pairwise cosine similarity of all mutational signature definitions. Below we provide example code to both generate a similarity matrix from a matrix of mutational signature definitions and verify that its entries are between 0 and 1, and that its diagonal elements equal 1. 
 
 ```{r}
 # Exclude the first column, "Type", which defines each  mutational type
-cosmic_sbs_sim = lsa::cosine(as.matrix(sigvar::COSMIC3.3.1_SBS[,-1]))
+cosmic_sbs_sim = sigvar::cossim(as.matrix(sigvar::COSMIC3.3.1_SBS[,-1]))
 
 # View the first 10 rows and 5 columns of the similarity matrix
 cosmic_sbs_sim[1:10, 1:5]

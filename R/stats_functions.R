@@ -40,7 +40,7 @@ sigvar <- function(sig_activity,
 # cossim
 #' Compute the cosine similarity matrix for a set of mutational signatures.
 #'
-#' @param ref_sigs A matrix with K columns containing non-negative entries that sum to 1. Each column represents a signature (e.g., SBS1, SBS2), each row represents a mutation type (e.g., A[C>A]A), and each entry represents the abundance of that type in the signature.
+#' @param ref_sigs A matrix with K columns containing non-negative entries that sum to 1. Each column represents a signature (e.g., SBS1, SBS2), each row represents a mutation type (e.g., \code{A[C>A]A}), and each entry represents the abundance of that type in the signature.
 #'
 #' @return A K x K similarity matrix with diagonal elements equal to 1 and off-diagonal elements between 0 and 1. Entry \code{S[j,k]} is the similarity between signature \code{j} and signature \code{k}, equaling 1 if the categories are to be treated as identical and equaling 0 if they are to be treated as totally dissimilar. The default value is \code{S = diag(K)}.
 #' @export

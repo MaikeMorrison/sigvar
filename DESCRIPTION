@@ -30,7 +30,18 @@ Suggests:
     knitr,
     rmarkdown,
     testthat (>= 3.0.0),
-    magick 
+    magick,
+  # For vignettes
+    BiocStyle,
+    PNWColors,
+    cowplot,
+    ggpubr,
+    ggrepel,
+    kableExtra,
+    lsa,
+    patchwork,
+    FAVA,
+    tidyverse
 biocViews: Software, WholeGenome, SomaticMutation, StructuralVariation
 Config/testthat/edition: 3
 Depends: 
