@@ -19,6 +19,5 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(sigFAVA)
-library(FAVA)
+library(sigvar)
 ```

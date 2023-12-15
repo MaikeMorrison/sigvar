@@ -2,19 +2,7 @@
 % Please edit documentation in R/data_vis_functions.R
 \name{plot_signature_prop}
 \alias{plot_signature_prop}
-\title{plot_signature_prop -----------------------------------------------------------------
-
-#' Plot the signature proportion for a set of samples
-#'
-#'
-#' @param Q A dataframe, matrix, or array representing mutational signature
-#'   relative activities.
-#'   Each row represents a sample.
-plot_signature_prop <- function(Q){convert to long format
-
-Q_long <- Q \%>\% mutate(Sample=paste0("P",1:nrow(Q))) \%>\%
-tidyr::pivot_longer(-Sample,names_to = "Signature",values_to = "Proportion") \%>\%
-mutate(Signature = factor(Signature, ordered = TRUE, levels=colnames(Q)\link{order(colMeans(Q),decreasing = F)}) )}
+\title{Visualize a relative abundance matrix as a stacked bar plot.}
 \usage{
 plot_signature_prop(
   relab_matrix,
@@ -49,29 +37,13 @@ or \code{arrange = FALSE}, neither order is changed.}
 A ggplot object containing a bar plot visualization of the relative abundance matrix.
 }
 \description{
-plot_signature_prop -----------------------------------------------------------------
-
-#' Plot the signature proportion for a set of samples
-#'
-#'
-#' @param Q A dataframe, matrix, or array representing mutational signature
-#'   relative activities.
-#'   Each row represents a sample.
-plot_signature_prop <- function(Q){convert to long format
-
-Q_long <- Q \%>\% mutate(Sample=paste0("P",1:nrow(Q))) \%>\%
-tidyr::pivot_longer(-Sample,names_to = "Signature",values_to = "Proportion") \%>\%
-mutate(Signature = factor(Signature, ordered = TRUE, levels=colnames(Q)\link{order(colMeans(Q),decreasing = F)}) )
+This function enables graphical visualization of a matrix of compostional data.
+In the output plot, each vertical bar represents a single vector;
+the height of each color in the bar corresponds to the abundance of each category
+in that vector. Because this function produces a
+ggplot object, its output can be modified using
+standard ggplot2 syntax.
 }
-\section{order samples}{
-Sample_order = Q_long \%>\% dplyr::group_by(Signature) \%>\% dplyr::arrange(desc(Signature),Proportion) \%>\% dplyr::pull(Sample) \%>\% unique()
-Q_long = Q_long \%>\% dplyr::mutate(Sample = factor(Sample,levels=Sample_order))
-}
-
-\section{create color palette}{
-
-}
-
 \examples{
 
 # Make an example matrix of compositional data

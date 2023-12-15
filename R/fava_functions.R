@@ -8,6 +8,9 @@ process_relab <- function(relab_matrix,
                           time = NULL,
                           group = NULL){
 
+  # Satisfy R cmd check
+  grouping_var_multiple <- NULL
+
   # Arrange data by time if not already
   if(!is.null(time)){
     if(!is.null(group)){

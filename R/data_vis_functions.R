@@ -58,44 +58,7 @@ Q_checker <- function(Q, K, rep) {
 }
 
 
-#' # plot_signature_prop -----------------------------------------------------------------
-#' #' Plot the signature proportion for a set of samples
-#' #'
-#' #'
-#' #' @param Q A dataframe, matrix, or array representing mutational signature
-#' #'   relative activities.
-#' #'   Each row represents a sample.
-#' plot_signature_prop <- function(Q){
-#'   # convert to long format
-#'   Q_long <- Q %>% mutate(Sample=paste0("P",1:nrow(Q))) %>%
-#'     tidyr::pivot_longer(-Sample,names_to = "Signature",values_to = "Proportion") %>%
-#'     mutate(Signature = factor(Signature, ordered = TRUE, levels=colnames(Q)[order(colMeans(Q),decreasing = F)]) )
-#'
-#'   # order samples
-#'   Sample_order = Q_long %>% dplyr::group_by(Signature) %>% dplyr::arrange(desc(Signature),Proportion) %>% dplyr::pull(Sample) %>% unique()
-#'   Q_long = Q_long %>% dplyr::mutate(Sample = factor(Sample,levels=Sample_order))
-#'
-#'   # create color palette
-#'   sig_palette = sigvar::sbs_palette[levels(Q_long$Signature)[levels(Q_long$Signature)%in%names(sigvar::sbs_palette)]]
-#'   sig_palette = c(sig_palette,
-#'                   PNWColors::pnw_palette("Sailboat",length(levels(Q_long$Signature))-length(sig_palette) ) %>%
-#'                     `names<-`(sort(levels(Q_long$Signature)[!levels(Q_long$Signature)%in%names(sigvar::sbs_palette)]) ))
-#'   sig_palette = sig_palette[order(names(sig_palette))]
-#'
-#'   ggplot2::ggplot(Q_long,
-#'        ggplot2::aes(x = Sample, y = Proportion,
-#'            fill = Signature, color = Signature)) +
-#'   ggplot2::geom_bar(stat = "identity") +
-#'   #facet_wrap(~ Group, scales = "free_x", ncol = 4)+
-#'   scale_color_manual(values = sig_palette) + #, breaks = rev(SBS_sigs)[1:10]) +
-#'   scale_fill_manual( values = sig_palette) +
-#'     ggplot2::theme_minimal() +
-#'     ggplot2::theme(#legend.position = "bottom",
-#'     panel.grid = ggplot2::element_blank(),
-#'     strip.background = ggplot2::element_blank(), strip.text = ggplot2::element_text(size = 11),
-#'     axis.text = ggplot2::element_blank()) +
-#'     ggplot2::ylab("") + ggplot2::xlab("Sample")
-#' }
+
 
 # # plot_signature_prop ----------------------------------------
 #' Visualize a relative abundance matrix as a stacked bar plot.
@@ -315,6 +278,10 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                       pivot = FALSE,
                       facet, threshold = 0) {
 
+  # Satisfy R cmd check
+  Signature <- . <- Mean_activity <- Proportion_present <- NULL
+
+
   # If multiple groups are provided, make a new grouping column
   multiple_groups = FALSE
   if(length(group)>1){
@@ -449,7 +416,11 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
 #' @export
 plot_SBS_spectrum <- function(SBS_table) {
 
-  sbs <- COSMIC3.3.1_SBS %>%
+  # Satisfy R cmd check
+  Type <- name <- Relative_abundance <- Sub <- NULL
+
+
+  sbs <- sigvar::COSMIC3.3.1_SBS %>%
     dplyr::select(Type)
   sbs$Sub = stringr::str_split(sbs$Type, "\\[|\\]", simplify = TRUE)[,2]
 
@@ -459,7 +430,7 @@ plot_SBS_spectrum <- function(SBS_table) {
               "#CAC8C9", "#A0CE62", "#ECC6C5") %>%
     `names<-`(unique(sort(sbs$Sub)))
 
-  sbs = left_join(sbs,
+  sbs = dplyr::left_join(sbs,
                   data.frame(Sub = names(sub_pal),
                              color = sub_pal))
 
@@ -470,7 +441,7 @@ plot_SBS_spectrum <- function(SBS_table) {
   plot_data_wide = cbind(sbs, SBS_table) %>%
       dplyr::mutate(name = glue::glue("<b style='color:#BEBEBE'>{stringr::str_sub(Context, 1,1)}<b style='color:{color}'>{stringr::str_sub(Context, 2, 2)}<b style='color:#BEBEBE'>{stringr::str_sub(Context, 3,3)}"), .before = 5)
 
-  plot_data_long = pivot_longer(plot_data_wide, cols = colnames(SBS_table),
+  plot_data_long = tidyr::pivot_longer(plot_data_wide, cols = colnames(SBS_table),
                                 names_to = "Spectrum", values_to = "Relative_abundance")
 
   ggplot2::ggplot(plot_data_long, ggplot2::aes(x = name, y = Relative_abundance, fill = Sub)) +

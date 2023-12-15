@@ -11,7 +11,7 @@ save_replicates = FALSE
 alternative = "less"
 
 test_that("bootstrapping works with just two groups", {
-  expect_no_error(sig_boot(sig_activity = smoker_sigs_chen, n_replicates = 10, K = 3, group = "Smoker"))
+  expect_no_error(sigboot(sig_activity = smoker_sigs_chen, n_replicates = 10, K = 3, group = "Smoker"))
 })
 
 

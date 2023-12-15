@@ -72,24 +72,23 @@ library(dplyr)
 library(ggplot2)
 
 head(ESCC_sig_activity)
+#> # A tibble: 6 x 46
+#>   Country Incidence_Level Sample    SBS1  SBS2  SBS3  SBS4  SBS5  SBS8 SBS10a
+#>   <ord>   <chr>           <chr>    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl>
+#> 1 Kenya   High            PD37727a 0.148 0         0     0     0     0      0
+#> 2 Kenya   High            PD37728a 0.156 0.207     0     0     0     0      0
+#> 3 Kenya   High            PD37729a 0     0.196     0     0     0     0      0
+#> 4 Kenya   High            PD37730a 0.165 0.234     0     0     0     0      0
+#> 5 Kenya   High            PD37731a 0     0.317     0     0     0     0      0
+#> 6 Kenya   High            PD37733a 0.134 0.212     0     0     0     0      0
+#> # i 36 more variables: SBS10b <dbl>, SBS12 <dbl>, SBS13 <dbl>, SBS14 <dbl>,
+#> #   SBS15 <dbl>, SBS16 <dbl>, SBS17a <dbl>, SBS17b <dbl>, SBS18 <dbl>,
+#> #   SBS20 <dbl>, SBS22 <dbl>, SBS23 <dbl>, SBS25 <dbl>, SBS28 <dbl>,
+#> #   SBS30 <dbl>, SBS33 <dbl>, SBS34 <dbl>, SBS39 <dbl>, SBS40 <dbl>,
+#> #   SBS44 <dbl>, SBS288P <dbl>, DBS2 <dbl>, DBS4 <dbl>, DBS6 <dbl>, DBS9 <dbl>,
+#> #   DBS78D <dbl>, ID1 <dbl>, ID2 <dbl>, ID3 <dbl>, ID4 <dbl>, ID6 <dbl>,
+#> #   ID8 <dbl>, ID9 <dbl>, ID11 <dbl>, ID14 <dbl>, ID17 <dbl>
 ```
-
-    ## # A tibble: 6 × 46
-    ##   Country Incidence_Level Sample    SBS1  SBS2  SBS3  SBS4  SBS5  SBS8 SBS10a
-    ##   <ord>   <chr>           <chr>    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl>
-    ## 1 Kenya   High            PD37727a 0.148 0         0     0     0     0      0
-    ## 2 Kenya   High            PD37728a 0.156 0.207     0     0     0     0      0
-    ## 3 Kenya   High            PD37729a 0     0.196     0     0     0     0      0
-    ## 4 Kenya   High            PD37730a 0.165 0.234     0     0     0     0      0
-    ## 5 Kenya   High            PD37731a 0     0.317     0     0     0     0      0
-    ## 6 Kenya   High            PD37733a 0.134 0.212     0     0     0     0      0
-    ## # ℹ 36 more variables: SBS10b <dbl>, SBS12 <dbl>, SBS13 <dbl>, SBS14 <dbl>,
-    ## #   SBS15 <dbl>, SBS16 <dbl>, SBS17a <dbl>, SBS17b <dbl>, SBS18 <dbl>,
-    ## #   SBS20 <dbl>, SBS22 <dbl>, SBS23 <dbl>, SBS25 <dbl>, SBS28 <dbl>,
-    ## #   SBS30 <dbl>, SBS33 <dbl>, SBS34 <dbl>, SBS39 <dbl>, SBS40 <dbl>,
-    ## #   SBS44 <dbl>, SBS288P <dbl>, DBS2 <dbl>, DBS4 <dbl>, DBS6 <dbl>, DBS9 <dbl>,
-    ## #   DBS78D <dbl>, ID1 <dbl>, ID2 <dbl>, ID3 <dbl>, ID4 <dbl>, ID6 <dbl>,
-    ## #   ID8 <dbl>, ID9 <dbl>, ID11 <dbl>, ID14 <dbl>, ID17 <dbl>
 
 Each row of this data set reports the relative activity of each
 mutational signature for one sample. Because we are analyzing relative
@@ -145,6 +144,7 @@ knitr::kable(sva_incidence)
 | UK       | Low             |                   0.2143285 |                    0.6335159 |
 
 ``` r
+
 ggplot(sva_incidence,
        aes(x = mean_within_sample_diversity, 
            y = across_sample_heterogeneity, 
@@ -154,7 +154,7 @@ ggplot(sva_incidence,
   theme_bw()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](man/figures/README-unnamed-chunk-5-1.png)<!-- -->
 
 We see that high-ESCC-incidence countries have more within-sample
 signature diversity and less across-sample heterogeneity than
@@ -182,7 +182,7 @@ plot_dots(sig_activity = ESCC_sig_activity,
           pivot = TRUE)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](man/figures/README-unnamed-chunk-6-1.png)<!-- -->
 
 We use bootstrapping (`sigboot`) to statistically compare the signature
 diversity or heterogeneity of cancer samples. For example, the below
@@ -211,19 +211,18 @@ Brazil.
 low_inc_boot$bootstrap_distribution_plot$`Japan--Brazil`
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](man/figures/README-unnamed-chunk-8-1.png)<!-- -->
 
 This lack of significance is quantified by the two-sided P-value
 comparing each pair of countries:
 
 ``` r
 low_inc_boot$P_values %>%  data.frame() %>% select(-pooled_diversity)
+#>   group_1 group_2 across_sample_heterogeneity mean_within_sample_diversity
+#> 1   Japan  Brazil                        0.77                         0.78
+#> 2   Japan      UK                        0.91                         0.66
+#> 3  Brazil      UK                        0.71                         0.81
 ```
-
-    ##   group_1 group_2 across_sample_heterogeneity mean_within_sample_diversity
-    ## 1   Japan  Brazil                        0.77                         0.78
-    ## 2   Japan      UK                        0.91                         0.66
-    ## 3  Brazil      UK                        0.71                         0.81
 
 However, suppose we compare a high-incidence country like Kenya to a
 low-incidence country like Japan:
@@ -239,7 +238,7 @@ comparison_boot = sigboot(sig_activity = ESCC_sig_activity %>%
 comparison_boot$bootstrap_distribution_plot
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](man/figures/README-unnamed-chunk-10-1.png)<!-- -->
 
 We see that, for the SVA statistics `across_sample_heterogeneity` and
 `mean_within_sample_diversity`, the red dots fall far outside of the
@@ -249,7 +248,6 @@ reflected by low two-sided P-values:
 
 ``` r
 comparison_boot$P_values %>%  data.frame() %>% select(-pooled_diversity)
+#>   group_1 group_2 across_sample_heterogeneity mean_within_sample_diversity
+#> 1   Kenya   Japan                        0.08                        <0.01
 ```
-
-    ##   group_1 group_2 across_sample_heterogeneity mean_within_sample_diversity
-    ## 1   Kenya   Japan                        0.08                        <0.01

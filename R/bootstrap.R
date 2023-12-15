@@ -19,13 +19,14 @@
 #' \item \code{bootstrap_distribution_plot}: The distribution of bootstrap replicate differences in each variability value. The observed differences are shown in red. The further the red points are from 0, the more significant the statistical difference between groups.
 #' \item \code{observed_stats}: The observed diversity statistics for the groups.
 #' \item \code{bootstrap_stats}: The bootstrap replicate diversity statistics for the groups.
-#' \item \code{bootstrap_replicates}: The bootstrap replicate matrices, reported only if  \code{save_replicates = TRUE}.
+#' \item \code{bootstrap_replicates}: The bootstrap replicate matrices, reported only if  \code{save_replicates = TRUE}.}
 #'
+#' @import utils
 #' @export
 #'
 #' @examples
 #' # Estimate the uncertainty in the across-sample and mean within-sample variability of
-#' mutational signatures in ESCC samples grouped by country
+#' # mutational signatures in ESCC samples grouped by country
 #' # We provide a cosine similarity matrix in order to account for cosine similarity among signatures
 #' smoker_boot = sigboot(sig_activity = smoker_sigs_chen, K = 3, n_replicates = 500,
 #'                     group = "Smoker", S = smoker_sigs_chen_cossim,
@@ -42,7 +43,6 @@
 #' smoker_boot$bootstrap_distribution_plot
 #'
 #'
-#' @import FAVA
 sigboot <- function(sig_activity,
                     n_replicates,
                     K = ncol(sig_activity) - length(group),
@@ -51,6 +51,10 @@ sigboot <- function(sig_activity,
                     seed = NULL,
                     save_replicates = FALSE,
                     alternative = "two.sided"){
+
+  # Satisfy R cmd check
+  . <- NULL
+
 
   # Set random seed (optional)
   if(!is.null(seed)){
@@ -88,7 +92,7 @@ sigboot <- function(sig_activity,
     return(out)
   }else{
     # Make a list of all unique pairs of groups
-    group_pairs = t(combn(groups, 2))
+    group_pairs = t(utils::combn(groups, 2))
 
     # Do the bootstrap comparison procedure for each group:
     bootstrap_list = list()
@@ -107,7 +111,7 @@ sigboot <- function(sig_activity,
     # Combine all elements from each category
 
     # 1 - P-values
-    p_values = cbind(data.frame(t(combn(groups, 2))) %>% `colnames<-`(c("group_1", "group_2")),
+    p_values = cbind(data.frame(t(utils::combn(groups, 2))) %>% `colnames<-`(c("group_1", "group_2")),
                      lapply(bootstrap_list, function(list) list$P_values) %>%
                        do.call(rbind, .))
 
@@ -120,14 +124,14 @@ sigboot <- function(sig_activity,
       do.call(rbind, .) %>% dplyr::distinct() %>%
       dplyr::arrange(group)
 
-    if(multiple_groups){ observed_stats = left_join(group_table, observed_stats) }
+    if(multiple_groups){ observed_stats = dplyr::left_join(group_table, observed_stats) }
 
 
     # 4 - bootstrap_stats
     bootstrap_stats = lapply(bootstrap_list, function(list) list$bootstrap_stats) %>%
       do.call(rbind, .)
 
-    if(multiple_groups){ bootstrap_stats = left_join(group_table, bootstrap_stats) }
+    if(multiple_groups){ bootstrap_stats = dplyr::left_join(group_table, bootstrap_stats) }
 
     # 5 - bootstrap_replicates
 
@@ -152,6 +156,7 @@ pairwise_comparison <- function(sig_activity,
                                 S = NULL, normalized = FALSE,
                                 save_replicates = FALSE,
                                 alternative){
+  Statistic <- Difference <- . <- NULL
 
   # Confirm there are only two groups provided
   groups = unique(sig_activity[[group]]) %>% as.character
@@ -185,9 +190,10 @@ pairwise_comparison <- function(sig_activity,
                                       c("across_sample_heterogeneity" =
                                           fst(relab_matrix = matrix, K = K, S = S, normalized = normalized),
                                         "mean_within_sample_diversity" =
-                                          het_mean(relab_matrix = matrix, K = K, S = S),
-                                        "pooled_diversity" =
-                                          het_pooled(relab_matrix = matrix, K = K, S = S))
+                                          het_mean(relab_matrix = matrix, K = K, S = S)#,
+                                        # "pooled_diversity" =
+                                        #   het_pooled(relab_matrix = matrix, K = K, S = S)
+                                        )
                                     }) %>%
                                do.call(rbind, .) %>%
                                data.frame %>%
@@ -203,15 +209,17 @@ pairwise_comparison <- function(sig_activity,
   observed_stats_A = c("across_sample_heterogeneity" =
                          fst(relab_matrix = A, K = K, S = S, normalized = normalized),
                        "mean_within_sample_diversity" =
-                         het_mean(relab_matrix = A, K = K, S = S),
-                       "pooled_diversity" =
-                         het_pooled(relab_matrix = A, K = K, S = S))
+                         het_mean(relab_matrix = A, K = K, S = S)#,
+                       # "pooled_diversity" =
+                       #   het_pooled(relab_matrix = A, K = K, S = S)
+                       )
   observed_stats_B = c("across_sample_heterogeneity" =
                          fst(relab_matrix = B, K = K, S = S, normalized = normalized),
                        "mean_within_sample_diversity" =
-                         het_mean(relab_matrix = B, K = K, S = S),
-                       "pooled_diversity" =
-                         het_pooled(relab_matrix = B, K = K, S = S))
+                         het_mean(relab_matrix = B, K = K, S = S)#,
+                       # "pooled_diversity" =
+                       #   het_pooled(relab_matrix = B, K = K, S = S)
+                       )
 
   # Compute the difference between the two scrambled bootstrap populations
   bootstrap_difference = bootstrap_stats_A - bootstrap_stats_B
@@ -239,7 +247,7 @@ pairwise_comparison <- function(sig_activity,
 
   # PLOT
   boot_diff_long <- bootstrap_difference %>%
-    tidyr::pivot_longer(cols = 1:3, names_to = "Statistic", values_to = "Difference")
+    tidyr::pivot_longer(cols = dplyr::everything(), names_to = "Statistic", values_to = "Difference")
 
   obs_diff_long <- data.frame(Statistic = names(observed_difference),
                               Difference = observed_difference)

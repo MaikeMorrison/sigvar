@@ -21,16 +21,16 @@
 #'  sigvar(sig_activity = smoker_sigs_chen, K = 3, group = "Smoker", S = smoker_sigs_chen_cossim)
 #'
 sigvar <- function(sig_activity,
-                    K = NULL,
+                   K = NULL,
                    group = NULL,
-                    S = NULL,
-                    w = NULL,
-                    time = NULL,
-                    normalized = FALSE){
+                   S = NULL,
+                   w = NULL,
+                   time = NULL,
+                   normalized = FALSE){
   var_table = dplyr::full_join(fst(relab_matrix = sig_activity, K = K, S = S, w = w,
-                 time = time, group = group, normalized = normalized),
-                 het_mean(relab_matrix = sig_activity, K = K, S = S, w = w,
-                 time = time, group = group))
+                                   time = time, group = group, normalized = normalized),
+                               het_mean(relab_matrix = sig_activity, K = K, S = S, w = w,
+                                        time = time, group = group))
   cols = ncol(var_table)
   colnames(var_table)[(cols-1):cols] = c("across_sample_heterogeneity", "mean_within_sample_diversity")
   return(var_table)

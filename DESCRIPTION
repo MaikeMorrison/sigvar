@@ -18,11 +18,19 @@ Imports:
     ggplot2,
     rlang,
     tidyr,
-    readr
+    readr,
+    stringr,
+    tibble,
+    ggh4x,
+    glue,
+    ggtext,
+    ggforce,
+    scales
 Suggests: 
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    magick 
 biocViews: Software, WholeGenome, SomaticMutation, StructuralVariation
 Config/testthat/edition: 3
 Depends: 

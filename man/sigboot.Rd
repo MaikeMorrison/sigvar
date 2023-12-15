@@ -42,14 +42,14 @@ A named list containing the following entries:
 \item \code{bootstrap_distribution_plot}: The distribution of bootstrap replicate differences in each variability value. The observed differences are shown in red. The further the red points are from 0, the more significant the statistical difference between groups.
 \item \code{observed_stats}: The observed diversity statistics for the groups.
 \item \code{bootstrap_stats}: The bootstrap replicate diversity statistics for the groups.
-\item \code{bootstrap_replicates}: The bootstrap replicate matrices, reported only if  \code{save_replicates = TRUE}.
+\item \code{bootstrap_replicates}: The bootstrap replicate matrices, reported only if  \code{save_replicates = TRUE}.}
 }
 \description{
 \code{sigboot} uses bootstrapping to evaluate differences in within-sample diversity and across-sample heterogeneity of mutational signature activity  between pairs of groups of tumor samples. \code{sigboot} takes the same options as \code{sigvar}, so, as with \code{sigvar}, you can separately analyze multiple populations or groups of samples (specify \code{group}), and account for cosine similarity among signatures (specify \code{S}). \code{sigboot} follows the bootstrapping procedure defined by Efron and Tibshirani (1993). Details on the bootstrapping procedure are available in the Methods section of the accompanying paper.
 }
 \examples{
 # Estimate the uncertainty in the across-sample and mean within-sample variability of
-mutational signatures in ESCC samples grouped by country
+# mutational signatures in ESCC samples grouped by country
 # We provide a cosine similarity matrix in order to account for cosine similarity among signatures
 smoker_boot = sigboot(sig_activity = smoker_sigs_chen, K = 3, n_replicates = 500,
                     group = "Smoker", S = smoker_sigs_chen_cossim,

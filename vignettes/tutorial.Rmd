@@ -1,6 +1,6 @@
 ---
 title: "Introduction to Signature Variability Analysis with sigvar"
-author: "Maike Morrison & Nicolas Alcala"
+author: "Maike Morrison"
 # output: rmarkdown::html_vignette
 output:
   BiocStyle::html_document:
@@ -49,19 +49,21 @@ install.packages("devtools") # run only if devtools not already installed
 devtools::install_github("MaikeMorrison/sigvar", dependencies = TRUE)
 ```
 
-The package requires packages `dplyr`, `ggplot2`, `rlang`, `tidyr`, and `readr`. They will all be installed automatically by the command above. Installation time ranges from 1 to 5 minutes depending on whether dependencies also need to be installed.
+<!-- The package requires packages `dplyr`, `ggplot2`, `rlang`, `tidyr`, and `readr`. They will all be installed automatically by the command above. Installation time ranges from 1 to 5 minutes depending on whether dependencies also need to be installed. -->
 
 
 ## Overview
 
-In this tutorial, we will explain the data required to use the *sigvar* R package ([Data specifications]). We will then analyze example data from [Moody et al. (2021)](https://www.nature.com/articles/s41588-021-00928-6) ([Example analysis]). With this data set and the *sigvar* R package, we conduct signature variability analysis, exploring the within-tumor diversity and across-tumor heterogeneity of mutational signature activities for esophageal squamous cell carcinoma (ESCC) samples from eight countries which vary dramatically in their ESCC incidences. 
+We begin the tutorial by explaining what types of data are required to use the *sigvar* R package ([Data specifications]). We then conduct an example of signature variability analysis ([Example analysis]), using  data from [Moody et al. (2021)](https://www.nature.com/articles/s41588-021-00928-6) to explore the within-tumor diversity and across-tumor heterogeneity of mutational signature activities for esophageal squamous cell carcinoma (ESCC) samples from eight countries which vary dramatically in their ESCC incidences. We begin our example analysis by introducing the data ([Example data]) and demonstrating the data visualization functions of *sigvar* ([Visualize mutational signature activities]). We then perform [Signature variability analysis], visualize the results, and use [Bootstrapping] to determine the statistical significance of differences in SVA results between countries. 
 
 <!-- microbiome composition of three subjects over time, use FAVA to quantify the temporal variability across these microbiome samples, and explore these dynamics at a finer resolution using sliding windows over time. -->
 
 
 # Data specifications
 
-To use the *sigvar* package, your data must be in the form of a data frame, matrix, or tibble with rows corresponding to samples and columns corresponding to either metadata (on the left-hand side) or relative activities of mutational signatures (on the right hand side). The relative activities of all signatures must sum to 1 for each sample. If your matrix contains metadata, you must specify `K`, the number of signatures. 
+To use the *sigvar* package, your data must be in the form of a data frame, matrix, or tibble with rows corresponding to samples and columns corresponding to either metadata (on the left-hand side) or relative activities of mutational signatures (on the right hand side). You can read the data into R using functions such as `read.csv`, `data.table::fread`, or `readxl::read_xlsx`, depending on the file type.  
+
+Each row of your matrix must correspond to one sample. If your matrix contains metadata, you must specify `K`, the number of signatures, and the signatures must all be on the right-hand side of the matrix. The relative activities of all `K` signatures must sum to 1 for each sample. 
 
 ```{r, out.width="500%", echo = FALSE}
 knitr::include_graphics("../man/figures/schematic_data_structure.png")
@@ -69,9 +71,49 @@ knitr::include_graphics("../man/figures/schematic_data_structure.png")
 
 Your matrix may contain samples from multiple groups you would like to analyze separately. In this case, you must provide the name of the column specifying the group each sample belongs to as the `group` parameter of the `sigvar` or `sigboot` functions. For example, to separately analyze the smokers and non-smokers in the matrix pictured above, we would specify `group = "Smoking"`.
 
-## Optional: cosine similarity matrix
+## Optional: signature similarity matrix
 
-If you would like to perform SVA while accounting for the similarity among mutational signatures, provide a similarity matrix, `S`. Entry `S[i,j]` corresponds to the similarity of the mutational spectra of signatures `i` and `j`. `S[i,j]=1` when `i==j`. In general `S[i,j]` takes values between 0 and 1, inclusive. In our analyses, we use cosine similarity matrices, where we define each entry as the cosine similarity between the mutational spectra of two signatures.
+If you would like to perform SVA while accounting for the similarity among mutational signatures, provide a similarity matrix, `S`, which must also be a  data frame, matrix, or tibble. Entry `S[i,j]` corresponds to the similarity of the mutational spectra of signatures `i` and `j`. All diagonal elements must equal 1 (i.e., `S[i,j]=1` when `i==j`), since each signature is identical to itself. All off-diagonal elements must be between 0 and 1, inclusive. In our analyses, we use cosine similarity matrices, where we define entry `S[i,j]` as the cosine similarity between the mutational spectra of signatures `i` and `j`. 
+
+For example, below are the definitions of the 79 COSMIC (v3.1) SBS mutational signatures, which are included in the `sigvar` package under the file name `COSMIC3.3.1_SBS`:
+
+```{r, echo = FALSE}
+library(dplyr)
+knitr::kable(sigvar::COSMIC3.3.1_SBS %>% mutate(across(SBS1:SBS95, function(col) round(col, 3))))  %>%
+    kableExtra::scroll_box(width = "600px", height = "300px")
+```
+
+We recommend using the `cosine` function in the R package `lsa` to compute the pairwise cosine similarity of all mutational signature definitions. Below we provide example code to both generate a similarity matrix from a matrix of mutational signature definitions and verify that its entries are between 0 and 1, and that its diagonal elements equal 1. 
+
+```{r}
+# Exclude the first column, "Type", which defines each  mutational type
+cosmic_sbs_sim = lsa::cosine(as.matrix(sigvar::COSMIC3.3.1_SBS[,-1]))
+
+# View the first 10 rows and 5 columns of the similarity matrix
+cosmic_sbs_sim[1:10, 1:5]
+
+# Confirm that the diagonal elements of the matrix are all equal to 1
+all(diag(cosmic_sbs_sim) == 1)
+
+# Confirm that all elements are non-negative
+all(cosmic_sbs_sim >= 0)
+
+# Confirm that no elements exceed 1
+all(cosmic_sbs_sim <= 1)
+```
+
+When including a cosine similarity matrix in `sigvar` or `sigboot`, it is important that the ordering of signatures in the similarity matrix matches the ordering in your signature activity matrix. You should reorder the rows and columns of your similarity matrix to match your activity matrix:
+
+```{r}
+# Suppose this is the list of signatures included in your relative activity matrix:
+sigs = c("SBS95", "SBS10a", "SBS5", "SBS1", "SBS17b")
+
+# Re-order the rows and columns of the similarity matrix
+sim_reordered = cosmic_sbs_sim[sigs, sigs]
+
+sim_reordered
+```
+
 
 
 # Example analysis
@@ -101,6 +143,7 @@ The example data set, `ESCC_sig_activity`, has 552 rows, each corresponding to o
 The rightmost 43 entries of each row sum to 1, since these entries correspond to the relative activities of all mutational signatures.
 
 You can explore the structure of this data using the following functions:
+
 ```{r, eval=FALSE}
 # open the data set in a new window
 View(ESCC_sig_activity)
@@ -110,6 +153,7 @@ str(ESCC_sig_activity)
 ```
 
 Here are the first 40 rows and the first 20 columns of the relative abundance matrix, `ESCC_sig_activity`:
+
 ```{r echo=FALSE}
 knitr::kable(ESCC_sig_activity[1:40,1:20]) %>%
     kableExtra::scroll_box(width = "600px", height = "300px")
@@ -123,13 +167,16 @@ knitr::kable(ESCC_sig_similarity[1:20, 1:20])  %>%
 ```
 
 Here is a heat map plot of the similarity matrix:
+
 ```{r, fig.height = 7, echo = FALSE}
 ggplot(ESCC_sig_similarity %>%
          data.frame() %>%
          mutate(name2 = rownames(ESCC_sig_similarity)) %>%
          pivot_longer(cols = 1:43,
                       values_to = "Similarity") %>% 
-         mutate(across(c(name, name2), function(col) factor(col, ordered = TRUE, levels = colnames(ESCC_sig_similarity))))) +
+         mutate(across(c(name, name2), 
+                       function(col) factor(col, ordered = TRUE, 
+                                            levels = colnames(ESCC_sig_similarity))))) +
   geom_raster(aes(x = name,
                   y = name2,
                   fill = Similarity)) +
@@ -184,12 +231,15 @@ plot_dots(sig_activity = ESCC_sig_activity,
 ```
 
 
-### Signature variability analysis
+## Signature variability analysis
 
 Signature variability analysis can be conducted in a single line of code:
 
 ```{r}
-sva = sigvar(sig_activity = ESCC_sig_activity, K = 43, S = ESCC_sig_similarity, group = "Country")
+sva = sigvar(sig_activity = ESCC_sig_activity,
+             K = 43, 
+             S = ESCC_sig_similarity, 
+             group = "Country")
 
 knitr::kable(sva)
 ```
@@ -214,56 +264,51 @@ ggplot(sva_incidence,
   geom_point(size = 4) +
   ggrepel::geom_text_repel(aes(label = Country)) +
   theme_bw()
+
+ggplot(sva_incidence %>% 
+         pivot_longer(cols = c("across_sample_heterogeneity", 
+                               "mean_within_sample_diversity"), 
+                      names_to = "Statistic", 
+                      values_to = "SVA"),
+       aes(x = Incidence_Level, y = SVA)) + 
+  geom_boxplot(aes(color = Incidence_Level)) +
+  geom_point(aes(color = Incidence_Level), size = 4, alpha = 0.6) +
+  facet_wrap(~ Statistic, scales = "free_y") + 
+  ggpubr::stat_compare_means(method = "t.test") +
+  theme_bw() 
+
 ```
 
 We see that high-ESCC-incidence countries have more within-sample signature diversity and less across-sample heterogeneity than low-incidence countries.
 
-<!-- ```{r} -->
-<!-- sva_incidence %>%  -->
-<!--   tidyr::pivot_longer(cols = c(across_sample_heterogeneity, mean_within_sample_diversity), -->
-<!--                       names_to = "Variability_statistic") %>% -->
-<!-- ggplot(aes(x = Incidence_Level, y = value, fill = Incidence_Level)) +  -->
-<!--   geom_violin(color = NA, alpha = 0.75) + -->
-<!--   ggbeeswarm::geom_beeswarm() + -->
-<!--   ggpubr::stat_compare_means(method = "t.test") +  -->
-<!--   facet_wrap(~ Variability_statistic, scales = "free") + -->
-<!--   theme_bw() -->
-<!-- ``` -->
-
 
 ## Bootstrapping
 
-We use bootstrapping (`sigboot`) to statistically compare the signature diversity or heterogeneity of cancer samples. For example, the below code compares SVA results among the low-incidence countries.
+When comparing one group of populations to another group of populations, like when comparing high- and low-incidence countries, we can use conventional statistical tests for comparing two distributions, such as Wilcoxon rank-sum tests and T-tests. However, when comparing the SVA results of just one population to another population (say we wanted to compare the SVA results of just Japan to those of just Kenya), we rely on a statistical method known as bootstrapping (implemented as `sigboot` in the *sigvar* R package). 
 
-```{r}
-low_inc_boot = sigboot(sig_activity = ESCC_sig_activity %>% 
-                         filter(Incidence_Level == "Low"),
-                       K = 43, 
-                       group = "Country",
-                       n_replicates = 100, 
-                       seed = 1)
-```
+We will demonstrate sigboot with an example comparing Japan ($n=37$ samples) to Kenya ($m=68$ samples). Bootstrapping proceeds in the following steps:
 
-In short, the bootstrapping algorithm involves taking a pair of populations (for example, Japan and Brazil), scrambling their samples up many times (with some samples randomly duplicated and others omitted), conducting SVA on the scrambled populations, and then comparing the difference between SVA results for each scrambled population (black dots) to the true difference (red dots). We can see in the below plot that the red dots fall in the middle of the black dots, suggesting that there is not a significant difference in SVA results between Japan and Brazil. 
+1. Merge the two relative abundance matrices to generate a single matrix with $n+m$ samples.
 
-```{r}
-low_inc_boot$bootstrap_distribution_plot$`Japan--Brazil`
-```
+2 Draw $n$ samples with replacement from this merged matrix. This generates a bootstrap replicate of Japan. Perform SVA on this replicate matrix.
 
-This lack of significance is quantified by the two-sided P-value comparing each pair of countries: 
+3. Draw $m$ samples with replacement from the merged matrix to generate a bootstrap replicate of Kenya. Perform SVA on this replicate matrix.
 
-```{r}
-low_inc_boot$P_values %>%  data.frame() %>% select(-pooled_diversity)
-```
+4. Compute the difference between the values of each SVA statistic from steps 3 and 4.
 
-However, suppose we compare a high-incidence country like Kenya to a low-incidence country like Japan:
+5. Repeat steps 2-4 many times to generate many bootstrapped differences in SVA values between Japan and Kenya under the null hypothesis that there is no true difference in the distribution generating their samples.
+
+6. Compare the true difference in SVA values between Japan and Kenya to the distribution of bootstrapped differences. The fraction of bootstrap replicate differences whose absolute values are greater than the absolute value of the true value is the two-sided P-value for our statistical test. One-sided tests could be performed by computing the fraction of differences greater or less than the true value.
+
+This procedure is implemented in the function `sigboot`, which can conduct many pairwise comparisons. In the below example, we generate 100 bootstrap replicates  (`n_replicates = 100`) of the difference in SVA values between each pair of subjects (`group = "Country"`) in our relative abundance matrix (`relab_matrix = ESCC_sig_activity`). We account for the cosine similarity between signatures in each computation (`S = ESCC_sig_similarity`). Because bootstrapping is a random process, running the code multiple times would give slightly different results. Setting a random seed (`seed = 1`) makes this result repeatable. If you wish to perform a one-sided statistical test, you can specify `alternative = "lesser"` or `alternative = "greater"`; the default value is `alternative = "two.sided"`.
 
 ```{r}
 comparison_boot = sigboot(sig_activity = ESCC_sig_activity %>% 
                          filter(Country %in% c("Japan", "Kenya")),
                        K = 43, 
                        group = "Country",
-                       n_replicates = 100, 
+                       S = ESCC_sig_similarity,
+                       n_replicates = 500, 
                        seed = 1)
 
 comparison_boot$bootstrap_distribution_plot
@@ -272,5 +317,5 @@ comparison_boot$bootstrap_distribution_plot
 We see that, for the SVA statistics `across_sample_heterogeneity` and `mean_within_sample_diversity`, the red dots fall far outside of the range of most of the black dots, suggesting that there is a significant difference in SVA results between Kenya and Japan. This difference is reflected by low two-sided P-values:
 
 ```{r}
-comparison_boot$P_values %>%  data.frame() %>% select(-pooled_diversity)
+comparison_boot$P_values
 ```

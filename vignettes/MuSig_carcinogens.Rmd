@@ -23,7 +23,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(sigFAVA)
+library(sigvar)
 library(FAVA)
 library(ggplot2)
 library(stringr)
