@@ -47,25 +47,24 @@ install.packages("devtools") # run only if devtools not already installed
 devtools::install_github("MaikeMorrison/sigvar", dependencies = TRUE, build_vignettes = TRUE)
 ```
 
-The package requires packages `dplyr`, `ggplot2`, `rlang`, `tidyr`, and
-`readr`. They will all be installed automatically by the command above.
+<!-- The package requires packages `dplyr`, `ggplot2`, `rlang`, `tidyr`, and `readr`. They will all be installed automatically by the command above.  -->
+
 Installation time ranges from 1 to 5 minutes depending on whether
 dependencies also need to be installed. Run time is expected to be a few
 minutes on a typical desktop computer.
 
 <!-- See vignettes for detailed examples of using sigvar on real datasets. -->
 
-The package has been tested on R version 4.1.2 on a redhat linux
-platform and a windows 10 pro platform. The package is available under
+The package has been tested on R version 4.1.2 on a Redhat Linux
+platform and a Windows 10 Pro platform. The package is available under
 the MIT license.
 
 ## Tutorial
 
-A tutorial on the usage of *sigvar* with a focus on the analysis of
-compositional data representing microbiome samples is available in the
-`tutorial` vignette, which is available at [this
+A tutorial on the usage of *sigvar* is available in the `tutorial`
+vignette, which is available at [this
 link](https://maikemorrison.com/files/sigvar_tutorial.html) or via the
-following code after package installation:
+following R code after package installation:
 
 ``` r
 vignette("tutorial", package = "sigvar")
