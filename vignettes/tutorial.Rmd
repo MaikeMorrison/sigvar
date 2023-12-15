@@ -26,13 +26,13 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The R package *sigvar* implements **sig**nature **var**iability analysis, a framework for the analysis of mutational signature activities within and across cancer samples. This R package accompanies the paper [``Variability of mutational signatures is a footprint of carcinogens'' by Morrison et al.](https://doi.org/10.1101/2023.11.23.23298821); please refer to the paper for more details on the methods presented in this package.  
+The R package *sigvar* implements **sig**nature **var**iability analysis, a framework for the analysis of mutational signature activities within and across cancer samples. This R package accompanies the paper ["Variability of mutational signatures is a footprint of carcinogens'' by Morrison et al.](https://doi.org/10.1101/2023.11.23.23298821); please refer to the paper for more details on the methods presented in this package.  
 
 The *sigvar* package contains two core functions to perform signature variability analysis:
 
 * `sigvar`: Compute the within-sample diversity and across-sample heterogeneity of mutational signature activity in one or multiple populations of samples
 
-* `sigboot`: Use bootstrapping to statistically compare the within-sample diversity and across-sample heterogeneity of the mutational signature activity between two or more groups of tumor samples
+* `sigboot`: Use bootstrapping to statistically compare the within-sample diversity and across-sample heterogeneity of the mutational signature activity between two or more groups of samples
 
 *sigvar* also includes accessory functions for the visualization of mutational signature data, such as:
 
@@ -48,7 +48,13 @@ You can install the development version of sigvar from [GitHub](https://github.c
 
 ```{r, eval=FALSE}
 install.packages("devtools") # run only if devtools not already installed
-devtools::install_github("MaikeMorrison/sigvar", dependencies = TRUE)
+devtools::install_github("MaikeMorrison/sigvar", dependencies = TRUE, build_vignettes = TRUE)
+```
+
+After installation, you can access this vignette at an time by running:
+
+```{r}
+vignette("tutorial", package = "sigvar")
 ```
 
 <!-- The package requires packages `dplyr`, `ggplot2`, `rlang`, `tidyr`, and `readr`. They will all be installed automatically by the command above. Installation time ranges from 1 to 5 minutes depending on whether dependencies also need to be installed. -->
@@ -56,7 +62,7 @@ devtools::install_github("MaikeMorrison/sigvar", dependencies = TRUE)
 
 ## Overview
 
-We begin the tutorial by explaining what types of data are required to use the *sigvar* R package ([Data specifications]). We then conduct an example of signature variability analysis ([Example analysis]), using  data from [Moody et al. (2021)](https://www.nature.com/articles/s41588-021-00928-6) to explore the within-tumor diversity and across-tumor heterogeneity of mutational signature activities for esophageal squamous cell carcinoma (ESCC) samples from eight countries which vary dramatically in their ESCC incidences. We begin our example analysis by introducing the data ([Example data]) and demonstrating the data visualization functions of *sigvar* ([Visualize mutational signature activities]). We then perform [Signature variability analysis], visualize the results, and use [Bootstrapping] to determine the statistical significance of differences in SVA results between countries. 
+We begin the tutorial by explaining what types of data are required to use the *sigvar* R package ([Data specifications]). We then conduct an example of signature variability analysis ([Example analysis]), using  data from [Moody et al. (2021)](https://www.nature.com/articles/s41588-021-00928-6) to explore the within-sample diversity and across-sample heterogeneity of mutational signature activities for esophageal squamous cell carcinoma (ESCC) samples from eight countries which vary dramatically in their ESCC incidences. We begin our example analysis by introducing the data ([Example data]) and demonstrating the data visualization functions of *sigvar* ([Visualize mutational signature activities]). We then perform [Signature variability analysis], visualize the results, and use [Bootstrapping] to determine the statistical significance of differences in SVA results between countries. 
 
 <!-- microbiome composition of three subjects over time, use FAVA to quantify the temporal variability across these microbiome samples, and explore these dynamics at a finer resolution using sliding windows over time. -->
 
@@ -132,7 +138,7 @@ library(patchwork)
 
 In this example, we apply signature variability analysis (SVA) to data from [Moody et al. (2021)](https://www.nature.com/articles/s41588-021-00928-6). This data set contains 552 esophageal squamous cell carcinoma (ESCC) samples collected across eight countries which vary dramatically in their incidence of ESCC. Moody et al. (2021) reported the activities of 43 SBS, DBS, and ID mutational signatures for each sample. 
 
-The example data set, `ESCC_sig_activity`, has 552 rows, each corresponding to one tumor sample, and 46 columns:
+The example data set, `ESCC_sig_activity`, has 552 rows, each corresponding to one sample, and 46 columns:
 
 * `Country`: the country in which each sample was collected
 
@@ -321,3 +327,8 @@ We see that, for the SVA statistics `across_sample_heterogeneity` and `mean_with
 ```{r}
 comparison_boot$P_values
 ```
+
+
+# Conclusion
+
+This concludes the tutorial on the *sigvar* R package for signature variability analysis. We hope you found it helpful! For guidance on specific functions, access the documentation by typing `?` into the R console (e.g., `?sigboot`). To see all available functions, type `?sigvar::`. For more details on signature variability analysis, see the paper ["Variability of mutational signatures is a footprint of carcinogens'' by Morrison et al.](https://doi.org/10.1101/2023.11.23.23298821).   If you find a problem with the R package, please [open an issue on Github using this link](https://github.com/MaikeMorrison/sigvar/issues). 
