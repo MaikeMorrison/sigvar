@@ -80,6 +80,22 @@ SPfolder = system.file("extdata", "example_SigProfiler_results", package = "sigF
 internal_for_import_test = import_SigProfiler(SPfolder)
 usethis::use_data(internal_for_import_test, internal = TRUE)
 
+# Get Sherlock data
+Sherlock_LCINS_SBS = read_tsv("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/sherlock_232_SBS_Signature_Ratio.txt")
+Sherlock.muts     = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=4,skip=1)
+Sherlock_LCINS_SBS.refs = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=7,skip=2) %>% arrange(Type,Subtype)
+Sherlock_LCINS.metadata = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=1,skip=1)
+
+Sherlock_LCINS_SBS.refs = Sherlock_LCINS_SBS.refs[,colnames(Sherlock_LCINS_SBS)[-1]]
+all(colnames(Sherlock_LCINS_SBS.refs)==colnames(Sherlock_LCINS_SBS)[-(1)])
+
+Sherlock_LCINS_SBS.refs$Type = MutType$Type
+Sherlock_LCINS_SBS.refs$Subtype = MutType$Subtype
+
+usethis::use_data(Sherlock_LCINS_SBS,overwrite = TRUE)
+usethis::use_data(Sherlock_LCINS_SBS.refs,overwrite = TRUE)
+usethis::use_data(Sherlock_LCINS.metadata,overwrite = TRUE)
+
 # code to prepare mice carcinogen exposure dataset
 mice_metadata = readxl::read_xlsx("../data/mice_carcinogens/41588_2020_692_MOESM2_ESM.xlsx",sheet = 2,skip=3)
 mice_metadata = mice_metadata[-1,] %>% rename(Sample=`Sample name in the manuscript`)
@@ -91,26 +107,30 @@ mexposure.tib = bind_cols(Sample=str_replace(stringr::str_replace_all( rownames(
 # merge
 mexposure.tib$Sample[!mexposure.tib$Sample %in% mice_metadata$Sample] # all here
 
-mutsig_carcinogens_mice_SBS = left_join(mexposure.tib,mice_metadata)
+carcinogens_mice_SBS = left_join(mexposure.tib,mice_metadata)
 
 # clean dose
-mutsig_carcinogens_mice_SBS$dose_numeric = as.numeric( str_remove(mutsig_carcinogens_mice_SBS$dose," ppm| mg/m3| MG/KG| PPM| MG/L| mg/L| mg/kg| m.9ful|mg/m3| mg/l| MG/M3") )
+carcinogens_mice_SBS$dose_numeric = as.numeric( str_remove(mutsig_carcinogens_mice_SBS$dose," ppm| mg/m3| MG/KG| PPM| MG/L| mg/L| mg/kg| m.9ful|mg/m3| mg/l| MG/M3") )
 
 # reorder columns
-mutsig_carcinogens_mice_SBS = mutsig_carcinogens_mice_SBS %>% dplyr::relocate(.after = Sample, mSBS1,mSBS5,mSBS12,mSBS17,mSBS18,mSBS19,mSBS40, mSBS42, mSBS_N1, mSBS_N2, mSBS_N3)
+carcinogens_mice_SBS = mutsig_carcinogens_mice_SBS %>% dplyr::relocate(.after = Sample, mSBS1,mSBS5,mSBS12,mSBS17,mSBS18,mSBS19,mSBS40, mSBS42, mSBS_N1, mSBS_N2, mSBS_N3)
 
 # save
-usethis::use_data(mutsig_carcinogens_mice_SBS,overwrite = TRUE)
+usethis::use_data(carcinogens_mice_SBS,overwrite = TRUE)
 
 ## get references for mSBS
-mutsig_carcinogens_mice_SBS.refs = readRDS("../data/mouse-mutatation-signatures/figure1/mSBSs.rds")
+carcinogens_mice_SBS.refs = readRDS("../data/mouse-mutatation-signatures/figure1/mSBSs.rds")
 
 barplot( mutsig_carcinogens_mice_SBS.refs[,1] ) # to check order. Seems to be the same as in fig 1d (C>A, C>G, C>T, T>A, etc)
+#carcinogens_mice_SBS.refs = bind_cols( Type=Sherlock_LCINS_SBS.refs$Type,  Subtype=Sherlock.refs$Subtype, as_tibble(carcinogens_mice_SBS.refs))
 
-mutsig_carcinogens_mice_SBS.refs = bind_cols( Type=Sherlock.refs$Type,  Subtype=Sherlock.refs$Subtype, as_tibble(mutsig_carcinogens_mice_SBS.refs))
+carcinogens_mice_SBS.refs = mutsig_carcinogens_mice_SBS.refs[,sigs_mice.S]
+
+carcinogens_mice_SBS.refs$Type = MutType$Type
+carcinogens_mice_SBS.refs$Subtype = MutType$Subtype
 
 ## save
-usethis::use_data(mutsig_carcinogens_mice_SBS.refs,overwrite = TRUE)
+usethis::use_data(carcinogens_mice_SBS.refs,overwrite = TRUE)
 
 ## read mutational spectra data
 mutprof_carcinogens_mice_SBS = read_tsv("../data/signatures/COSMIC/SPinput_split_mice_carcinogens/output/SBS/Mice_Carcinogens.SBS96.all") %>%
@@ -188,24 +208,75 @@ drivers_fig4.lung = drivers_fig4.lung %>% mutate(mutation_ID=paste(str_replace_a
 drivers_fig4.liver = drivers_fig4.liver %>% mutate(mutation_ID=paste(str_replace_all(X1," ","_"),X2,X3,X4,X5,sep="_"))
 
 # read sig outputs
-mut_profs_all_drivers = read_tsv("../data/signatures/COSMIC/SPinput_split_mice_carcinogens/output/SBS/Mice_Carcinogens.SBS96.all")
+mut_profs_all_drivers = read_tsv("../data/signatures/COSMIC/SPinput_split_mice_carcinogens/output/SBS/Mice_Carcinogens.SBS96.all") %>% 
+  mutate(Type=str_extract(MutationType,"[ATCG]>[ATCG]"),
+         Subtype=paste0(str_sub(MutationType,1,1),str_sub(MutationType,3,3),str_sub(MutationType,7,7)) ) %>% dplyr::arrange(Type,Subtype)
 
-mut_profs_all_drivers.t = t(mut_profs_all_drivers[,-(1:2)])
+
+mut_profs_all_drivers.t = t(mut_profs_all_drivers[,-c(1,ncol(mut_profs_all_drivers)-1,ncol(mut_profs_all_drivers))])
+colnames(mut_profs_all_drivers.t) = mut_profs_all_drivers$MutationType
 mut_profs_all_drivers.t = bind_cols(mutation_ID= rownames(mut_profs_all_drivers.t), as_tibble(mut_profs_all_drivers.t) )
 
 drivers_fig4.lung.spectra  = left_join(drivers_fig4.lung,mut_profs_all_drivers.t)
 drivers_fig4.liver.spectra = left_join(drivers_fig4.liver,mut_profs_all_drivers.t)
 
+mice_lung_drivers_SBS = tibble(Fgfr2 = colSums(drivers_fig4.lung.spectra[drivers_fig4.lung.spectra$X6=="Fgfr2",1:96+10]) ,
+                               Kras = colSums(drivers_fig4.lung.spectra[drivers_fig4.lung.spectra$X6=="Kras",1:96+10])
+                               )
+
+mice_liver_drivers_SBS = tibble(Hras = colSums(drivers_fig4.liver.spectra[drivers_fig4.liver.spectra$X6=="Hras",1:96+10]) ,
+                               Braf = colSums(drivers_fig4.liver.spectra[drivers_fig4.liver.spectra$X6=="Braf",1:96+10])
+)
+
+mice_lung_drivers_SBS$Fgfr2 = mice_lung_drivers_SBS$Fgfr2/Fgfr2.trans.SBS96.context
+mice_lung_drivers_SBS$Kras = mice_lung_drivers_SBS$Fgfr2/Kras.trans.SBS96.context
+mice_liver_drivers_SBS$Hras = mice_liver_drivers_SBS$Hras/Hras.trans.SBS96.context
+mice_liver_drivers_SBS$Braf = mice_liver_drivers_SBS$Braf/Braf.trans.SBS96.context
+
+usethis::use_data(mice_liver_drivers_SBS,overwrite = T)
+usethis::use_data(mice_lung_drivers_SBS,overwrite = T)
+#
+
+sigs_mice.S = colnames(mutsig_carcinogens_mice_SBS[,2:12])
+
+Riva_SBS       = as.matrix(mutsig_carcinogens_mice_SBS[,2:12])
+rownames(Riva_SBS) = mutsig_carcinogens_mice_SBS$Sample
+Riva.refs = as.matrix(mutsig_carcinogens_mice_SBS.refs[,sigs_mice.S])
+colnames(Riva.refs) = sigs_mice.S
+rownames(Riva.refs) = paste0(mutsig_carcinogens_mice_SBS.refs$Type,",",mutsig_carcinogens_mice_SBS.refs$Subtype)
+
+Riva_MutProf = Riva_SBS%*%t(Riva.refs)
+
+drivers = drivers %>% mutate(Tissue = str_extract(sample,"[A-Z]+"), 
+                             Chemical = str_remove_all(str_extract(sample,"_[A-Z_]+"),"^_|_$"), 
+                             Type=str_extract(context,"[ATCG]>[ATCG]"),
+                             Subtype=paste0(str_sub(context,1,1),str_sub(context,3,3),str_sub(context,7,7)) )
+
+drivers.spectrum.lung.mice = drivers[!duplicated(drivers[,2:5]),] %>% filter(Tissue=="LUNG") %>% group_by(gene,Type,Subtype) %>% summarize(n=n())
+drivers.spectrum.lung.mice.l = lapply(unique(drivers.spectrum.lung.mice$gene), function(x)  left_join(MutType,drivers.spectrum.lung.mice %>% filter(gene==x)) )
+for(i in 1:length(drivers.spectrum.lung.mice.l)) drivers.spectrum.lung.mice.l[[i]]$n[is.na(drivers.spectrum.lung.mice.l[[i]]$n)] = 0
+names(drivers.spectrum.lung.mice.l) = unique(drivers.spectrum.lung.mice$gene)
+
+drivers.spectrum.liver.mice = drivers[!duplicated(drivers[,2:5]),] %>% filter(Tissue=="LIVER") %>% group_by(gene,Type,Subtype) %>% summarize(n=n())
+drivers.spectrum.liver.mice.l = lapply(unique(drivers.spectrum.liver.mice$gene), function(x)  left_join(MutType,drivers.spectrum.liver.mice %>% filter(gene==x)) )
+for(i in 1:length(drivers.spectrum.liver.mice.l)) drivers.spectrum.liver.mice.l[[i]]$n[is.na(drivers.spectrum.liver.mice.l[[i]]$n)] = 0
+names(drivers.spectrum.liver.mice.l) = unique(drivers.spectrum.liver.mice$gene)
+
+drivers.spectrum.lung.mice.l$Kras$n/Kras.trans.SBS96.context
+
+mice_lung_drivers_SBS
+mice_liver_drivers_SBS
+
 # ESCC signatures
 load("data/tab15.rda")
 
-mutprof_ESCC_SBS = tab15[,!str_detect(colnames(tab15),"ID|DBS")]
+ESCC_countries_SBS = tab15[,!str_detect(colnames(tab15),"ID|DBS")]
 # renormalize
-mutprof_ESCC_SBS[,-c(1:3)] = sweep(mutprof_ESCC_SBS[,-c(1:3)] , 1, rowSums(mutprof_ESCC_SBS[,-c(1:3)]), "/")
+ESCC_countries_SBS[,-c(1:3)] = sweep(ESCC_countries_SBS[,-c(1:3)] , 1, rowSums(ESCC_countries_SBS[,-c(1:3)]), "/")
 
-all_sigs = colnames(mutprof_ESCC_SBS)[-(1:3)]
+all_sigs = colnames(ESCC_countries_SBS)[-(1:3)]
 
-escc_stats.SBS = sigvar::sigvar(sig_activity = mutprof_ESCC_SBS, K = length(all_sigs), group = "Country"#, S = ESCC_sim
+escc_stats.SBS = sigvar::sigvar(sig_activity = ESCC_countries_SBS, K = length(all_sigs), group = "Country"#, S = ESCC_sim
 ) %>%
   mutate(incidence = ifelse(Country %in% c("UK", "Japan", "Brazil"),
                             "Low incidence", "High incidence"))
@@ -223,7 +294,17 @@ SBS_all = left_join(SBS_ref, SBS_denovo %>%
                          str_sub(MutationType,3,3),
                          str_sub(MutationType,7,7)))
 
-ESCC.refs = left_join(MutType,SBS_all)
+ESCC_countries_SBS.refs = left_join(MutType,SBS_all)
+
+sigs_ESCC.S = colnames(ESCC_countries_SBS)[-(1:3)]
+ESCC_countries_SBS.refs = ESCC_countries_SBS.refs[,sigs_ESCC.S]
+
+ESCC_countries_SBS.refs$Type = MutType$Type
+ESCC_countries_SBS.refs$Subtype = MutType$Subtype
+
+# save data
+usethis::use_data(ESCC_countries_SBS,overwrite = T)
+usethis::use_data(ESCC_countries_SBS.refs,overwrite = T)
 
 # ESCC drivers
 ESCC_drivers = read_xlsx("../data/signatures/Mutographs_signatures/MoodyEtAl2021_suptables.xlsx",sheet=12,skip=2)
@@ -255,18 +336,14 @@ all(ESCC_drivers.SBS.SPformat$Sample==colnames(ESCC_drivers.SBS.spectra)[-(1:3)]
 ESCC_TP53driverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="TP53" &
                                                                                                                          !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
 
-ESCC_TP53driverposdam.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="TP53" &
-                                                                                                                         ESCC_drivers.SBS$Effect%in% c("nonsense","start_lost","stop_lost")&
-                                                                                                                         !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
-
-ESCC_TP53drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="TP53")+3]))
-ESCC_CDKN2Adrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="CDKN2A")+3]))
+#ESCC_TP53drivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="TP53")+3]))
+#ESCC_CDKN2Adrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="CDKN2A")+3]))
 ESCC_CDKN2Adriverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="CDKN2A" &
                                                                                                                          !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
 
-ESCC_PIK3CAdrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="PIK3CA")+3]))
-ESCC_PIK3CAdriverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="PIK3CA" &
-                                                                                                                           !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
+#ESCC_PIK3CAdrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="PIK3CA")+3]))
+#ESCC_PIK3CAdriverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="PIK3CA" &
+#                                                                                                                           !duplicated(ESCC_drivers.SBS.SPformat[,6:10]))+3]))
 
 ESCC_KMT2Ddrivers.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="KMT2D")+3]))
 ESCC_KMT2Ddriverpos.SBS.spectra = bind_cols(ESCC_drivers.SBS.spectra[,c(1:3)],n=rowSums(ESCC_drivers.SBS.spectra[,which(ESCC_drivers.SBS.SPformat$ID=="KMT2D" &
@@ -309,3 +386,34 @@ NFE2L2.trans.SBS96.context  = compute_SBS96_context(NFE2L2.trans)
 
 NOTCH1.trans = unlist(str_split(read_tsv("../data/signatures/COSMIC/Homo_sapiens_NOTCH1_ENST00000651671_1_sequence.fa",comment = ">",col_names = NA)[[1]],""))
 NOTCH1.trans.SBS96.context  = compute_SBS96_context(NOTCH1.trans)
+
+# driver spectra
+ESCC_drivers_SBS = tibble(Type=ESCC_TP53driverpos.SBS.spectra$Type,
+                          Subtype=ESCC_TP53driverpos.SBS.spectra$Subtype,
+  TP53=ESCC_TP53driverpos.SBS.spectra$n/TP53.trans.SBS96.context,
+  CDKN2A=ESCC_CDKN2Adriverpos.SBS.spectra$n/TP53.trans.SBS96.context,
+  EP300=ESCC_EP300driverpos.SBS.spectra$n/TP53.trans.SBS96.context,
+  KMT2D=ESCC_KMT2Ddriverpos.SBS.spectra$n/TP53.trans.SBS96.context,
+  NFE2L2=ESCC_NFE2L2driverpos.SBS.spectra$n/TP53.trans.SBS96.context,
+  NOTCH1=ESCC_NOTCH1driverpos.SBS.spectra$n/TP53.trans.SBS96.context,
+  PIK3CA=ESCC_PIK3CAdriverpos.SBS.spectra$n/TP53.trans.SBS96.context )
+
+usethis::use_data(ESCC_drivers_SBS,overwrite = T)
+
+## LUAD drivers intogen
+EGFR_drivers_intogen_SBS96 = read_tsv("../data/signatures/COSMIC/SPinput_split/output/SBS/COSMIC_EGFR.SBS96.all")
+EGFR_drivers_intogen_SBS96 = tibble( MutationType=EGFR_drivers_intogen_SBS96$MutationType, EGFR=rowSums(EGFR_drivers_intogen_SBS96[,-1]) ) %>% 
+  mutate(Type=str_extract(MutationType,"[ATCG]>[ATCG]"),
+         Subtype=paste0(str_sub(MutationType,1,1),str_sub(MutationType,3,3),str_sub(MutationType,7,7)) ) %>% dplyr::arrange(Type,Subtype)
+TP53_drivers_intogen_SBS96 = read_tsv("../data/signatures/COSMIC/SPinput_TP53_split/output/SBS/COSMIC_EGFR.SBS96.all")
+TP53_drivers_intogen_SBS96 = tibble( MutationType=TP53_drivers_intogen_SBS96$MutationType, TP53=rowSums(TP53_drivers_intogen_SBS96[,-1]) )%>% 
+  mutate(Type=str_extract(MutationType,"[ATCG]>[ATCG]"),
+         Subtype=paste0(str_sub(MutationType,1,1),str_sub(MutationType,3,3),str_sub(MutationType,7,7)) ) %>% dplyr::arrange(Type,Subtype)
+
+LUAD_drivers_SBS = left_join(left_join(MutType,EGFR_drivers_intogen_SBS96),TP53_drivers_intogen_SBS96)
+
+LUAD_drivers_SBS$EGFR = LUAD_drivers_SBS$EGFR/EGFR.trans.SBS96.context
+LUAD_drivers_SBS$TP53 = LUAD_drivers_SBS$TP53/TP53.trans.SBS96.context
+
+LUAD_drivers_SBS = LUAD_drivers_SBS[,-3]
+usethis::use_data(LUAD_drivers_SBS,overwrite = T)
