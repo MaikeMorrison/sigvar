@@ -2,14 +2,12 @@ citHeader("To cite sigvar in publications use:")
 
 bibentry(
   "Article",
-  author = "Maike L. Morrison, Laurane Mang"\'e", Sergey Senkin, Noah A. Rosenberg, Matthieu Foll, Lynnette Fernandez-Cuesta, Nicolas Alcala"",
-	title = "Variability of mutational signatures is a footprint of carcinogens"",
-	elocation-id = "2023.11.23.23298821",
+  author = "Maike L. Morrison, Laurane Mange, Sergey Senkin, Noah A. Rosenberg, Matthieu Foll, Lynnette Fernandez-Cuesta, Nicolas Alcala",
+	title = "Variability of mutational signatures is a footprint of carcinogens",
 	year = "2023",
 	doi = "10.1101/2023.11.23.23298821",
 	publisher = "Cold Spring Harbor Laboratory Press",
 	URL = "https://www.medrxiv.org/content/early/2023/11/24/2023.11.23.23298821",
-	eprint = "https://www.medrxiv.org/content/early/2023/11/24/2023.11.23.23298821.full.pdf",
 	journal = "medRxiv",
 )
 
