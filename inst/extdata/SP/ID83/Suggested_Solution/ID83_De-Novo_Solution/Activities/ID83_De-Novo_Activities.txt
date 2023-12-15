@@ -1,0 +1,11 @@
+Samples	ID83A	ID83B	ID83C	ID83D	ID83E
+Sample1	35	50	36	21	21
+Sample2	30	53	10	61	11
+Sample3	0	75	0	51	1
+Sample4	10	80	0	41	2
+Sample5	55	70	6	35	33
+Sample6	7	50	38	27	44
+Sample7	31	0	3	1	55
+Sample8	45	0	63	2	2
+Sample9	55	0	36	20	36
+Sample10	10	50	30	5	0

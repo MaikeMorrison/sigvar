@@ -1,0 +1,11 @@
+Samples	DBS2	DBS3	DBS5	DBS11
+Sample1	0	8	0	12
+Sample2	0	0	0	20
+Sample3	0	5	4	7
+Sample4	0	0	0	2
+Sample5	0	0	8	3
+Sample6	3	0	10	23
+Sample7	0	6	8	12
+Sample8	12	0	0	30
+Sample9	0	0	3	10
+Sample10	0	10	0	7
