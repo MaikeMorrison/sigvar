@@ -111,20 +111,17 @@ vignette("tutorial", package = "sigvar")
 <!--   theme_bw() -->
 <!-- ``` -->
 <!-- We see that high-ESCC-incidence countries have more within-sample signature diversity and less across-sample heterogeneity than low-incidence countries. -->
-<!-- <!-- ```{r} -->
-
-–\> <!-- <!-- sva_incidence %>%  --> –\>
-<!-- <!--   tidyr::pivot_longer(cols = c(across_sample_heterogeneity, mean_within_sample_diversity), -->
-–\>
-<!-- <!--                       names_to = "Variability_statistic") %>% -->
-–\>
-<!-- <!-- ggplot(aes(x = Incidence_Level, y = value, fill = Incidence_Level)) +  -->
-–\> <!-- <!--   geom_violin(color = NA, alpha = 0.75) + --> –\>
-<!-- <!--   ggbeeswarm::geom_beeswarm() + --> –\>
-<!-- <!--   ggpubr::stat_compare_means(method = "t.test") +  --> –\>
-<!-- <!--   facet_wrap(~ Variability_statistic, scales = "free") + -->
-–\> <!-- <!--   theme_bw() --> –\> <!-- <!-- ``` --> –\>
-
+<!-- ```{r} -->
+<!-- sva_incidence %>%  -->
+<!--   tidyr::pivot_longer(cols = c(across_sample_heterogeneity, mean_within_sample_diversity), -->
+<!--                       names_to = "Variability_statistic") %>% -->
+<!-- ggplot(aes(x = Incidence_Level, y = value, fill = Incidence_Level)) +  -->
+<!--   geom_violin(color = NA, alpha = 0.75) + -->
+<!--   ggbeeswarm::geom_beeswarm() + -->
+<!--   ggpubr::stat_compare_means(method = "t.test") +  -->
+<!--   facet_wrap(~ Variability_statistic, scales = "free") + -->
+<!--   theme_bw() -->
+<!-- ``` -->
 <!-- Note that this difference in diversity is missed when we analyze only country-level mean signature activities: -->
 <!-- ```{r, fig.width=8} -->
 <!-- plot_dots(sig_activity = ESCC_sig_activity,  -->
