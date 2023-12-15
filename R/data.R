@@ -188,7 +188,7 @@
 #'
 #' Data from: Zhang et al. (2021). Genomic and evolutionary classification of lung cancer in never smokers. Nature Genetics, 53(9), 1348–1359. https://doi.org/10.1038/s41588-021-00920-0
 #'
-#' @format ## `zhang_sig_activity `
+#' @format ## `zhang_sig_activity`
 #' A dataframe with 39 rows and 213 columns:
 #' \describe{
 #' \item{Subject}{Unique ID for each subject}
@@ -198,7 +198,7 @@
 #' \item{SBS1, ..., SBS40}{Relative abundance of mutational signatures in each sample. These columns sum to 1 for each row.}
 #' }
 #' @source <https://doi.org/10.1038/s41588-021-00920-0>
-"zhang_sig_activity "
+"zhang_sig_activity"
 
 
 #' Cosine similarity of SBS mutational signatures found in samples of lung cancer in never smokers
