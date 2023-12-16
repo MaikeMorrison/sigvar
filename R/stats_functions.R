@@ -27,12 +27,22 @@ sigvar <- function(sig_activity,
                    w = NULL,
                    time = NULL,
                    normalized = FALSE){
-  var_table = dplyr::full_join(fst(relab_matrix = sig_activity, K = K, S = S, w = w,
-                                   time = time, group = group, normalized = normalized),
-                               het_mean(relab_matrix = sig_activity, K = K, S = S, w = w,
-                                        time = time, group = group))
-  cols = ncol(var_table)
-  colnames(var_table)[(cols-1):cols] = c("across_sample_heterogeneity", "mean_within_sample_diversity")
+
+  if(is.null(group)){
+    var_table = data.frame(across_sample_heterogeneity = fst(relab_matrix = sig_activity, K = K, S = S, w = w,
+                                                             time = time, group = group, normalized = normalized),
+                           mean_within_sample_diversity = het_mean(relab_matrix = sig_activity, K = K, S = S, w = w,
+                                                                   time = time, group = group))
+  }else{
+    var_table = dplyr::full_join(fst(relab_matrix = sig_activity, K = K, S = S, w = w,
+                                     time = time, group = group, normalized = normalized),
+                                 het_mean(relab_matrix = sig_activity, K = K, S = S, w = w,
+                                          time = time, group = group))
+    cols = ncol(var_table)
+    colnames(var_table)[(cols-1):cols] = c("across_sample_heterogeneity", "mean_within_sample_diversity")
+  }
+
+
   return(var_table)
 }
 

@@ -7,31 +7,34 @@
 sigboot(
   sig_activity,
   n_replicates,
-  K = ncol(sig_activity) - length(group),
   group,
+  K = NULL,
   S = NULL,
+  w = NULL,
+  time = NULL,
   normalized = FALSE,
   seed = NULL,
-  save_replicates = FALSE,
   alternative = "two.sided"
 )
 }
 \arguments{
-\item{sig_activity}{A matrix or data frame with rows containing non-negative entries that sum to 1. Each row represents a sample, each column represents a mutational signature, and each entry represents the abundance of that signature in the sample. If \code{sig_activity} contains any metadata, it must be on the left-hand side of the matrix, the right \code{K} entries of each row must sum to 1, and \code{K} must be specified. Otherwise, all entries of each row must sum to 1.}
+\item{sig_activity}{A matrix or data frame with \code{I} rows. Each row represents a sample, each column represents a mutational signature, and each entry represents the abundance of that signature in the sample. If \code{sig_activity} contains any metadata, it must be on the left-hand side of the matrix, the right \code{K} entries of each row must sum to 1, and \code{K} must be specified. Otherwise, all entries of each row must sum to 1.}
 
 \item{n_replicates}{The number of bootstrap replicate matrices to generate for each provided relative abundance matrix.}
 
-\item{K}{Optional; an integer specifying the number of mutational signatures included in \code{sig_activity}. Default is \code{K=ncol(sig_activity)-length(group)}.}
-
 \item{group}{A string (or vector of strings) specifying the name(s) of the column(s) that describes which group(s) each sample belongs to.}
 
+\item{K}{Optional; an integer specifying the number of mutational signatures included in \code{sig_activity}. Default is \code{K=ncol(sig_activity)-length(group)}.}
+
 \item{S}{Optional; a K x K similarity matrix with diagonal elements equal to 1 and off-diagonal elements between 0 and 1. Entry \code{S[j,k]} is the similarity between signature \code{j} and signature \code{k}, equaling 1 if the categories are to be treated as identical and equaling 0 if they are to be treated as totally dissimilar. The default value is \code{S = diag(K)}.}
+
+\item{w}{Optional; a vector of length \code{I} with non-negative entries that sum to 1. Entry \code{w[i]} represents the weight placed on row \code{i} of \code{sig_activity} in the computation of the mean abundance of each category across rows. The default value is \code{w = rep(1/nrow(sig_activity), nrow(sig_activity))}.}
+
+\item{time}{Optional; a string specifying the name of the column that describes the sampling time for each row (or another continuous, increasing variable). Include if you wish to weight SVA by the temporal distance between samples.}
 
 \item{normalized}{Optional; should the across-sample variability (Fst) be normalized by its upper bound conditional on the mean activity of the most abundant signature be used as the measure of across-sample variability? Default is \code{normalized = FALSE}; use \code{normalized = TRUE} to compute normalized Fst. Fst can only be normalized if it is not weighted.}
 
 \item{seed}{Optional; an integer to be used as a random seed for the simulations.}
-
-\item{save_replicates}{Optional; should all of the bootstrap replicate matrices be included in the output? Default is \code{save_replicates = FALSE};  \code{save_replicates = FALSE} savea memory when analyzing large datasets.}
 
 \item{alternative}{Optional; do you want to do a one- or two.sided test? Default is \code{alternative = "two.sided"}. If you wish to do a one-sided test, specify either \code{alternative = "less"} or \code{alternative = "greater"}.}
 }
@@ -64,6 +67,4 @@ smoker_boot$P_values
 # smokers and non-smokers and the bootstrap replicates, which assume no difference
 # between these two groups
 smoker_boot$bootstrap_distribution_plot
-
-
 }

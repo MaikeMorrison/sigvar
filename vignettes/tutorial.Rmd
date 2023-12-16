@@ -54,7 +54,7 @@ devtools::install_github("MaikeMorrison/sigvar",
 
 After installation, you can access this introductory vignette at an time by running:
 
-```{r}
+```{r, eval = FALSE}
 vignette("tutorial", package = "sigvar")
 ```
 
