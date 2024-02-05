@@ -242,7 +242,7 @@ plot_signature_prop <- function(relab_matrix, group = NULL, time = NULL, w = NUL
 #' @param pivot Optional; set \code{pivot=TRUE} if you would like to plot groups
 #'   on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.
 #' @param max_dotsize Optional; a number specifying the maximum size for each dot.
-#' @param threshold Optional; a number between 0 and 1 specifying the minimum mean activity of a signature in order for it to be shown as a dot. Default is \code{threshold = 0}.
+#' @param threshold Optional; a number between 0 and 1. For each signature, the size of the associated dot corresponds to the proportion of tumors with that signature at an abundance exceeding this threshold.  Default is \code{threshold = 0}.
 #' @return A ggplot object containing a dot plot visualization of the mean
 #'   mutational signature activities
 #' @examples

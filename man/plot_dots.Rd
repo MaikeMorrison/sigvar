@@ -33,7 +33,7 @@ on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.}
 \item{facet}{Optional; a string specifying the name of the column by which
 you would like to facet your plot.}
 
-\item{threshold}{Optional; a number between 0 and 1 specifying the minimum mean activity of a signature in order for it to be shown as a dot. Default is \code{threshold = 0}.}
+\item{threshold}{Optional; a number between 0 and 1. For each signature, the size of the associated dot corresponds to the proportion of tumors with that signature at an abundance exceeding this threshold.  Default is \code{threshold = 0}.}
 }
 \value{
 A ggplot object containing a dot plot visualization of the mean
