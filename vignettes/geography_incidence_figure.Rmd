@@ -190,7 +190,7 @@ jt_sigs_ordered = (names(sort(colSums(jt %>% select(all_of(all_sigs))))) %>%
                      rev)[1:10]
 
 
-japan_relab = plot_relabund(japan, K = 43, arrange = "both")+
+japan_relab = plot_signature_prop(japan, K = 43, arrange = "both")+
   scale_fill_manual(values = all_sig_pal, breaks = j_sigs_ordered,
                     name = "Signature") + 
   scale_color_manual(values = all_sig_pal, breaks = j_sigs_ordered, 
@@ -198,7 +198,7 @@ japan_relab = plot_relabund(japan, K = 43, arrange = "both")+
   # theme(legend.position = "right") +
   ggtitle("   Japan")
 
-tanzania_relab = plot_relabund(tanz, K = 43, arrange = "both")+
+tanzania_relab = plot_signature_prop(tanz, K = 43, arrange = "both")+
   scale_fill_manual(values = all_sig_pal,  breaks = t_sigs_ordered, 
                     name = "Signature") + 
   scale_color_manual(values = all_sig_pal, breaks = t_sigs_ordered, 
@@ -353,7 +353,7 @@ lr_sigs_ordered = (names(sort(colSums(lr %>% select(all_of(rcc_sigs))))) %>%
                      rev)[1:10]
 
 
-lithuania_relab = plot_relabund(lith, K = 28, arrange = "both")+
+lithuania_relab = plot_signature_prop(lith, K = 28, arrange = "both")+
   scale_fill_manual(values = all_sig_pal, breaks = j_sigs_ordered,
                     name = "Signature") + 
   scale_color_manual(values = all_sig_pal, breaks = j_sigs_ordered, 
@@ -361,7 +361,7 @@ lithuania_relab = plot_relabund(lith, K = 28, arrange = "both")+
   # theme(legend.position = "right") +
   ggtitle("   Lithuania")
 
-romania_relab = plot_relabund(rom, K = 28, arrange = "both")+
+romania_relab = plot_signature_prop(rom, K = 28, arrange = "both")+
   scale_fill_manual(values = all_sig_pal,  breaks = t_sigs_ordered, 
                     name = "Signature") + 
   scale_color_manual(values = all_sig_pal, breaks = t_sigs_ordered, 
