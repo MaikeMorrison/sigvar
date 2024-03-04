@@ -28,7 +28,6 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(tidyverse)
 library(patchwork)
-library(FAVA)
 library(sigvar)
 ```
 
