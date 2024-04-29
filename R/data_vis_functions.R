@@ -237,6 +237,7 @@ plot_signature_prop <- function(relab_matrix, group = NULL, time = NULL, w = NUL
 #'    \code{sig_activity} minus either 1 (since one column must specify the group) or 2 if
 #'   \code{facet} is provided, since one column must specify the variable on
 #'   which to facet.
+#' @param median Optional; Specify `median = TRUE` if you would like to color points by the median signature activity across samples, rather than the mean. Default value is `median = FALSE`.
 #' @param facet Optional; a string specifying the name of the column by which
 #'   you would like to facet your plot.
 #' @param pivot Optional; set \code{pivot=TRUE} if you would like to plot groups
@@ -276,6 +277,7 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                       K=ncol(sig_activity)-1-as.numeric(!missing(facet)),
                       max_dotsize = 5,
                       pivot = FALSE,
+                      median = FALSE,
                       facet, threshold = 0) {
 
   # Satisfy R cmd check
@@ -337,14 +339,23 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                           values_to = "Proportion_present")
   }
 
-
-
+if(median){
+  sig_activity_means = sig_activity_sigs %>%
+    dplyr::group_by(group) %>%
+    dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) median(col[col>0]))) %>%
+    tidyr::pivot_longer(cols = dplyr::all_of(signatures),
+                        names_to = "Signature",
+                        values_to = "Mean_activity")
+}else{
   sig_activity_means = sig_activity_sigs %>%
     dplyr::group_by(group) %>%
     dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) mean(col[col>0]))) %>%
     tidyr::pivot_longer(cols = dplyr::all_of(signatures),
                         names_to = "Signature",
                         values_to = "Mean_activity")
+}
+
+
 
 
   plot_data = dplyr::inner_join(sig_activity_present, sig_activity_means) %>%
@@ -368,12 +379,18 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                                    limits = c(threshold,1), range = c(-1, max_dotsize),
                                    breaks = c(0.5, 1),
                                    name = "Proportion of\ntumors with\nsignature") +
-    ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
-                                                          barwidth = 4,
-                                                          direction = "horizontal"),
-                                   colours = c("#E81F27", "#881F92", "#2419F9"),
-                                   limits = c(0,1), breaks = c(0, 0.5, 1),
-                                   name = "Mean relative\nactivity in\ntumors with\nsignature") +
+  {if(median)ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
+                                                                         barwidth = 4,
+                                                                         direction = "horizontal"),
+                                         colours = c("#E81F27", "#881F92", "#2419F9"),
+                                         limits = c(0,1), breaks = c(0, 0.5, 1),
+                                         name = "Median relative\nactivity in\ntumors with\nsignature")} +
+    {if(!median)ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
+                                                                                barwidth = 4,
+                                                                                direction = "horizontal"),
+                                                colours = c("#E81F27", "#881F92", "#2419F9"),
+                                                limits = c(0,1), breaks = c(0, 0.5, 1),
+                                                name = "Mean relative\nactivity in\ntumors with\nsignature")} +
     ggplot2::theme_bw()  +
     # ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3)) +
     # {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
