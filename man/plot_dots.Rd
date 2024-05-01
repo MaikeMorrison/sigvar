@@ -11,6 +11,7 @@ plot_dots(
   max_dotsize = 5,
   pivot = FALSE,
   median = FALSE,
+  normalized = TRUE,
   facet,
   threshold = 0
 )
@@ -31,7 +32,9 @@ which to facet.}
 \item{pivot}{Optional; set \code{pivot=TRUE} if you would like to plot groups
 on the y-axis and signatures on the x-axis. Default is \code{pivot=FALSE}.}
 
-\item{median}{Optional; Specify \code{median = TRUE} if you would like to color points by the median signature activity across samples, rather than the mean. Default value is \code{median = FALSE}.}
+\item{median}{Optional; specify \code{median = TRUE} if you would like to color points by the median signature activity across samples, rather than the mean. Default value is \code{median = FALSE}.}
+
+\item{normalized}{Optional; specify \code{normalized = FALSE} if you would like to plot absolute signature activities rather than relative signature activities. I.e., if your \code{sig_activity} matrix contains rows representing absolute signature activities (i.e., they do not necessarily sum to 1) and you wish that these activities are not automatically normalized. This determines the color scale for the resulting plot. Default is \code{normalized = TRUE}.}
 
 \item{facet}{Optional; a string specifying the name of the column by which
 you would like to facet your plot.}

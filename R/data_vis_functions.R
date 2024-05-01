@@ -237,7 +237,8 @@ plot_signature_prop <- function(relab_matrix, group = NULL, time = NULL, w = NUL
 #'    \code{sig_activity} minus either 1 (since one column must specify the group) or 2 if
 #'   \code{facet} is provided, since one column must specify the variable on
 #'   which to facet.
-#' @param median Optional; Specify `median = TRUE` if you would like to color points by the median signature activity across samples, rather than the mean. Default value is `median = FALSE`.
+#' @param median Optional; specify `median = TRUE` if you would like to color points by the median signature activity across samples, rather than the mean. Default value is `median = FALSE`.
+#' @param normalized Optional; specify `normalized = FALSE` if you would like to plot absolute signature activities rather than relative signature activities. I.e., if your `sig_activity` matrix contains rows representing absolute signature activities (i.e., they do not necessarily sum to 1) and you wish that these activities are not automatically normalized. This determines the color scale for the resulting plot. Default is `normalized = TRUE`.
 #' @param facet Optional; a string specifying the name of the column by which
 #'   you would like to facet your plot.
 #' @param pivot Optional; set \code{pivot=TRUE} if you would like to plot groups
@@ -278,6 +279,7 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                       max_dotsize = 5,
                       pivot = FALSE,
                       median = FALSE,
+                      normalized = TRUE,
                       facet, threshold = 0) {
 
   # Satisfy R cmd check
@@ -315,7 +317,8 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
   if(facet_true){
     sig_activity_sigs = cbind(data.frame("group" = sig_activity[[group]],
                                          "facet" = sig_activity[[facet]]),
-                              Q_checker(sig_activity %>% dplyr::select(-c(group, facet)), K)) %>%
+                              (if(normalized){Q_checker(sig_activity %>% dplyr::select(-c(group, facet)), K)}else{
+                                sig_activity[,(ncol(sig_activity) - K + 1):ncol(sig_activity)]})) %>%
       `colnames<-`(c("group", "facet", signatures))
 
     sig_activity_present = sig_activity_sigs %>%
@@ -328,7 +331,8 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
 
   }else{
     sig_activity_sigs = cbind(data.frame("group" = sig_activity[[group]]),
-                              Q_checker(sig_activity %>% dplyr::select(-group), K)) %>%
+                              (if(normalized){Q_checker(sig_activity %>% dplyr::select(-group), K)}else{
+                                sig_activity[,(ncol(sig_activity) - K + 1):ncol(sig_activity)]})) %>%
       `colnames<-`(c("group", signatures))
 
     sig_activity_present = sig_activity_sigs %>%
@@ -339,21 +343,25 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                           values_to = "Proportion_present")
   }
 
-if(median){
-  sig_activity_means = sig_activity_sigs %>%
-    dplyr::group_by(group) %>%
-    dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) median(col[col>0]))) %>%
-    tidyr::pivot_longer(cols = dplyr::all_of(signatures),
-                        names_to = "Signature",
-                        values_to = "Mean_activity")
-}else{
-  sig_activity_means = sig_activity_sigs %>%
-    dplyr::group_by(group) %>%
-    dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) mean(col[col>0]))) %>%
-    tidyr::pivot_longer(cols = dplyr::all_of(signatures),
-                        names_to = "Signature",
-                        values_to = "Mean_activity")
-}
+
+
+
+
+  if(median){
+    sig_activity_means = sig_activity_sigs %>%
+      dplyr::group_by(group) %>%
+      dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) median(col[col>0]))) %>%
+      tidyr::pivot_longer(cols = dplyr::all_of(signatures),
+                          names_to = "Signature",
+                          values_to = "Mean_activity")
+  }else{
+    sig_activity_means = sig_activity_sigs %>%
+      dplyr::group_by(group) %>%
+      dplyr::summarise(dplyr::across(dplyr::all_of(signatures), function(col) mean(col[col>0]))) %>%
+      tidyr::pivot_longer(cols = dplyr::all_of(signatures),
+                          names_to = "Signature",
+                          values_to = "Mean_activity")
+  }
 
 
 
@@ -368,37 +376,46 @@ if(median){
                                        dplyr::distinct())
     }else{.}}
 
+
+
+
   ggplot2::ggplot(plot_data,
                   ggplot2::aes(y = Signature, x = group,
                                color = Mean_activity,
                                size = Proportion_present)) +
     ggplot2::geom_point() +
     ggplot2::scale_size_continuous(guide = ggplot2::guide_legend(title.position = "top",
-                                                        direction = "horizontal"),
+                                                                 direction = "horizontal"),
                                    #max_size = max_dotsize,
                                    limits = c(threshold,1), range = c(-1, max_dotsize),
                                    breaks = c(0.5, 1),
                                    name = "Proportion of\ntumors with\nsignature") +
-  {if(median)ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
-                                                                         barwidth = 4,
-                                                                         direction = "horizontal"),
-                                         colours = c("#E81F27", "#881F92", "#2419F9"),
-                                         limits = c(0,1), breaks = c(0, 0.5, 1),
-                                         name = "Median relative\nactivity in\ntumors with\nsignature")} +
+    {if(median)ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
+                                                                              barwidth = 4,
+                                                                              direction = "horizontal"),
+                                              colours = c("#E81F27", "#881F92", "#2419F9"),
+                                              limits = c(0,ifelse(normalized, 1, max(plot_data$Mean_activity, na.rm = TRUE))),
+                                              breaks = c(0, 0.5, 1),
+                                              name = "Median relative\nactivity in\ntumors with\nsignature")} +
     {if(!median)ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
-                                                                                barwidth = 4,
-                                                                                direction = "horizontal"),
-                                                colours = c("#E81F27", "#881F92", "#2419F9"),
-                                                limits = c(0,1), breaks = c(0, 0.5, 1),
-                                                name = "Mean relative\nactivity in\ntumors with\nsignature")} +
+                                                                               barwidth = 4,
+                                                                               direction = "horizontal"),
+                                               colours = c("#E81F27", "#881F92", "#2419F9"),
+                                               limits = signif(c(0, ifelse(normalized, 1,
+                                                                               max(plot_data$Mean_activity, na.rm = TRUE))), 2),
+                                               breaks = signif(seq(from = 0,
+                                                            to = ifelse(normalized, 1,
+                                                                        max(plot_data$Mean_activity, na.rm = TRUE)),
+                                                            length.out = 3), 2),
+                                               name = "Mean relative\nactivity in\ntumors with\nsignature")} +
     ggplot2::theme_bw()  +
     # ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3)) +
     # {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
 
     {if(pivot)ggplot2::coord_flip()} +
     #{if(pivot)
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  #}+
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    #}+
 
     # {if(pivot & !facet_true)ggplot2::theme(legend.position = "top")}+
     # {if(pivot & !facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barwidth = 3))}+
@@ -448,18 +465,18 @@ plot_SBS_spectrum <- function(SBS_table) {
     `names<-`(unique(sort(sbs$Sub)))
 
   sbs = dplyr::left_join(sbs,
-                  data.frame(Sub = names(sub_pal),
-                             color = sub_pal))
+                         data.frame(Sub = names(sub_pal),
+                                    color = sub_pal))
 
 
   strip <- ggh4x::strip_themed(background_x = ggh4x::elem_list_rect(fill = sub_pal, color = sub_pal),
                                text_x = ggh4x::elem_list_text(color = c("black", "white", "white", rep("black", 3))))
 
   plot_data_wide = cbind(sbs, SBS_table) %>%
-      dplyr::mutate(name = glue::glue("<b style='color:#BEBEBE'>{stringr::str_sub(Context, 1,1)}<b style='color:{color}'>{stringr::str_sub(Context, 2, 2)}<b style='color:#BEBEBE'>{stringr::str_sub(Context, 3,3)}"), .before = 5)
+    dplyr::mutate(name = glue::glue("<b style='color:#BEBEBE'>{stringr::str_sub(Context, 1,1)}<b style='color:{color}'>{stringr::str_sub(Context, 2, 2)}<b style='color:#BEBEBE'>{stringr::str_sub(Context, 3,3)}"), .before = 5)
 
   plot_data_long = tidyr::pivot_longer(plot_data_wide, cols = colnames(SBS_table),
-                                names_to = "Spectrum", values_to = "Relative_abundance")
+                                       names_to = "Spectrum", values_to = "Relative_abundance")
 
   ggplot2::ggplot(plot_data_long, ggplot2::aes(x = name, y = Relative_abundance, fill = Sub)) +
     ggplot2::geom_bar(stat = "identity") +
