@@ -67,6 +67,42 @@ sbs_palette = c(
 sbs_palette = sbs_palette[order(names(sbs_palette))]
 usethis::use_data(sbs_palette,overwrite = T)
 
+# code to prepare Thyroid cancer and radiation dataset
+thyroid.meta = read_tsv("../data/Thyroid_radiation/abg2538-data-s1.txt")
+IDmat = thyroid.meta %>% dplyr::select(SigPro_DC83_RnT_ID1_Ct:SigPro_DC83_RnT_ID8_Ct)
+IDmat = sweep(IDmat,1,rowSums(IDmat),"/")
+SBSmat = thyroid.meta %>% dplyr::select(SigPro_DC96_RnT_SBS1_Ct:SigPro_DC96_RnT_SBS23_Ct)
+SBSmat = sweep(SBSmat,1,rowSums(SBSmat),"/")
+
+Allmat.nonorm = thyroid.meta %>% dplyr::select(SigPro_DC96_RnT_SBS1_Ct:SigPro_DC96_RnT_SBS23_Ct,SigPro_DC83_RnT_ID1_Ct:SigPro_DC83_RnT_ID8_Ct)
+Allmat = sweep(Allmat.nonorm,1,rowSums(Allmat.nonorm),"/")
+colnames(Allmat) = str_extract(colnames(Allmat),"SBS[0-9]+|ID[0-9]+")
+
+radiation_sigs_morton = bind_cols(Sample = thyroid.meta$REBC_ID, Sex=SEX,Age=AGE_SURGERY,Radiation_dose = thyroid.meta$DOSE,Allmat)[!is.na(Allmat[,1]),]
+radiation_sigs_morton$Exposure = case_when(radiation_sigs_morton$Radiation_dose>0~"Exposed to \nradiation",TRUE~"Unexposed to \nradiation")
+
+radiation_sigs_morton = radiation_sigs_morton %>% dplyr::relocate(Exposure,.after="Radiation_dose")
+
+usethis::use_data(radiation_sigs_morton,overwrite=T)
+
+COSMIC3.0_SBS = read_tsv("../data/Thyroid_radiation/COSMIC_v3_SBS_GRCh38.txt")
+COSMIC3.0_ID = read_tsv("../data/Thyroid_radiation/COSMIC_v3_ID_GRCh37.txt")
+
+COSMIC3.0_SBS.cossim = sigvar::cossim(as.matrix(COSMIC3.0_SBS[,-1]))
+COSMIC3.0_ID.cossim  = sigvar::cossim(as.matrix(COSMIC3.0_ID[,-1]))
+
+COSMIC3.0_SBS_ID.cossim = rbind(cbind(COSMIC3.0_SBS.cossim,matrix(0,nrow(COSMIC3.0_SBS.cossim),ncol(COSMIC3.0_ID.cossim))),
+                                cbind(matrix(0,nrow(COSMIC3.0_ID.cossim),ncol(COSMIC3.0_SBS.cossim)),COSMIC3.0_ID.cossim))
+
+colnames(COSMIC3.0_SBS_ID.cossim) = rownames(COSMIC3.0_SBS_ID.cossim) = c(colnames(COSMIC3.0_SBS.cossim),colnames(COSMIC3.0_ID.cossim))
+
+radiation_sigs_morton_cossim = COSMIC3.0_SBS_ID.cossim[colnames(Allmat),colnames(Allmat)]
+usethis::use_data(radiation_sigs_morton_cossim,overwrite=T)
+
+usethis::use_data(COSMIC3.0_SBS)
+usethis::use_data(COSMIC3.0_ID)
+usethis::use_data()
+
 # code to prepare PCAWG dataset
 PCAWG_SigProfiler_COSMIC_SBS = read_csv("../data/signatures/PCAWG_signatures/PCAWG_sigProfiler_SBS_signatures_in_samples.csv")
 PCAWG_SigProfiler_COSMIC_DBS = read_csv("../data/signatures/PCAWG_signatures/PCAWG_sigProfiler_DBS_signatures_in_samples.csv")
@@ -208,7 +244,7 @@ drivers_fig4.lung = drivers_fig4.lung %>% mutate(mutation_ID=paste(str_replace_a
 drivers_fig4.liver = drivers_fig4.liver %>% mutate(mutation_ID=paste(str_replace_all(X1," ","_"),X2,X3,X4,X5,sep="_"))
 
 # read sig outputs
-mut_profs_all_drivers = read_tsv("../data/signatures/COSMIC/SPinput_split_mice_carcinogens/output/SBS/Mice_Carcinogens.SBS96.all") %>% 
+mut_profs_all_drivers = read_tsv("../data/signatures/COSMIC/SPinput_split_mice_carcinogens/output/SBS/Mice_Carcinogens.SBS96.all") %>%
   mutate(Type=str_extract(MutationType,"[ATCG]>[ATCG]"),
          Subtype=paste0(str_sub(MutationType,1,1),str_sub(MutationType,3,3),str_sub(MutationType,7,7)) ) %>% dplyr::arrange(Type,Subtype)
 
@@ -247,8 +283,8 @@ rownames(Riva.refs) = paste0(mutsig_carcinogens_mice_SBS.refs$Type,",",mutsig_ca
 
 Riva_MutProf = Riva_SBS%*%t(Riva.refs)
 
-drivers = drivers %>% mutate(Tissue = str_extract(sample,"[A-Z]+"), 
-                             Chemical = str_remove_all(str_extract(sample,"_[A-Z_]+"),"^_|_$"), 
+drivers = drivers %>% mutate(Tissue = str_extract(sample,"[A-Z]+"),
+                             Chemical = str_remove_all(str_extract(sample,"_[A-Z_]+"),"^_|_$"),
                              Type=str_extract(context,"[ATCG]>[ATCG]"),
                              Subtype=paste0(str_sub(context,1,1),str_sub(context,3,3),str_sub(context,7,7)) )
 
@@ -402,11 +438,11 @@ usethis::use_data(ESCC_drivers_SBS,overwrite = T)
 
 ## LUAD drivers intogen
 EGFR_drivers_intogen_SBS96 = read_tsv("../data/signatures/COSMIC/SPinput_split/output/SBS/COSMIC_EGFR.SBS96.all")
-EGFR_drivers_intogen_SBS96 = tibble( MutationType=EGFR_drivers_intogen_SBS96$MutationType, EGFR=rowSums(EGFR_drivers_intogen_SBS96[,-1]) ) %>% 
+EGFR_drivers_intogen_SBS96 = tibble( MutationType=EGFR_drivers_intogen_SBS96$MutationType, EGFR=rowSums(EGFR_drivers_intogen_SBS96[,-1]) ) %>%
   mutate(Type=str_extract(MutationType,"[ATCG]>[ATCG]"),
          Subtype=paste0(str_sub(MutationType,1,1),str_sub(MutationType,3,3),str_sub(MutationType,7,7)) ) %>% dplyr::arrange(Type,Subtype)
 TP53_drivers_intogen_SBS96 = read_tsv("../data/signatures/COSMIC/SPinput_TP53_split/output/SBS/COSMIC_EGFR.SBS96.all")
-TP53_drivers_intogen_SBS96 = tibble( MutationType=TP53_drivers_intogen_SBS96$MutationType, TP53=rowSums(TP53_drivers_intogen_SBS96[,-1]) )%>% 
+TP53_drivers_intogen_SBS96 = tibble( MutationType=TP53_drivers_intogen_SBS96$MutationType, TP53=rowSums(TP53_drivers_intogen_SBS96[,-1]) )%>%
   mutate(Type=str_extract(MutationType,"[ATCG]>[ATCG]"),
          Subtype=paste0(str_sub(MutationType,1,1),str_sub(MutationType,3,3),str_sub(MutationType,7,7)) ) %>% dplyr::arrange(Type,Subtype)
 
