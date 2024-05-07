@@ -458,6 +458,28 @@ plot_SBS_spectrum <- function(SBS_table) {
   Type <- name <- Relative_abundance <- Sub <- NULL
 
 
+  # CHECKS ON SBS_table ------------------------------------------------------
+
+  # does SBS_table have 96 rows?
+  if(nrow(SBS_table) != 96){stop("SBS_table must have exactly 96 rows, one for each single-base substitution.")}
+
+
+  # does SBS_table have only numeric columns?
+  col_count = ncol(SBS_table)
+  SBS_table = dplyr::select_if(SBS_table, is.numeric)
+
+  if(col_count != ncol(SBS_table)){warning(paste0("The ",
+                                                  col_count - ncol(SBS_table),
+                                                  " column(s) containing non-numeric values were ommitted."))}
+
+  # does SBS_table have only columns that sum to 1?
+  if(any(round(colSums(SBS_table),5) != 1)){
+    SBS_table = apply(SBS_table, 2, function(col) col/sum(col))
+
+    warning("At least one column did not sum to 1. The columns have each been divided by their sum so that they now sum to 1.")
+  }
+
+
   sbs <- sigvar::COSMIC3.3.1_SBS %>%
     dplyr::select(Type)
   sbs$Sub = stringr::str_split(sbs$Type, "\\[|\\]", simplify = TRUE)[,2]
