@@ -396,7 +396,9 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                                               colours = c("#E81F27", "#881F92", "#2419F9"),
                                               limits = c(0,ifelse(normalized, 1, max(plot_data$Mean_activity, na.rm = TRUE))),
                                               breaks = c(0, 0.5, 1),
-                                              name = "Median relative\nactivity in\ntumors with\nsignature")} +
+                                              name = ifelse(normalized,
+                                                            "Median relative\nactivity in\ntumors with\nsignature",
+                                                            "Median activity\nin tumors with\nsignature"))} +
     {if(!median)ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
                                                                                barwidth = 4,
                                                                                direction = "horizontal"),
@@ -407,7 +409,9 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                                                             to = ifelse(normalized, 1,
                                                                         max(plot_data$Mean_activity, na.rm = TRUE)),
                                                             length.out = 3), 2),
-                                               name = "Mean relative\nactivity in\ntumors with\nsignature")} +
+                                               name = ifelse(normalized,
+                                                             "Mean relative\nactivity in\ntumors with\nsignature",
+                                                             "Mean activity\nin tumors with\nsignature"))} +
     ggplot2::theme_bw()  +
     # ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3)) +
     # {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
