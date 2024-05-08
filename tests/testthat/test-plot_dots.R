@@ -1,4 +1,5 @@
 sig_activity = ESCC_sig_activity
+sig_activity[,-c(1:3)] = round(sig_activity[,-c(1:3)]*1000)
 group = "Country"
 K=ncol(sig_activity)-3
 max_dotsize = 5

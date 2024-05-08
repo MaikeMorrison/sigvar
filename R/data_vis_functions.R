@@ -396,7 +396,9 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                                               colours = c("#E81F27", "#881F92", "#2419F9"),
                                               limits = c(0,ifelse(normalized, 1, max(plot_data$Mean_activity, na.rm = TRUE))),
                                               breaks = c(0, 0.5, 1),
-                                              name = "Median relative\nactivity in\ntumors with\nsignature")} +
+                                              name = ifelse(normalized,
+                                                            "Median relative\nactivity in\ntumors with\nsignature",
+                                                            "Median activity\nin tumors with\nsignature"))} +
     {if(!median)ggplot2::scale_color_gradientn(guide = ggplot2::guide_colorbar(title.position = "top",
                                                                                barwidth = 4,
                                                                                direction = "horizontal"),
@@ -407,7 +409,9 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                                                             to = ifelse(normalized, 1,
                                                                         max(plot_data$Mean_activity, na.rm = TRUE)),
                                                             length.out = 3), 2),
-                                               name = "Mean relative\nactivity in\ntumors with\nsignature")} +
+                                               name = ifelse(normalized,
+                                                             "Mean relative\nactivity in\ntumors with\nsignature",
+                                                             "Mean activity\nin tumors with\nsignature"))} +
     ggplot2::theme_bw()  +
     # ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3)) +
     # {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
@@ -452,6 +456,28 @@ plot_SBS_spectrum <- function(SBS_table) {
 
   # Satisfy R cmd check
   Type <- name <- Relative_abundance <- Sub <- NULL
+
+
+  # CHECKS ON SBS_table ------------------------------------------------------
+
+  # does SBS_table have 96 rows?
+  if(nrow(SBS_table) != 96){stop("SBS_table must have exactly 96 rows, one for each single-base substitution.")}
+
+
+  # does SBS_table have only numeric columns?
+  col_count = ncol(SBS_table)
+  SBS_table = dplyr::select_if(SBS_table, is.numeric)
+
+  if(col_count != ncol(SBS_table)){warning(paste0("The ",
+                                                  col_count - ncol(SBS_table),
+                                                  " column(s) containing non-numeric values were ommitted."))}
+
+  # does SBS_table have only columns that sum to 1?
+  if(any(round(colSums(SBS_table),5) != 1)){
+    SBS_table = apply(SBS_table, 2, function(col) col/sum(col))
+
+    warning("At least one column did not sum to 1. The columns have each been divided by their sum so that they now sum to 1.")
+  }
 
 
   sbs <- sigvar::COSMIC3.3.1_SBS %>%
