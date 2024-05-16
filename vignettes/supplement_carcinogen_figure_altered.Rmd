@@ -1,0 +1,520 @@
+---
+title: "Carcinogen exposure is associated with increased diversity of signature activity within tumors."
+author: "Laurane Mangé"
+date: '2024-05-16'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Code used to produce the corresponding supplementary figures
+
+This document gives the code used to produce the analyses and figures pertaining to the simulation of 20 sets of samples (corresponding to the 20 substances in Riva et al. 2020 dataset <https://www.nature.com/articles/s41588-020-0692-4>) showing what figure 2a would look like under random circumstances. All file paths used are to be modified according to the user's working directory.
+
+## Libraries necessary
+
+```{r libraries, warning = FALSE, message = FALSE}
+library("FAVA")
+library(sigvar)
+library(readr)
+library(stringr)
+library(tidyverse)
+library(patchwork)
+library(ggtext)
+library(wordspace)
+library(beepr)
+library(data.table)
+library(ggplot2)
+```
+
+After installing and loading the necessary packages, we start by removing signatures below 5% from our mutational signature dataset as they are usually considered inaccurate. We then reproduce figure 2a without these signatures, which implies recomputing the Pvalues of the mean within-sample diversity of each carcinogen group.
+
+We first define the color palette we will use for figure 2.
+```{r color palette}
+
+pal =   c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51") %>%
+  `names<-`(c("Non-smoker", "Unexposed to\nasbestos", "Passive smoker", "Exposed to\nasbestos", "Smoker"))
+```
+
+We then prepare the Riva et al. data for our analysis. First, we fetch the necessary data.
+
+```{r fetch data}
+
+## Riva et al. mice carcinogen data
+
+riva_sig_defs = mutsig_carcinogens_mice_SBS.refs
+
+chem_abbreviations = data.frame(chemical = c("1-trans-delta-9-TetrahydrocannabJnol", "1,2,3-Trichloropropane", "antimony trioxide", "antrhaquinone", "Black Cohosh", "bromochloroacetic acid", "cobalt metal", "CUMENE", "DIETHANOLAMINE", "furan", "ginkgo biloba extract", "Indium phosphide", "isobutyl nitrite", "nickel oxide", "nickel subsulfite", "nickel sulfate hexahydrate", "OXAZEPAM", "p-Nitroaniline", "p Nitrobenzoic acid'", "Pentabromodiphenyl Ether Mixture", "primaclone", "Resveratrol", "Salicylazosulfapyridine", "Scopolamine hydrobromide trihydrate", "sodium tungstate dihydrate", "Sodium Tungstate Dihydrate", "Triethanolamine", "vanadium pentoxide", "vinylidene chloride"),
+                                chem_name = c("1-trans-delta-9-TetrahydrocannabJnol", "TCP", "Antimony trioxide", "Anthraquinone", "Black cohosh", "Bromochloroacetic\nacid", "Cobalt metal", "Cumene", "Diethanolamine", "Furan", "G. biloba extract", "Indium phosphide", "Isobutyl nitrite", "Nickel oxide", "Nickel subsulfide", "Nickel sulfate\nhexahydrate", "Oxazepam", "p-Nitroaniline", "p Nitrobenzoic acid'", "DE-71", "Primaclone", "Resveratrol", "Salicylazosulfapyridine", "Scopolamine hydrobromide trihydrate", "Sodium tungstate\ndihydrate", "Sodium tungstate\ndihydrate", "Triethanolamine", "Vanadium pentoxide", "VDC"))
+
+
+riva_relab = mutsig_carcinogens_mice_SBS %>% left_join(chem_abbreviations) %>%
+  select(Sample, chemical = chem_name, dose_numeric, Tissue, mSBS1:mSBS_N3) %>%
+  filter(Tissue %in% c("liver", "lung")) 
+```
+
+Then we format the data to fit our SVA analysis. This includes defining the chemicals as factors, filtering out signatures under 5%, and normalizing the resulting matrix.
+
+```{r format data}
+
+riva_relab$chemical[stringr::str_detect(riva_relab$Sample, "SPONTANEOUS")] = "Spontaneous"
+chems = c("Spontaneous", setdiff( riva_relab$chemical %>% unique, "Spontaneous"))
+
+riva_relab$chemical = factor(riva_relab$chemical, ordered = TRUE, levels = chems)
+
+
+# filter sigs below 5% (they become 0) then normalize so rows sum up to 1
+
+riva_relab_norm <- riva_relab
+riva_relab_norm[5:15][ riva_relab_norm[5:15] <= 0.05 ] <- 0
+riva_relab_norm <- cbind(riva_relab_norm[1:4],sweep(riva_relab_norm[5:15],1,rowSums(riva_relab_norm[5:15]),"/"))
+```
+
+We can now define the remaining parameters necessary to use `sigvar`and perform our SVA analysis.
+
+```{r SVA analysis}
+
+sigs = colnames(riva_relab_norm)[5:15]
+
+riva_cossim <- sigvar::cossim(as.matrix(riva_sig_defs[,-c(1:2)]))[sigs, sigs]
+
+riva_var = sigvar(sig_activity = riva_relab_norm, 
+                  K = 11, S = riva_cossim,
+                  group = c("chemical", "Tissue")) %>% 
+  `colnames<-`(c("chemical", "Tissue", "group", "across", "mean_within"))
+
+riva_within = riva_relab_norm %>% select(chemical, Tissue) %>%
+  mutate(within = apply(riva_relab_norm, 1, het, K = 11, S = riva_cossim)) %>%  
+  left_join(riva_var)
+```
+
+We now want to plot figure 2a using the obtained within-sample diversity values. For this, we first define the color palette used for the different levels of statistical significance.
+
+```{r plot res 5percent color palette signif}
+
+## Significance - bootstrapping
+
+signif_pal = c("#DABD61FF", "#D95F30FF", "#BE3428FF", "#620800") %>% 
+  `names<-`(c("\U00B7", "*", "**", "***"))
+```
+
+We then compute the new Pvalues of all mean within-sample diversities. Each run of `sigboot` statistically comparing the across-sample heterogeneity and within-sample diversity of 2 groups of samples (exposed to a chemical vs spontaneous tumors) is saved in `riva_bootstrap_list_greater`.
+
+```{r plot new pvals}
+
+### New pvals : 
+
+tictoc::tic()
+#Compute Riva stats
+riva_bootstrap_list_greater = list()
+chemical_tissue = list()
+i = 1
+ set.seed(1)
+ for(chem in setdiff(chems, "Spontaneous")){
+   riva_chem_spontaneous = filter(riva_relab_norm, chemical %in% c("Spontaneous", chem))
+   riva_chem = filter(riva_relab_norm, chemical == chem)
+   for(tissue in unique(riva_chem$Tissue)){
+     riva_bootstrap_list_greater[[i]] = sigvar::sigboot(sig_activity = riva_chem_spontaneous %>% filter(Tissue == tissue),
+                    K = 11, S = riva_cossim,
+                    group = c("chemical", "Tissue"), 
+                    n_replicates = 1000, seed = 1, alternative = "greater")
+
+     chemical_tissue[[i]] = c()
+     i = i + 1
+   }
+ }
+ tictoc::toc()
+ beepr::beep()
+```
+
+We now want a dataframe containing all the information necessary to plot figure 2a. We create `riva5percent_p_values_greater` based on the bootstrap Pvalues file from the sigvar package. This dataframe has 7 columns : group 1 (chemical + tissue), chemical, tissue, group 2 (spontaneous + tissue), Pvalue for across-sample heterogeneity, Pvalue for within-sample diversity, Pvalue for pooled diversity (this column is now full of NAs). We adjust every row (every comparison between 2 groups of samples) with the corresponding values from `riva_bootstrap_list_greater`.
+
+```{r plot df riva5percent}
+ 
+ #Copy format and data from the bootstrap Pvalues file in the sigvar package
+ riva5percent_p_values_greater <- mutsig_carcinogens_mice_bootstrap_p_vals
+
+ # Is the spontaneous group 1st or 2nd in the comparison ?
+ # 1st group in column 1 (should be chemical+organ) and 2nd in column 4 (should be spont+organ)
+ for(i in 1:nrow(riva5percent_p_values_greater)){
+   if(str_detect(sub("\\ -.*", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison),"Spont")){
+     riva5percent_p_values_greater[i,4] <- sub("\\ -.*", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
+     riva5percent_p_values_greater[i,1] <- sub(".*- ", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
+   }
+   else{
+     riva5percent_p_values_greater[i,1] <- sub("\\ -.*", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
+     riva5percent_p_values_greater[i,4] <- sub(".*- ", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
+   }
+   
+
+   riva5percent_p_values_greater[i,2] <- sub("\\_.*", "", riva5percent_p_values_greater[i,1])
+   riva5percent_p_values_greater[i,3] <- sub(".*_", "", riva5percent_p_values_greater[i,1])
+   riva5percent_p_values_greater[i,7] <- NA
+   riva5percent_p_values_greater[i,5] <- riva_bootstrap_list_greater[[i]]$P_values$across_sample_heterogeneity
+   riva5percent_p_values_greater[i,6] <- riva_bootstrap_list_greater[[i]]$P_values$mean_within_sample_diversity
+ }
+
+sig2 = riva5percent_p_values_greater
+```
+
+We can finally plot figure 2a without signatures under 5%. We reuse the same format for the figure.
+
+```{r plot fig2a 5percent}
+
+#Assign significance symbol to pvals
+sig2$chemical = as.character(sig2$chemical)
+
+sig2$significance = 
+  ifelse(sig2$mean_within_sample_diversity<.001, "***",
+         ifelse(sig2$mean_within_sample_diversity<.01, "**", 
+                ifelse(sig2$mean_within_sample_diversity<.05, "*",
+                       ifelse(sig2$mean_within_sample_diversity<0.1, "\U00B7",
+                              ""))))
+
+
+sig2$within_sig = ifelse(sig2$Tissue == "liver", 0.45, 0.5)
+
+bold_list = sig2 %>% group_by(chemical) %>% 
+  summarise(min_within = min(mean_within_sample_diversity)) %>% 
+  mutate(chemical_bold = ifelse(min_within < 0.1, paste0("**", chemical, "**"),
+                                as.character(chemical))) %>% 
+  select(chemical, chemical_bold) %>% distinct() %>%
+  filter(chemical != "Spontaneous") %>%
+  rbind(c("Spontaneous", "**Spontaneous**"))
+
+
+riva_within_sig2  = left_join(riva_within, sig2, 
+                              by = c("chemical", "Tissue", "group")) %>%
+  left_join(bold_list)
+
+sig2 = left_join(sig2, bold_list)
+
+
+chems_ordered = riva_within_sig2 %>% filter(Tissue == "liver") %>%
+  arrange(-mean_within) %>%
+  select(chemical_bold) %>% unique %>% unlist
+
+riva_within_sig2$chemical_ordered = factor(riva_within_sig2$chemical_bold, 
+                                           ordered = TRUE,
+                                           levels = c(setdiff(chems_ordered,
+                                                              "**Spontaneous**"), 
+                                                      "**Spontaneous**"))
+
+
+riva_1d = ggplot(riva_within_sig2, aes(y = chemical_ordered, x = within)) +
+  
+  geom_point(aes(x = mean_within, y = chemical_ordered), size = 3, alpha = 0) +
+  
+  geom_vline(aes(xintercept = mean_within),
+             data = riva_within_sig2 %>% filter(chemical == "Spontaneous"), 
+             linewidth = 1, color = "#3A488AFF", alpha = 0.7) +
+  
+  geom_violin(fill = "#3A488AFF", color = NA, width = 0.9, alpha = 0.7,
+              data = riva_within_sig2 %>% filter(chemical == "Spontaneous")) + 
+  geom_violin(aes(fill = significance), color = NA, width = 1.3, alpha = 0.7,
+              data = riva_within_sig2 %>% filter(chemical != "Spontaneous")) + 
+  geom_point(aes(x = mean_within, y = chemical_bold), size = 2.5, alpha = 0.3) +
+  
+  facet_grid(~ifelse(Tissue == "liver", 
+                     "**Mouse liver tumors**<br>(Riva et al. 2020)", 
+                     "**Mouse lung tumors**<br>(Riva et al. 2020)"), 
+             scales = "free_x", space = "free_x") + 
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_markdown(size = 9),
+        legend.position = "none",
+        axis.title.y = element_blank(),
+        axis.text.y = element_markdown()) +
+  xlab("Within-sample diversity") +
+  
+  geom_text(aes(x = within_sig, y = chemical_bold, 
+                label = significance, color = significance), 
+            data = riva_within_sig2, size = 5,
+            fontface = "bold", vjust = 0.5, hjust = 1) +
+  scale_fill_manual(values = signif_pal) +
+   scale_color_manual(values = signif_pal) + 
+
+  geom_richtext(
+    data = data.frame(label = "
+  <span style='color:#DABD61FF'> \U00B7   <i>P</i> < 0.10</span><br>
+  <span style='color:#D95F30FF'>*  <i>P</i> < 0.05</span><br>
+  <span style='color:#BE3428FF'>**    <i>P</i> < 0.01</span><br>
+   <span style='color:#620800'>***    <i>P</i> < 0.001</span>",
+                      Tissue = "liver"),
+    aes(x = 0.34, y = "Diethanolamine", label = label), color = "grey")
+
+
+# Add arrows
+
+riva_center = 0.619
+
+base_within_only <- ggplot(data.frame(xstart = riva_center + c(-0.15, 0.15), 
+                                      xend   = riva_center + c(-0.35, 0.35), 
+                                      ystart = c(0.031, 0.031), 
+                                      yend   = c(0.031, 0.031), 
+                                      xlab   = riva_center + c(-0.25, 0.25),
+                                      ylab   = c(-0.023, -0.023),
+                                      color  = c("blue", "orange"),
+                                      label  = c("Few signatures", 
+                                                 "Many signatures"))) + 
+  theme_void() + 
+  theme(legend.position = "none",
+        plot.background = element_rect(fill = "white", color = "white")) + 
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1))
+
+
+# RIVA
+
+riva_arrows <- base_within_only +
+  annotation_custom(grob = ggplotGrob(riva_1d+ 
+                                        xlab("Mean within-sample\ndiversity") + 
+                                        ylab("Across-sample\nheterogeneity") + 
+                                        theme(#axis.title = element_blank(),
+                                          plot.background = element_blank())), 
+                    xmin = -0.09, xmax = 1, ymin = -0.095, ymax = 1.13)
+
+
+panels5percent = patchwork::wrap_plots((riva_arrows), 
+                               widths = 1.3) + 
+  plot_annotation(tag_levels = "a")
+
+panels5percent
+
+```
+
+The above version of figure 2a is similar to the one in the article, showing that removing small signatures does not change the overall observed effects of carcinogens on the mice.
+
+We now wish to produce another version of figure 2a which would show what it would look like if there were no particular effects of the 20 substances on the mice. This figure could show, by comparison with our results, that there is indeed a general effect of these substances shown by the increase in mean within-sample diversity of each group of samples.
+
+To represent null conditions, we use the mean within-sample diversity and corresponding standard deviation of the spontaneous samples group to generate as many other samples (represented by a within-sample diversity value instead of multiple mutational signatures) as are in each substance group. The generated samples follow a normal distribution as they were created using the `rnorm` function. This process is done for the liver samples, and repeated for the lung samples.
+
+We first fetch the spontaneous samples for both tissue types and compute the 2 mean within-sample diversities and associated standard deviations.
+
+```{r riva normal samples mean and sd}
+# generate samples from spontaneous pop using normale distrib
+chemical_counts_liver <- riva_relab_norm %>% filter(Tissue=="liver") %>% group_by(chemical) %>% count()
+chemical_counts_lung <- riva_relab_norm %>% filter(Tissue=="lung") %>% group_by(chemical) %>% count()
+
+# number of samples per substance group
+chemical_counts_liver <- setorder(chemical_counts_liver[-1,],"chemical")
+chemical_counts_lung <- setorder(chemical_counts_lung[-1,],"chemical")
+
+liver_spont <- riva_relab_norm %>% filter(Tissue=="liver", chemical=="Spontaneous")
+lung_spont <- riva_relab_norm %>% filter(Tissue=="lung", chemical=="Spontaneous")
+# mean within-sample div of spont liver 
+mean_within_liver_spont <- riva_within$mean_within[riva_within$group=='Spontaneous_liver'][1]
+# mean within-sample div of spont lung 
+mean_within_lung_spont <- riva_within$mean_within[riva_within$group=='Spontaneous_lung'][1]
+# sd of within-sample div for spont liver samples
+sd_within_liver_spont <- sd(riva_within$within[riva_within$group=='Spontaneous_liver'])
+# sd of within-sample div for spont lung samples
+sd_within_lung_spont <- sd(riva_within$within[riva_within$group=='Spontaneous_lung'])
+```
+
+We now create a list of all within-sample diversity values generated under normal distribution (first for the liver then the lung). The number of values generated is equal to the number of samples in each group from the original data (excluding the group of spontaneous samples for each tissue type). We also compute mean within-sample diversity values by regrouping samples as is in the original data (the groups are identical in number and in size compared to the chemical groups in the Riva et al. data).
+
+The `riva_within` dataframe contains the original within-sample diversity and across-sample heterogeneity values for the Riva et al. data. We copy this dataframe and replace the within-sample diversity values by the ones generated and stored in each list. The same is done for the mean within-sample diversity values of each group.
+
+```{r riva normal samples generate}
+
+riva_within_sim_liver <- setorder(riva_within %>% filter(Tissue=="liver", chemical!="Spontaneous"),"chemical")
+riva_within_sim_lung <- setorder(riva_within %>% filter(Tissue=="lung", chemical!="Spontaneous"), "chemical")
+
+# list of within-sample div values generated under normal distrib for liver
+# number of samples generated = number of samples in each group from original data
+set.seed(1)
+lliv <- lapply(1:nrow(chemical_counts_liver), function(i) rnorm(chemical_counts_liver$n[i],mean=mean_within_liver_spont,sd=sd_within_liver_spont))
+riva_within_sim_liver["within"] <- unlist(lliv)
+meanliv <- lapply(1:length(lliv), function(i) rep(mean(lliv[[i]]),chemical_counts_liver$n[i]))
+riva_within_sim_liver["mean_within"] <- unlist(meanliv)
+
+# same for lung samples
+llung <- lapply(1:nrow(chemical_counts_lung), function(i) rnorm(chemical_counts_lung$n[i],mean=mean_within_lung_spont,sd=sd_within_lung_spont))
+riva_within_sim_lung["within"] <- unlist(llung)
+meanlung <- lapply(1:length(llung), function(i) rep(mean(llung[[i]]),chemical_counts_lung$n[i]))
+riva_within_sim_lung["mean_within"] <- unlist(meanlung)
+```
+
+Next, we regroup in a single dataframe named `riva_within_sim` both dataframes copied and modified for each tissue type, and the corresponding information for the spontaneous samples excluded previously.
+
+```{r riva normal samples final df}
+# dataframe with info for each generated sample :
+# chemical, tissue, within-sample div, group (chemical+tissue), across sample het., mean within-sample div of the group the sample belongs to 
+riva_within_sim <- rbind(riva_within_sim_liver, riva_within_sim_lung, riva_within %>% filter(Tissue=="liver",chemical=="Spontaneous"), riva_within %>% filter(Tissue=="lung",chemical=="Spontaneous"))
+
+```
+
+Once We have all the simulated samples under null conditions, we calculate the new corresponding Pvalues to quantitatively compare the mean within-sample diversity of each substance group to the original spontaneous samples group. This is done using a Student's t-test on the within-sample diversities between the substance group of interest and the original spontaneous samples of the corresponding organ.
+
+```{r riva normal samples Pvals}
+sig2 = mutsig_carcinogens_mice_bootstrap_p_vals
+lpvals <- c(t.test(riva_within_sim[1:4,3],riva_within_sim[148:158,3])$p.value, #tcp
+            t.test(riva_within_sim[5:9,3],riva_within_sim[148:158,3])$p.value, #anthra
+            t.test(riva_within_sim[10:15,3],riva_within_sim[148:158,3])$p.value, #Anti
+            t.test(riva_within_sim[102:106,3],riva_within_sim[159:170,3])$p.value, #Anti lung
+            t.test(riva_within_sim[16:20,3],riva_within_sim[148:158,3])$p.value, #Bromo
+            t.test(riva_within_sim[21:25,3],riva_within_sim[148:158,3])$p.value, #cobalt
+            t.test(riva_within_sim[107:112,3],riva_within_sim[159:170,3])$p.value, #cobalt lung
+            t.test(riva_within_sim[26:30,3],riva_within_sim[148:158,3])$p.value, #cumene
+            t.test(riva_within_sim[31:35,3],riva_within_sim[148:158,3])$p.value, #diet
+            t.test(riva_within_sim[36:40,3],riva_within_sim[148:158,3])$p.value, #furan
+            t.test(riva_within_sim[41:43,3],riva_within_sim[148:158,3])$p.value, #g biloba
+            t.test(riva_within_sim[44:48,3],riva_within_sim[148:158,3])$p.value, #indium
+            t.test(riva_within_sim[49:54,3],riva_within_sim[148:158,3])$p.value, #isobutyl
+            t.test(riva_within_sim[113:118,3],riva_within_sim[159:170,3])$p.value, #isobutyl lung
+            t.test(riva_within_sim[55:58,3],riva_within_sim[148:158,3])$p.value, # n oxide
+            t.test(riva_within_sim[119:123,3],riva_within_sim[159:170,3])$p.value, # n oxide lung
+            t.test(riva_within_sim[59:61,3],riva_within_sim[148:158,3])$p.value, #n sub
+            t.test(riva_within_sim[124:127,3],riva_within_sim[159:170,3])$p.value, #n sub lung
+            t.test(riva_within_sim[62:67,3],riva_within_sim[148:158,3])$p.value, # n sulf hex
+            t.test(riva_within_sim[128:133,3],riva_within_sim[159:170,3])$p.value, # n sulf hex lung
+            t.test(riva_within_sim[68:72,3],riva_within_sim[148:158,3])$p.value, # oxaz
+            t.test(riva_within_sim[73:77,3],riva_within_sim[148:158,3])$p.value, #de71
+            t.test(riva_within_sim[78:82,3],riva_within_sim[148:158,3])$p.value, #prima
+            t.test(riva_within_sim[83:88,3],riva_within_sim[148:158,3])$p.value, #sodium
+            t.test(riva_within_sim[134:139,3],riva_within_sim[159:170,3])$p.value, #sodium lung
+            t.test(riva_within_sim[89:94,3],riva_within_sim[148:158,3])$p.value, # vana
+            t.test(riva_within_sim[140:142,3],riva_within_sim[159:170,3])$p.value, # vana lung
+            t.test(riva_within_sim[95:101,3],riva_within_sim[148:158,3])$p.value, #vdc
+            t.test(riva_within_sim[143:147,3],riva_within_sim[159:170,3])$p.value) #vdc lung
+
+sig2["mean_within_sample_diversity"] <- lpvals
+```
+
+We can finally plot the new version of figure 2a under null conditions using the same format as before. We put this figure next to the previous version of figure 2a without signatures under 5% to visualize the differences between the two.
+
+```{r Fig2a plot null conditions}
+sig2$chemical = as.character(sig2$chemical)
+
+sig2$significance = 
+  ifelse(sig2$mean_within_sample_diversity<.001, "***",
+         ifelse(sig2$mean_within_sample_diversity<.01, "**", 
+                ifelse(sig2$mean_within_sample_diversity<.05, "*",
+                       ifelse(sig2$mean_within_sample_diversity<0.1, "\U00B7",
+                              ""))))
+
+
+sig2$within_sig = ifelse(sig2$Tissue == "liver", 0.45, 0.5)
+
+bold_list = sig2 %>% group_by(chemical) %>% 
+  summarise(min_within = min(mean_within_sample_diversity)) %>% 
+  mutate(chemical_bold = ifelse(min_within < 0.1, paste0("**", chemical, "**"),
+                                as.character(chemical))) %>% 
+  select(chemical, chemical_bold) %>% distinct() %>%
+  filter(chemical != "Spontaneous") %>%
+  rbind(c("Spontaneous", "**Spontaneous**"))
+
+
+riva_within_sim_sig2  = left_join(riva_within_sim, sig2, 
+                              by = c("chemical", "Tissue", "group")) %>%
+  left_join(bold_list)
+
+sig2 = left_join(sig2, bold_list)
+
+
+chems_ordered = riva_within_sim_sig2 %>% filter(Tissue == "liver") %>%
+  arrange(-mean_within) %>%
+  select(chemical_bold) %>% unique %>% unlist
+
+riva_within_sim_sig2$chemical_ordered = factor(riva_within_sim_sig2$chemical_bold, 
+                                           ordered = TRUE,
+                                           levels = c(setdiff(chems_ordered,
+                                                              "**Spontaneous**"), 
+                                                      "**Spontaneous**"))
+
+
+riva_1d = ggplot(riva_within_sim_sig2, aes(y = chemical_ordered, x = within)) +
+  
+  geom_point(aes(x = mean_within, y = chemical_ordered), size = 3, alpha = 0) +
+  
+  geom_vline(aes(xintercept = mean_within),
+             data = riva_within_sim_sig2 %>% filter(chemical == "Spontaneous"), 
+             linewidth = 1, color = "#3A488AFF", alpha = 0.7) +
+  
+  geom_violin(fill = "#3A488AFF", color = NA, width = 0.9, alpha = 0.7,
+              data = riva_within_sim_sig2 %>% filter(chemical == "Spontaneous")) + 
+  geom_violin(aes(fill = significance), color = NA, width = 1.3, alpha = 0.7,
+              data = riva_within_sim_sig2 %>% filter(chemical != "Spontaneous")) + 
+  geom_point(aes(x = mean_within, y = chemical_bold), size = 2.5, alpha = 0.3) +
+  
+  facet_grid(~ifelse(Tissue == "liver", 
+                     "**Mouse liver tumors**<br>(Riva et al. 2020)", 
+                     "**Mouse lung tumors**<br>(Riva et al. 2020)"), 
+             scales = "free_x", space = "free_x") + 
+  theme_bw() +
+  theme(panel.grid = element_blank(),
+        strip.background = element_blank(),
+        strip.text = element_markdown(size = 9),
+        legend.position = "none",
+        axis.title.y = element_blank(),
+        axis.text.y = element_markdown()) +
+  xlab("Within-sample diversity") +
+  
+  geom_text(aes(x = within_sig, y = chemical_bold, 
+                label = significance, color = significance), 
+            data = riva_within_sim_sig2, size = 5,
+            fontface = "bold", vjust = 0.5, hjust = 1) +
+  scale_fill_manual(values = signif_pal) +
+  scale_color_manual(values = signif_pal) + 
+  
+  geom_richtext(
+    data = data.frame(label = "
+  <span style='color:#DABD61FF'> \U00B7   <i>P</i> < 0.10</span><br>
+  <span style='color:#D95F30FF'>*  <i>P</i> < 0.05</span><br>
+  <span style='color:#BE3428FF'>**    <i>P</i> < 0.01</span><br>
+   <span style='color:#620800'>***    <i>P</i> < 0.001</span>",
+                      Tissue = "liver"), 
+    aes(x = 0.34, y = "Primaclone", label = label), color = "grey")
+
+# Add arrows
+
+riva_center = 0.619
+
+base_within_only <- ggplot(data.frame(xstart = riva_center + c(-0.15, 0.15), 
+                                      xend   = riva_center + c(-0.35, 0.35), 
+                                      ystart = c(0.031, 0.031), 
+                                      yend   = c(0.031, 0.031), 
+                                      xlab   = riva_center + c(-0.25, 0.25),
+                                      ylab   = c(-0.023, -0.023),
+                                      color  = c("blue", "orange"),
+                                      label  = c("Few signatures", 
+                                                 "Many signatures"))) + 
+  theme_void() + 
+  theme(legend.position = "none",
+        plot.background = element_rect(fill = "white", color = "white")) + 
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1))
+
+
+# RIVA
+
+riva_arrows <- base_within_only +
+  annotation_custom(grob = ggplotGrob(riva_1d+ 
+                                        xlab("Mean within-sample\ndiversity") + 
+                                        ylab("Across-sample\nheterogeneity") + 
+                                        theme(#axis.title = element_blank(),
+                                          plot.background = element_blank())), 
+                    xmin = -0.09, xmax = 1, ymin = -0.095, ymax = 1.13)
+
+
+panels_sim = patchwork::wrap_plots((riva_arrows), 
+                               widths = 1.3) + 
+  plot_annotation(tag_levels = "a")
+
+panels_sim
+```
+
+Here are both altered versions of figure 2a next to each other :
+
+```{r plot both figs}
+both_fig2A <- patchwork::wrap_plots((panels5percent),(panels_sim)) +
+  plot_annotation(tag_levels = "a")
+
+both_fig2A
+```
+
+With every run of this code the results vary slightly, however we can still make a few key observations. We observe, in the null control for both organs (right figure b), that approximately half of the mean within-sample diversities are below the mean of the spontaneous groups and half are above. Furthermore, out of 20 substance groups for the liver and 9 for the lung, one of them has a near significant Pvalue (mean within-sample diversity Pvalue of 0.109 for lung sodium tungstate dihydrate). These two points illustrate the random aspect of the null control which shows no significant effects of the substances on the mice.
+
+Contrary to the previously mentioned figure, the version of figure 2a showing our SVA results without signatures under 5% (left figure a) has a higher number of significant Pvalues, as well as a higher portion of the mean within-sample diversities above the ones of the spontaneous groups. This shows that the substances have a general effect on the mice and that our results are robust.
