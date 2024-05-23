@@ -127,7 +127,7 @@ cor.test(x = escc_stats$mean_within_sample_diversity,
 
 ## Plot: Mean ALL SIGNATURES composition of each country
 ```{r}
-omit_sigs = which(colSums(select(ESCC_sig_activity, 
+omit_sigs = which(colSums(dplyr::select(ESCC_sig_activity, 
                                  all_of(all_sigs)) > 0)/
                     nrow(ESCC_sig_activity) < .02)
 
@@ -172,21 +172,21 @@ escc_dot_plot
 ```{r}
 all_sigs_ordered = ESCC_sig_activity_long %>% group_by(Signature) %>% 
   summarise(total = sum(Rel_Abundance_all)) %>% 
-  arrange(-total) %>% select(Signature) %>% unlist()
+  arrange(-total) %>% dplyr::select(Signature) %>% unlist()
 
 countries_plot = c("Japan", "Tanzania")
 
 jt = filter(ESCC_sig_activity, Country %in% countries_plot) 
 
 japan = filter(ESCC_sig_activity, Country == "Japan") %>% 
-  select(all_of(all_sigs))
+  dplyr::select(all_of(all_sigs))
 
 tanz = filter(ESCC_sig_activity, Country == "Tanzania") %>% 
-  select(all_of(all_sigs))
+  dplyr::select(all_of(all_sigs))
 
 j_sigs_ordered = (names(sort(colSums(japan))) %>% rev)[1:10]
 t_sigs_ordered = (names(sort(colSums(tanz))) %>% rev)[1:10]
-jt_sigs_ordered = (names(sort(colSums(jt %>% select(all_of(all_sigs))))) %>%
+jt_sigs_ordered = (names(sort(colSums(jt %>% dplyr::select(all_of(all_sigs))))) %>%
                      rev)[1:10]
 
 
@@ -231,7 +231,7 @@ rcc_clean = rcc_norm %>%
   filter(Country %in% include_countries)
 
 rcc_stats = sigvar(sig_activity = rcc_clean, K = 28, group = "Country"#, S = S
-) %>% left_join(distinct(select(rcc_norm, Country, ASR)))
+) %>% left_join(distinct(dplyr::select(rcc_norm, Country, ASR)))
 
 # Are things normal?
 ggpubr::ggqqplot(rcc_stats$mean_within_sample_diversity)
@@ -281,7 +281,7 @@ rcc_scatter
 ## RCC dot plot
 ```{r}
 rcc_sigs = colnames(rcc_clean)[-c(1:2)]
-omit_sigs_rcc = which(colSums(select(rcc_clean, -c(Sample, Country)) > 0)/
+omit_sigs_rcc = which(colSums(dplyr::select(rcc_clean, -c(Sample, Country)) > 0)/
                         nrow(ESCC_sig_activity) < .01)
 
 meanplot_rcc = mutate(rcc_clean, 
@@ -342,14 +342,14 @@ countries_plot_rcc = c("Lithuania", "Romania")
 lr = filter(rcc_clean, Country %in% countries_plot_rcc) 
 
 lith = filter(rcc_clean, Country == "Lithuania") %>% 
-  select(all_of(rcc_sigs))
+  dplyr::select(all_of(rcc_sigs))
 
 rom = filter(rcc_clean, Country == "Romania") %>% 
-  select(all_of(rcc_sigs))
+  dplyr::select(all_of(rcc_sigs))
 
 l_sigs_ordered = (names(sort(colSums(lith))) %>% rev)[1:10]
 r_sigs_ordered = (names(sort(colSums(rom))) %>% rev)[1:10]
-lr_sigs_ordered = (names(sort(colSums(lr %>% select(all_of(rcc_sigs))))) %>%
+lr_sigs_ordered = (names(sort(colSums(lr %>% dplyr::select(all_of(rcc_sigs))))) %>%
                      rev)[1:10]
 
 

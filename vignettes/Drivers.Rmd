@@ -1,0 +1,148 @@
+---
+title: "Signature Variability Analysis of the mutational signatures of driver alterations with sigvar"
+author:
+  - name: "Nicolas Alcala"
+    affiliation: "Rare Cancers Genomics Team, International Agency for Research on Cancer / World Health Organization"
+    email: "alcalan@iarc.who.int"
+date: "`r Sys.Date()`"
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Mutational signatures of carcinogens}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(sigvar)
+library(ggplot2)
+library(stringr)
+library(dplyr)
+library(readr)
+library(readxl)
+library(patchwork)
+library(ggpubr)
+library(GenomicFeatures)
+```
+
+# Introduction
+
+This vignette details an example of using sigvar to analyse the relationship between variability of mutational signatures and driver alterations, using the lung cancer in never smokers (LCINS) from the Sherlock-Lung study as an example (Zhang et al. 2021). It relies on the computation of the probability of driver mutations given a samples' single base substition (SBS) mutational spectrum and a cancer gene's spectrum of driver alterations.
+
+# Datasets
+This vignettes analyses the intogen dataset included in the sigvar package. For each dataset, we need three objects:
+- the relative SBS signature activities of all *n* samples, (table "_SBS"), with *n* rows and *k* columns, where *k* the number of active signatures in the dataset
+- the reference signature definitions (table "_SBS.refs"), with 96 rows corresponding to the usual SBS channels and *k* columns corresponding to the active signatures
+
+## Lung cancer in never smokers (LCINS)
+We retrieve the signature files from the sigvar package
+```{r }
+Sherlock_LCINS_SBS
+Sherlock_LCINS_SBS.refs
+```
+
+## Data preparation
+We compute the expected SBS profiles of each sample based on their signature attributions, by computing the linear combination of signatures observed in a sample weighted by their relative attribution in that sample.
+
+## LCINS
+```{r}
+MutType = Sherlock_LCINS_SBS.refs %>% dplyr::select(Type,Subtype)
+
+Sherlock_LCINS_SBS_spectra = as.matrix(Sherlock_LCINS_SBS[,-1])%*%t(as.matrix(Sherlock_LCINS_SBS.refs %>% dplyr::select(-Type,-Subtype) ))
+
+rownames(Sherlock_LCINS_SBS_spectra) = Sherlock_LCINS_SBS$Sample
+colnames(Sherlock_LCINS_SBS_spectra) = paste0(MutType$Type,",",MutType$Subtype)
+```
+
+# Computing the probability of driver mutations
+For each dataset, cancer gene, and patient, we compute the probability of a driver mutations as the dot product of the SBS spectrum of a patient (rows of tables "_SBS_spectra") and the SBS spectrum of driver mutations for this cancer gene (columns of tables "_drivers_SBS").
+
+## Compute driver spectra
+For LCINS we focus on the two most frequently mutated genes, *EGFR* and *TP53*. We first get SBS spectrum of gene *TP53*
+```{r}
+TP53_spectrum = get_SBS96_spectrum(transcript="ENST00000269305.9")
+```
+
+Get the SBS spectrum of driver *TP53* mutations in LUAD from the intogen database:
+```{r}
+TP53_driver_spectrum = get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
+```
+
+
+Compute the proportion of drivers in each of the 96 SBS context from the gene spectrum and driver spectrum:
+```{r}
+TP53_driver_prop = TP53_driver_spectrum/TP53_spectrum
+```
+
+## Compute probability of a driver given a sample's spectrum 
+```{r}
+prob_Sherlock_TP53_drivers = Sherlock_LCINS_SBS_spectra%*%TP53_driver_prop
+```
+
+
+# Computing variability statistics 
+We first compute the cosine similarities between mutational signatures, which we will use to weight the differences between signature such that profiles with plenty of similar signatures are not deemed diverse.
+
+```{r }
+Sherlock_LCINS_SBS_S_cossim <- cossim(as.matrix(Sherlock_LCINS_SBS.refs[,1:14]))
+```
+
+We then compute the within-sample diversity (gini simpson index or heterozygosity) for each sample:
+```{r }
+Sherlock_LCINS_SBS_GS = sapply(1:nrow(Sherlock_LCINS_SBS), function(i) het(Sherlock_LCINS_SBS[i,-1], S=Sherlock_LCINS_SBS_S_cossim) )
+```
+
+
+# Testing the relationship
+We test the relationship between probability of driver mutations, within-tumor variability, and passive smoking
+
+```{r }
+Sherlock_LCINS_SBS_res = bind_cols(prob.TP53=prob_Sherlock_TP53_drivers  ,
+                                   GS=Sherlock_LCINS_SBS_GS,
+                                   passive_smoking=Sherlock_LCINS.metadata$passive_smoking)
+
+Sherlock_LCINS_SBS_cor_TP53_GS = cor.test(Sherlock_LCINS_SBS_res$prob.TP53 , Sherlock_LCINS_SBS_res$GS)
+Sherlock_LCINS_SBS_cor_TP53_GS
+wilcox.test(prob.TP53~passive_smoking,data=Sherlock_LCINS_SBS_res)
+```
+
+# Plotting
+
+## Relationship between within-sample diversity and probability of driver alteration
+```{r }
+ggplot(data=Sherlock_LCINS_SBS_res,aes(y=prob.TP53,x=GS) ) + geom_point()+ stat_smooth(method = "lm",formula = y ~ x,geom = "smooth") + 
+    annotate("text",x = 0.05,y=0.045,label=paste0("P=",format(Sherlock_LCINS_SBS_cor_TP53_GS$p.value,digits=2)) ) + 
+  xlab("within-sample diversity") + ylab("Probability of TP53 driver alteration") + theme_classic()
+```
+
+## Relationship with passive smoking
+```{r }
+ggplot(data=Sherlock_LCINS_SBS_res %>% filter(!is.na(passive_smoking)),aes(y=prob.TP53,x=passive_smoking,fill=passive_smoking) ) + 
+  geom_violin()+ geom_boxplot(width=0.1,fill="white") +
+  stat_compare_means(comparisons = list(c("N","Y")), label = "p.signif" ) + 
+  xlab("") + ylab("Probability of TP53 driver alteration") + theme_classic()
+```
+
+
+## Spectra of driver mutations
+```{r}
+ggplot(tibble(Type= str_extract(names(TP53_driver_prop),"[ACGT]>[ACGT]"), 
+              Subtype =paste0(substr(names(TP53_driver_prop),1,1),substr(names(TP53_driver_prop),3,3),substr(names(TP53_driver_prop),7,7)), 
+              probability=TP53_driver_prop),aes(x=paste0(Type,Subtype),y= probability,fill=Type) ) + geom_col() +
+  theme_classic() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + xlab("Mutation type") + ylab("Proportion of drivers")
+```
+
+# Session information
+
+```{r }
+sessionInfo()
+```

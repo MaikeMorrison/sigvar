@@ -1,6 +1,6 @@
 Package: sigvar
 Title: Quantify and visualize variability of mutational signatures within and across samples
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(person("Maike", "Morrison", , "maikem@stanford.edu", role = c("aut"),
               comment = c(ORCID = "0000-0003-0430-1401")),
             person("Nicolas", "Alcala", , "alcalan@iarc.who.int", role = c("aut", "cre"),
@@ -9,7 +9,7 @@ Description: This package allows to import mutational signature attribution (a.k
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 URL: https://github.com/MaikeMorrison/sigvar
 BugReports: https://github.com/MaikeMorrison/sigvar/issues
 Imports:
@@ -24,7 +24,13 @@ Imports:
     glue,
     ggtext,
     ggforce,
-    scales
+    scales,
+    GenomicFeatures,
+    GenomeInfoDb,
+    BSgenome.Hsapiens.UCSC.hg38,
+    Biostrings,
+    rtracklayer,
+    TxDb.Hsapiens.UCSC.hg38.knownGene
 Suggests: 
     knitr,
     rmarkdown,

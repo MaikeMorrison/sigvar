@@ -196,6 +196,8 @@ compute_SBS96_context <- function(trans){
 trans.contexts  = sapply(2:(length(trans)-1),  function(i) paste0(trans[i+(-1):1],collapse = "") )
 
 ### Convert to SBS96
+
+
 reverse <- function(X){
   res = str_split(X,"")[[1]]
   res = sapply(res, function(x){
@@ -223,6 +225,49 @@ Braf.trans.SBS96.context  = compute_SBS96_context(Braf.trans)
 Kras.trans.SBS96.context  = compute_SBS96_context(Kras.trans)
 Hras.trans.SBS96.context  = compute_SBS96_context(Hras.trans)
 Fgfr2.trans.SBS96.context = compute_SBS96_context(Fgfr2.trans)
+
+RBM10.spectrum = get_SBS96_spectrum(transcript = "ENST00000377604")
+KRAS.spectrum = get_SBS96_spectrum(transcript = "ENST00000311936")
+EGFR.spectrum = get_SBS96_spectrum(transcript = "ENST00000275493")
+TP53.spectrum = get_SBS96_spectrum()
+
+library(biomaRt)
+
+get_SBS96_spectrum = function(transcript="ENST00000269305",dataset = "hsapiens_gene_ensembl"){
+txdb <- GenomicFeatures::makeTxDbFromBiomart(biomart = "ENSEMBL_MART_ENSEMBL",dataset = dataset, transcript_ids = transcript)
+SBS32_Subtypes = c("ACA", "ACC", "ACG", "ACT",
+"CCA", "CCC", "CCG", "CCT",
+"GCA", "GCC", "GCG", "GCT",
+"TCA", "TCC", "TCG", "TCT",
+"ATA", "ATC", "ATG", "ATT",
+"CTA", "CTC", "CTG", "CTT",
+"GTA", "GTC", "GTG", "GTT",
+"TTA", "TTC", "TTG", "TTT")
+SBS96_Subtypes = c("ACA", "ACC", "ACG", "ACT","CCA", "CCC", "CCG", "CCT","GCA", "GCC", "GCG", "GCT","TCA", "TCC", "TCG", "TCT",
+"ACA", "ACC", "ACG", "ACT","CCA", "CCC", "CCG", "CCT","GCA", "GCC", "GCG", "GCT","TCA", "TCC", "TCG", "TCT",
+"ACA", "ACC", "ACG", "ACT","CCA", "CCC", "CCG", "CCT","GCA", "GCC", "GCG", "GCT","TCA", "TCC", "TCG", "TCT",
+"ATA", "ATC", "ATG", "ATT","CTA", "CTC", "CTG", "CTT","GTA", "GTC", "GTG", "GTT","TTA", "TTC", "TTG", "TTT",
+"ATA", "ATC", "ATG", "ATT","CTA", "CTC", "CTG", "CTT","GTA", "GTC", "GTG", "GTT","TTA", "TTC", "TTG", "TTT",
+"ATA", "ATC", "ATG", "ATT","CTA", "CTC", "CTG", "CTT","GTA", "GTC", "GTG", "GTT","TTA", "TTC", "TTG", "TTT")
+# retrieve transcript sequence + neighboring nucleotides from DB
+hg38_tr = GenomicFeatures::exons(txdb,filter=list(tx_name=transcript))
+GenomeInfoDb::seqlevelsStyle(hg38_tr) <- GenomeInfoDb::seqlevelsStyle(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38)
+hg38_seq <- Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38, names=rtracklayer::chrom(hg38_tr) ,
+                               start=rtracklayer::start(hg38_tr)-1,end=rtracklayer::end(hg38_tr)+1,
+                               strand=rtracklayer::strand(hg38_tr))
+# compute spectrum
+spectrum = colSums(Biostrings::trinucleotideFrequency(hg38_seq))
+spectrumW = spectrum[names(spectrum) %in% SBS96_Subtypes]
+spectrumC = spectrum[!names(spectrum) %in% SBS96_Subtypes]
+names(spectrumC) = as.character(Biostrings::complement( Biostrings::DNAStringSet(names(spectrumC)) ))
+all(names(spectrumC) %in% SBS96_Subtypes)
+spectrum = matrix(rep(0,length(SBS32_Subtypes)),dimnames = list(SBS32_Subtypes,transcript))
+spectrum[names(spectrumW),] = spectrumW
+spectrum[names(spectrumC),] = spectrum[names(spectrumC),] + spectrumC
+spectrum = spectrum[SBS96_Subtypes,]
+return(spectrum)
+}
+
 
 # code to create mice mutsig files
 #Mice_Carcinogens.SBS96.input0 = read_tsv("../data/signatures/mice_carcinogens/41588_2020_692_MOESM2_ESM.xlsx")
@@ -436,7 +481,55 @@ ESCC_drivers_SBS = tibble(Type=ESCC_TP53driverpos.SBS.spectra$Type,
 
 usethis::use_data(ESCC_drivers_SBS,overwrite = T)
 
-## LUAD drivers intogen
+# get all drivers from intogen
+intogen.boostDM.files        = list.files("data-raw/app/tables/",pattern = "prediction")
+intogen.boostDM.files.gene   = str_extract(intogen.boostDM.files,pattern = "^[A-Z0-9]+")
+intogen.boostDM.files.cohort = str_replace_all(str_extract(intogen.boostDM.files,pattern = "\\.[A-Z0-9_]+\\."),"\\.","")
+
+intogen.boostDM = lapply(1:length(intogen.boostDM.files),
+                         function(i){res=read_tsv(paste0("data-raw/app/tables/",intogen.boostDM.files[i]) );res$cohort=intogen.boostDM.files.cohort[i];res$gene=intogen.boostDM.files.gene[i];return(res) })
+
+for(i in 1:length(intogen.boostDM.files)){
+  intogen.boostDM[[i]]$chr = paste0("chr",intogen.boostDM[[i]]$chr)
+}
+
+intogen.boostDM = bind_rows(intogen.boostDM)
+intogen.boostDM.drivers = intogen.boostDM %>% filter(boostDM_class) %>%
+  dplyr::select(gene,ENSEMBL_TRANSCRIPT, ENSEMBL_GENE,  chr,      pos, alt,   aachange, boostDM_score , frequency,cohort)
+
+usethis::use_data(intogen.boostDM.drivers,overwrite = T)
+
+## LUAD TP53 drivers intogen
+TP53_drivers_intogen_LUAD = read_tsv("../data/signatures/COSMIC/IntOGen-Distribution-TP53-LUAD_23052024.tsv") %>% filter(Driver=="Driver")
+TP53_drivers_intogen_LUAD$chr = paste0("chr",str_extract(TP53_drivers_intogen_LUAD$`Mutation (GRCh38)`,"^[0-9]+"))
+TP53_drivers_intogen_LUAD$pos = as.numeric(str_remove_all(str_extract(TP53_drivers_intogen_LUAD$`Mutation (GRCh38)`,":[0-9]+:"),":"))
+TP53_drivers_intogen_LUAD$alt = str_extract(TP53_drivers_intogen_LUAD$`Mutation (GRCh38)`,"[ACGT]$")
+
+sort( table( str_extract(TP53_drivers_intogen_LUAD$`Mutation (GRCh38)`,"[ACGT]>[ACGT]$") ) )
+
+usethis::use_data(TP53_drivers_intogen_LUAD,overwrite = T)
+
+# prepare txdb object
+txdb_human <- GenomicFeatures::makeTxDbFromGFF("data-raw/gencode.v46.basic.annotation.gff3.gz",organism = "Homo sapiens",format = "gff3",
+                                         dataSource = "gencode_r46_GRCh38.p14_basic_gene_annotation")
+
+saveDb(txdb_human,file = "inst/extdata/txdb_human")
+
+usethis::use_data(txdb_human,overwrite = T)
+
+### compare with old
+TP53_drivers_intogen_SBS96.flat = rowSums(TP53_drivers_intogen_SBS96[,-1])
+names(TP53_drivers_intogen_SBS96.flat) = TP53_drivers_intogen_SBS96$MutationType
+
+TP53_drivers_intogen_SBS96.flat = TP53_drivers_intogen_SBS96.flat[names(TP53_driver_spectrum)]
+
+plot(TP53_drivers_intogen_SBS96.flat,TP53_driver_spectrum) # not exactly the same
+
+apply(TP53_drivers_intogen_SBS96[,-1],2,function(x)TP53_drivers_intogen_SBS96$MutationType[which.max(x)])
+
+### TP53 drivers intogen
+TP53_drivers_intogen_SBS96
+
 EGFR_drivers_intogen_SBS96 = read_tsv("../data/signatures/COSMIC/SPinput_split/output/SBS/COSMIC_EGFR.SBS96.all")
 EGFR_drivers_intogen_SBS96 = tibble( MutationType=EGFR_drivers_intogen_SBS96$MutationType, EGFR=rowSums(EGFR_drivers_intogen_SBS96[,-1]) ) %>%
   mutate(Type=str_extract(MutationType,"[ATCG]>[ATCG]"),
