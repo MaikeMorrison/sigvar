@@ -46,6 +46,7 @@ import_SigProfiler <- function(folder="."){
 #' @importFrom GenomicFeatures exons
 #' @importFrom GenomeInfoDb seqlevelsStyle
 #' @importFrom BSgenome.Hsapiens.UCSC.hg38 BSgenome.Hsapiens.UCSC.hg38
+#' @importFrom BSgenome.Mmusculus.UCSC.mm10 BSgenome.Mmusculus.UCSC.mm10
 #' @importFrom Biostrings getSeq
 #' @importFrom rtracklayer chrom
 #' @importFrom rtracklayer start
@@ -56,8 +57,10 @@ import_SigProfiler <- function(folder="."){
 #' @importFrom Biostrings reverse
 #' @importFrom Biostrings DNAStringSet
 #' @importFrom TxDb.Hsapiens.UCSC.hg38.knownGene TxDb.Hsapiens.UCSC.hg38.knownGene
+#' @importFrom TxDb.Mmusculus.UCSC.mm10.knownGene TxDb.Mmusculus.UCSC.mm10.knownGene
 get_SBS96_spectrum = function(transcript="ENST00000269305.9",organism = "Homo sapiens"){
   if(sub("_| ","",tolower(organism))=="homosapiens") txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene::TxDb.Hsapiens.UCSC.hg38.knownGene
+  if(sub("_| ","",tolower(organism))=="musmusculus") txdb <- TxDb.Mmusculus.UCSC.mm10.knownGene::TxDb.Mmusculus.UCSC.mm10.knownGene
   if(!exists("txdb")) stop("Organism not found. Valid answers are homo sapiens")
   SBS32_Subtypes = c("ACA", "ACC", "ACG", "ACT",
                      "CCA", "CCC", "CCG", "CCT",
@@ -74,13 +77,21 @@ get_SBS96_spectrum = function(transcript="ENST00000269305.9",organism = "Homo sa
                      "ATA", "ATC", "ATG", "ATT","CTA", "CTC", "CTG", "CTT","GTA", "GTC", "GTG", "GTT","TTA", "TTC", "TTG", "TTT",
                      "ATA", "ATC", "ATG", "ATT","CTA", "CTC", "CTG", "CTT","GTA", "GTC", "GTG", "GTT","TTA", "TTC", "TTG", "TTT")
   # retrieve transcript sequence + neighboring nucleotides from DB
-  hg38_tr = GenomicFeatures::exons(txdb,filter=list(tx_name=transcript))
-  GenomeInfoDb::seqlevelsStyle(hg38_tr) <- GenomeInfoDb::seqlevelsStyle(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38)
-  hg38_seq <- Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38, names=rtracklayer::chrom(hg38_tr) ,
-                                 start=rtracklayer::start(hg38_tr)-1,end=rtracklayer::end(hg38_tr)+1,
-                                 strand=rtracklayer::strand(hg38_tr))
+  ref_tr = GenomicFeatures::exons(txdb,filter=list(tx_name=transcript))
+  if(sub("_| ","",tolower(organism))=="homosapiens"){
+    GenomeInfoDb::seqlevelsStyle(ref_tr) <- GenomeInfoDb::seqlevelsStyle(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38)
+    ref_seq <- Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38, names=rtracklayer::chrom(ref_tr) ,
+                                 start=rtracklayer::start(ref_tr)-1,end=rtracklayer::end(ref_tr)+1,
+                                 strand=rtracklayer::strand(ref_tr))
+  }
+  if(sub("_| ","",tolower(organism))=="musmusculus"){
+    GenomeInfoDb::seqlevelsStyle(ref_tr) <- GenomeInfoDb::seqlevelsStyle(BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10)
+    ref_seq <- Biostrings::getSeq(BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10, names=rtracklayer::chrom(ref_tr) ,
+                                 start=rtracklayer::start(ref_tr)-1,end=rtracklayer::end(ref_tr)+1,
+                                 strand=rtracklayer::strand(ref_tr))
+  }
   # compute spectrum
-  spectrum = colSums(Biostrings::trinucleotideFrequency(hg38_seq))
+  spectrum = colSums(Biostrings::trinucleotideFrequency(ref_seq))
   spectrumW = spectrum[names(spectrum) %in% SBS96_Subtypes]
   spectrumC = spectrum[!names(spectrum) %in% SBS96_Subtypes]
   names(spectrumC) = as.character(Biostrings::reverse(Biostrings::complement( Biostrings::DNAStringSet(names(spectrumC)) )))
@@ -92,9 +103,10 @@ get_SBS96_spectrum = function(transcript="ENST00000269305.9",organism = "Homo sa
   return(spectrum)
 }
 
-#' get_SBS96_spectrum_driver
+#' get_SBS96_driver_spectrum
 #'
 #' @param driverlist a table containing a list of drivers alterations, with columns chr, pos, and alt
+#' @param genome a string indicating the reference genome (currently supports hg38 and hg19)
 #'
 #' @return A vector of size 96 containing the SBS spectrum of the transcript
 #' @export
@@ -108,12 +120,10 @@ get_SBS96_spectrum = function(transcript="ENST00000269305.9",organism = "Homo sa
 #' @importFrom Biostrings complement
 #' @importFrom Biostrings reverse
 #' @importFrom Biostrings DNAStringSet
-get_SBS96_driver_spectrum = function( driverlist ){#gene="TP53",cohort="LUAD",observed=T){
-  #@param gene the gene alias
-  #@param cohort the cohort from intogen associated with the gene (examples: BRCA, PRAD)
-  #@param observed boolean value specifying whether to restrict to observed mutations, or to use in silico predicted driver mutations from boostDM (default: TRUE)
-  driver.preds = driverlist #intogen.boostDM.drivers %>% filter(gene==.env$gene,cohort%in%.env$cohort)
-  #if(observed) driver.preds = driver.preds %>% filter(frequency>0)
+get_SBS96_driver_spectrum = function( driverlist , genome = "hg38"){
+  #@param driverlist a dataframe with the list of driver positions (columns chr and pos required)
+  #@param genome the name of the reference genome corresponding to the driverlist positions (hg19, hg38 or mm10)
+  driver.preds = driverlist
   if(nrow(driver.preds)==0) stop("Gene-cohort pair not found in intogen data")
 
   SBS32_Subtypes = c("ACA", "ACC", "ACG", "ACT",
@@ -131,18 +141,33 @@ get_SBS96_driver_spectrum = function( driverlist ){#gene="TP53",cohort="LUAD",ob
                      "A[T>C]A", "A[T>C]C", "A[T>C]G", "A[T>C]T","C[T>C]A", "C[T>C]C", "C[T>C]G", "C[T>C]T","G[T>C]A", "G[T>C]C", "G[T>C]G", "G[T>C]T","T[T>C]A", "T[T>C]C", "T[T>C]G", "T[T>C]T",
                      "A[T>G]A", "A[T>G]C", "A[T>G]G", "A[T>G]T","C[T>G]A", "C[T>G]C", "C[T>G]G", "C[T>G]T","G[T>G]A", "G[T>G]C", "G[T>G]G", "G[T>G]T","T[T>G]A", "T[T>G]C", "T[T>G]G", "T[T>G]T")
   # retrieve transcript sequence + neighboring nucleotides from DB
-  hg38_seq <- as.character(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38,
+  if(genome%in%c("hg38","GRCh38") ){
+    ref_seq <- as.character(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38,
                                  names=driver.preds$chr ,
-                                 start=driver.preds$pos-1,end=driver.preds$pos+1)) #,
-                                 #strand=rtracklayer::strand(hg38_tr))
-  hg38_seq.alt = driver.preds$alt
+                                 start=driver.preds$pos-1,end=driver.preds$pos+1))
+  }else{
+    if(genome%in%c("hg19","GRCh37") ){
+      ref_seq <- as.character(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
+                                              names=driver.preds$chr ,
+                                              start=driver.preds$pos-1,end=driver.preds$pos+1))
+    }else{
+      if(genome%in%c("mm10","GRCm38") ){
+        ref_seq <- as.character(Biostrings::getSeq(BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10,
+                                                   names=driver.preds$chr ,
+                                                   start=driver.preds$pos-1,end=driver.preds$pos+1))
+      }else{
+        stop("genome parameter not recognized. Please use one of hg38, hg19, or mm10")
+      }
+    }
+  }
+  ref_seq.alt = driver.preds$alt
   # complement mutations
-  to_comp = which(!hg38_seq %in% SBS32_Subtypes)
-  hg38_seq[to_comp] = as.character(Biostrings::reverse(Biostrings::complement( Biostrings::DNAStringSet(hg38_seq[to_comp]) )))
-  hg38_seq.alt[to_comp] = as.character(Biostrings::complement( Biostrings::DNAStringSet(hg38_seq.alt[to_comp]) ))
+  to_comp = which(!ref_seq %in% SBS32_Subtypes)
+  ref_seq[to_comp] = as.character(Biostrings::reverse(Biostrings::complement( Biostrings::DNAStringSet(ref_seq[to_comp]) )))
+  ref_seq.alt[to_comp] = as.character(Biostrings::complement( Biostrings::DNAStringSet(ref_seq.alt[to_comp]) ))
   # compute spectrum
-  hg38_seq.mut = factor(paste0(substr(hg38_seq,1,1),"[",substr(hg38_seq,2,2),">",hg38_seq.alt,"]",substr(hg38_seq,3,3)),levels=SBS96_Subtypes)
-  spectrum = table( hg38_seq.mut )
+  ref_seq.mut = factor(paste0(substr(ref_seq,1,1),"[",substr(ref_seq,2,2),">",ref_seq.alt,"]",substr(ref_seq,3,3)),levels=SBS96_Subtypes)
+  spectrum = table( ref_seq.mut )
 
   return(spectrum)
 }

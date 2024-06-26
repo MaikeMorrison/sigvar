@@ -112,6 +112,104 @@
 #' @source <https://static-content.springer.com/esm/art%3A10.1038%2Fs41588-023-01321-1/MediaObjects/41588_2023_1321_MOESM4_ESM.xlsx>
 "MESOMICS_CN_SBS"
 
+#' Single base substitution reference signatures for COSMIC3.0
+#'
+#' COSMIC 3.0 Single base subtitutions mutational signatures
+#' from the COSMIC website
+#'
+#' @format ## `COSMIC3.0_SBS`
+#' A tibble with 96 rows and 68 columns:
+#' \describe{
+#'   \item{Type}{Type of SBS}
+#'   \item{SBS1,...,SBS85}{Proportion of SBS in each class for each signature}
+#' }
+#' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
+"COSMIC3.0_SBS"
+
+#' Single base substitution reference signatures for COSMIC3.3.1
+#'
+#' COSMIC 3.3.1 Single base subtitutions mutational signatures
+#' from the COSMIC website
+#'
+#' @format ## `COSMIC3.3.1_SBS`
+#' A tibble with 96 rows and 80 columns:
+#' \describe{
+#'   \item{Type}{Type of SBS}
+#'   \item{SBS1,...,SBS95}{Proportion of SBS in each class for each signature}
+#' }
+#' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
+"COSMIC3.3.1_SBS"
+
+#' Indel reference signatures for COSMIC3.0
+#'
+#' COSMIC 3.0 Indel mutational signatures
+#' from the COSMIC website
+#'
+#' @format ## `COSMIC3.0_ID`
+#' A tibble with 83 rows and 18 columns:
+#' \describe{
+#'   \item{Type}{Type of ID}
+#'   \item{ID1,...,ID17}{Proportion of ID in each class for each signature}
+#' }
+#' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
+"COSMIC3.0_ID"
+
+#' Indel reference signatures for COSMIC3.3.1
+#'
+#' COSMIC 3.3 Indel mutational signatures
+#' from the COSMIC website
+#'
+#' @format ## `COSMIC3.3_ID`
+#' A tibble with 83 rows and 19 columns:
+#' \describe{
+#'   \item{Type}{Type of ID}
+#'   \item{ID1,...,ID18}{Proportion of ID in each class for each signature}
+#' }
+#' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
+"COSMIC3.3_ID"
+
+#' Double base reference signatures for COSMIC3.0
+#'
+#' COSMIC 3.3 Double base mutational signatures
+#' from the COSMIC website
+#'
+#' @format ## `COSMIC3.3_DBS`
+#' A tibble with 78 rows and 12 columns:
+#' \describe{
+#'   \item{Type}{Type of ID}
+#'   \item{DBS1,...,DBS11}{Proportion of DBS in each class for each signature}
+#' }
+#' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
+"COSMIC3.3_DBS"
+
+#' Mice Double base reference signatures for COSMIC3.0
+#'
+#' Mice COSMIC 3.3 Double base mutational signatures
+#' from the COSMIC website
+#'
+#' @format ## `COSMIC3.3_DBS_mm10`
+#' A tibble with 78 rows and 12 columns:
+#' \describe{
+#'   \item{Type}{Type of ID}
+#'   \item{DBS1,...,DBS11}{Proportion of DBS in each class for each signature}
+#' }
+#' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
+"COSMIC3.3_DBS_mm10"
+
+#' Mice Single base substitution reference signatures for COSMIC3.3.1
+#'
+#' Mice COSMIC 3.3.1 Single base subtitutions mutational signatures
+#' from the COSMIC website
+#'
+#' @format ## `COSMIC3.3.1_SBS_mm10`
+#' A tibble with 96 rows and 80 columns:
+#' \describe{
+#'   \item{Type}{Type of SBS}
+#'   \item{SBS1,...,SBS95}{Proportion of SBS in each class for each signature}
+#' }
+#' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
+"COSMIC3.3.1_SBS_mm10"
+
 #' Copy Number reference signatures for COSMIC3.1
 #'
 #' COSMIC 3.1 Copy Number mutational signatures
@@ -125,6 +223,20 @@
 #' }
 #' @source <https://static-content.springer.com/esm/art%3A10.1038%2Fs41588-023-01321-1/MediaObjects/41588_2023_1321_MOESM4_ESM.xlsx>
 "COSMIC3.1_CN"
+
+#' Copy Number reference signatures for COSMIC3.3
+#'
+#' COSMIC 3.3 Copy Number mutational signatures
+#' from the COSMIC website
+#'
+#' @format ## `COSMIC3.3_CN`
+#' A tibble with 48 rows and 8 columns:
+#' \describe{
+#'   \item{MutationsType}{Type of segment}
+#'   \item{CN1,...,CN19}{Proportion of Copy number segments in each category}
+#' }
+#' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
+"COSMIC3.3_CN"
 
 #' Single Base Substitution COSMIC mutational signatures for 2780 tumors
 #'
@@ -275,3 +387,69 @@
 #' }
 #' @source <https://doi.org/10.1038/s41588-019-0569-6>
 "ESCC_sig_similarity"
+
+#' Single base substitution signature attributions found in esophageal squamous cell carcinoma across countries with varying incidence.
+#'
+#' Data from: Moody et al. Nat Genet (2021)
+"ESCC_countries_SBS"
+
+#' Reference COSMIC Single base substitution signatures found in esophageal squamous cell carcinoma across countries with varying incidence.
+#'
+#' Data from: Moody et al. Nat Genet (2021)
+"ESCC_countries_SBS.refs"
+
+"Sherlock_LCINS.metadata"
+
+#' Single base substitution signature attributions found in Lung cancer in never smokers.
+#'
+#' Data from: Zhang et al. Nat Genet (2021)
+"Sherlock_LCINS_SBS"
+
+#' Reference COSMIC Single base substitution signatures found in Lung cancer in never smokers.
+#'
+#' Data from: Zhang et al. Nat Genet (2021)
+"Sherlock_LCINS_SBS.refs"
+
+#' Single base substitution signature attributions found in mice exposed to 20 known or suspected carcinogens.
+#'
+#' Data from: Riva et al. Nat Genet (2020)
+"carcinogens_mice_SBS"
+
+
+#' Reference Single base substitution signatures found in mice exposed to 20 known or suspected carcinogens.
+#'
+#' Data from: Riva et al. Nat Genet (2020)
+"carcinogens_mice_SBS.refs"
+
+
+#' Single base substitution signature attributions found in papillary thyroid carcinoma from Chernobyl incident survivors.
+#'
+#' Data from: Morton et al. Science (2021)
+"radiation_sigs_morton"
+
+#' Cosine similarity matrix of Single base substitution signatures found in papillary thyroid carcinoma from Chernobyl incident survivors.
+#'
+#' Data from: Morton et al. Science (2021)
+"radiation_sigs_morton_cossim"
+
+#' Cosine similarity matrix of Single base substitution signatures found in lung adenocarcinomas in Asia.
+#'
+#' Data from: Chen et al. Nat Genet (2020)
+"smoker_sigs_chen_cossim"
+
+
+#' Supplementary table from Moody et al. Nat Genet 2021.
+#'
+#' Data from: Moody et al. Nat Genet (2021)
+"tab15"
+
+
+#' Driver mutations from the intogen website for gene EGFR in lung adenocarcinomas
+#'
+#' Data from: Intogen database
+"Intogen_EGFR_LUAD"
+
+#' Driver mutations from the intogen website for gene TP53 in lung adenocarcinomas
+#'
+#' Data from: Intogen database
+"TP53_drivers_intogen_LUAD"

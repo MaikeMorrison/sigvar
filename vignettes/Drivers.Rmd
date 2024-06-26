@@ -28,7 +28,6 @@ library(ggplot2)
 library(stringr)
 library(dplyr)
 library(readr)
-library(readxl)
 library(patchwork)
 library(ggpubr)
 library(GenomicFeatures)
@@ -67,7 +66,7 @@ colnames(Sherlock_LCINS_SBS_spectra) = paste0(MutType$Type,",",MutType$Subtype)
 For each dataset, cancer gene, and patient, we compute the probability of a driver mutations as the dot product of the SBS spectrum of a patient (rows of tables "_SBS_spectra") and the SBS spectrum of driver mutations for this cancer gene (columns of tables "_drivers_SBS").
 
 ## Compute driver spectra
-For LCINS we focus on the two most frequently mutated genes, *EGFR* and *TP53*. We first get SBS spectrum of gene *TP53*
+We focus on one of the most frequently mutated gene, *TP53*. We first get SBS spectrum of gene *TP53*
 ```{r}
 TP53_spectrum = get_SBS96_spectrum(transcript="ENST00000269305.9")
 ```

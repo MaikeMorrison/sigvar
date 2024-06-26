@@ -28,9 +28,12 @@ Imports:
     GenomicFeatures,
     GenomeInfoDb,
     BSgenome.Hsapiens.UCSC.hg38,
+    BSgenome.Hsapiens.UCSC.hg19,
+    BSgenome.Mmusculus.UCSC.mm10,
     Biostrings,
     rtracklayer,
-    TxDb.Hsapiens.UCSC.hg38.knownGene
+    TxDb.Hsapiens.UCSC.hg38.knownGene,
+    TxDb.Mmusculus.UCSC.mm10.knownGene
 Suggests: 
     knitr,
     rmarkdown,

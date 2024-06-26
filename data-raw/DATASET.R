@@ -122,6 +122,49 @@ Sherlock.muts     = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoke
 Sherlock_LCINS_SBS.refs = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=7,skip=2) %>% arrange(Type,Subtype)
 Sherlock_LCINS.metadata = read_xlsx("/home/alcalan/evolution/data/signatures/non-smoker_lung_cancer_genomics/41588_2021_920_MOESM4_ESM.xlsx",sheet=1,skip=1)
 
+## check which ones are recurrent driver genes
+Sherlock.muts %>% filter(Sherlock_Driver_Gene=="Y") %>% group_by(Hugo_Symbol)  %>%
+  summarize(n=n(),prop=n/length(unique(Sherlock.muts$Subject))) %>% arrange(-n) #above 5%: EGFR, TP53, RBM10, KRAS
+
+## create Sherlock catalog
+Sherlock.muts_EGFR = Sherlock.muts %>% filter(Sherlock_Driver_Gene=="Y",Hugo_Symbol =="EGFR",Variant_Type=="SNP") %>%
+  dplyr::select(Chromosome,Start_Position,Tumor_Seq_Allele2) %>% dplyr::rename(chr=Chromosome,pos=Start_Position,alt=Tumor_Seq_Allele2) %>% mutate(chr=paste0("chr",chr))
+Sherlock.muts_EGFR = Sherlock.muts_EGFR[!duplicated(Sherlock.muts_EGFR),]
+
+EGFR_driver_spectrum2 = get_SBS96_driver_spectrum(Sherlock.muts_EGFR)
+
+
+
+# compare SP and manual driver spectra
+EGFR_driver_spectrum_SP = read_tsv("../data/signatures/COSMIC/SPinput/output/SBS/COSMIC_EGFR.SBS96.all")
+
+EGFR_driver_spectrum_SP
+plot( EGFR_driver_spectrum_SP$EGFR_LUAD_intogen, EGFR_driver_spectrum[EGFR_driver_spectrum_SP$MutationType]) # exactly the same
+
+## contexts different
+plot(EGFR_spectrum,EGFR.trans.SBS96.context)
+### check transcript sequences
+EGFR.trans
+read_tsv("../data/signatures/COSMIC/Homo_sapiens_EGFR_ENST00000275493_7_sequence.fa",comment = ">",col_names = NA)[[1]]
+
+txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene::TxDb.Hsapiens.UCSC.hg38.knownGene
+hg38_tr = GenomicFeatures::exons(txdb,filter=list(tx_name="ENST00000275493.7"))
+GenomeInfoDb::seqlevelsStyle(hg38_tr) <- GenomeInfoDb::seqlevelsStyle(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38)
+hg38_seq <- Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38, names=rtracklayer::chrom(hg38_tr) ,
+                               start=rtracklayer::start(hg38_tr)-1,end=rtracklayer::end(hg38_tr)+1,
+                               strand=rtracklayer::strand(hg38_tr))
+
+all( str_split(as.character(hg38_seq[28]),"")[[1]][-c(1,6375)] == unlist(str_split(toto$X1[102:208],"")) ) #last exon is exactly the same
+
+## compare diversities
+Probs = read_tsv("../TableS_drivers_LCINS.tsv")
+
+cor.test( Sherlock_LCINS_SBS_res$GS, Probs$`Within-sample_diversity`)
+
+plot( Sherlock_LCINS_SBS_res$prob.EGFR, Probs$Probability_EGFR_driver)
+
+##
+
 Sherlock_LCINS_SBS.refs = Sherlock_LCINS_SBS.refs[,colnames(Sherlock_LCINS_SBS)[-1]]
 all(colnames(Sherlock_LCINS_SBS.refs)==colnames(Sherlock_LCINS_SBS)[-(1)])
 
@@ -301,16 +344,16 @@ mut_profs_all_drivers.t = bind_cols(mutation_ID= rownames(mut_profs_all_drivers.
 drivers_fig4.lung.spectra  = left_join(drivers_fig4.lung,mut_profs_all_drivers.t)
 drivers_fig4.liver.spectra = left_join(drivers_fig4.liver,mut_profs_all_drivers.t)
 
-mice_lung_drivers_SBS = tibble(Fgfr2 = colSums(drivers_fig4.lung.spectra[drivers_fig4.lung.spectra$X6=="Fgfr2",1:96+10]) ,
-                               Kras = colSums(drivers_fig4.lung.spectra[drivers_fig4.lung.spectra$X6=="Kras",1:96+10])
+mice_lung_drivers_SBS = tibble(Fgfr2 = colSums(drivers_fig4.lung.spectra[!duplicated(drivers_fig4.lung.spectra[,2:6])&drivers_fig4.lung.spectra$X6=="Fgfr2",1:96+10]) ,
+                               Kras = colSums(drivers_fig4.lung.spectra[!duplicated(drivers_fig4.lung.spectra[,2:6])&drivers_fig4.lung.spectra$X6=="Kras",1:96+10])
                                )
 
-mice_liver_drivers_SBS = tibble(Hras = colSums(drivers_fig4.liver.spectra[drivers_fig4.liver.spectra$X6=="Hras",1:96+10]) ,
-                               Braf = colSums(drivers_fig4.liver.spectra[drivers_fig4.liver.spectra$X6=="Braf",1:96+10])
+mice_liver_drivers_SBS = tibble(Hras = colSums(drivers_fig4.liver.spectra[!duplicated(drivers_fig4.liver.spectra[,2:6])&drivers_fig4.liver.spectra$X6=="Hras",1:96+10]) ,
+                               Braf = colSums(drivers_fig4.liver.spectra[!duplicated(drivers_fig4.liver.spectra[,2:6])&drivers_fig4.liver.spectra$X6=="Braf",1:96+10])
 )
 
 mice_lung_drivers_SBS$Fgfr2 = mice_lung_drivers_SBS$Fgfr2/Fgfr2.trans.SBS96.context
-mice_lung_drivers_SBS$Kras = mice_lung_drivers_SBS$Fgfr2/Kras.trans.SBS96.context
+mice_lung_drivers_SBS$Kras = mice_lung_drivers_SBS$Kras/Kras.trans.SBS96.context
 mice_liver_drivers_SBS$Hras = mice_liver_drivers_SBS$Hras/Hras.trans.SBS96.context
 mice_liver_drivers_SBS$Braf = mice_liver_drivers_SBS$Braf/Braf.trans.SBS96.context
 
@@ -508,6 +551,13 @@ TP53_drivers_intogen_LUAD$alt = str_extract(TP53_drivers_intogen_LUAD$`Mutation 
 sort( table( str_extract(TP53_drivers_intogen_LUAD$`Mutation (GRCh38)`,"[ACGT]>[ACGT]$") ) )
 
 usethis::use_data(TP53_drivers_intogen_LUAD,overwrite = T)
+
+## EGFR
+
+## RBM10
+
+## KRAS
+
 
 # prepare txdb object
 txdb_human <- GenomicFeatures::makeTxDbFromGFF("data-raw/gencode.v46.basic.annotation.gff3.gz",organism = "Homo sapiens",format = "gff3",

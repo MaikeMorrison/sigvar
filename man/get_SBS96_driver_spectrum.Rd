@@ -2,18 +2,20 @@
 % Please edit documentation in R/import_functions.R
 \name{get_SBS96_driver_spectrum}
 \alias{get_SBS96_driver_spectrum}
-\title{get_SBS96_spectrum_driver}
+\title{get_SBS96_driver_spectrum}
 \usage{
-get_SBS96_driver_spectrum(driverlist)
+get_SBS96_driver_spectrum(driverlist, genome = "hg38")
 }
 \arguments{
 \item{driverlist}{a table containing a list of drivers alterations, with columns chr, pos, and alt}
+
+\item{genome}{a string indicating the reference genome (currently supports hg38 and hg19)}
 }
 \value{
 A vector of size 96 containing the SBS spectrum of the transcript
 }
 \description{
-get_SBS96_spectrum_driver
+get_SBS96_driver_spectrum
 }
 \examples{
 TP53_LUAD.driver.spectrum = get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
