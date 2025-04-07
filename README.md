@@ -37,6 +37,12 @@ mutational signature data, such as:
 - `plot_dots`: Plot the mean mutational signature contributions of one
   or more groups of samples
 
+Finally, *sigvar* includes other accessory functions for investigating driver mutations:
+
+- `get_SBS96_spectrum`: compute the mutational spectrum of a given transcript
+
+- `get_SBS96_driver_spectrum`: compute the mutational spectrum of a list of driver mutations
+
 ## Installation
 
 You can install the development version of *sigvar* from
@@ -68,6 +74,12 @@ following R code after package installation:
 
 ``` r
 vignette("tutorial", package = "sigvar")
+```
+
+A vignette explaining how to compute the mutational spectrum of cancer driver genes and the probability of driver mutations given a sample's mutational spectrum is also available 
+
+``` r
+vignette("Drivers", package = "sigvar")
 ```
 
 <!-- ## Example -->
