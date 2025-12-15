@@ -59,6 +59,14 @@ Installation time ranges from 1 to 5 minutes depending on whether
 dependencies also need to be installed. Run time is expected to be a few
 minutes on a typical desktop computer.
 
+If the installation directly from GitHub does not work, download the code as a ZIP file (click the green "Code" button and then "Download ZIP") and then run:
+
+``` r
+devtools::install_local(path = "path/to/Downloads/sigvar-master.zip")
+```
+
+where `"path/to/Downloads/sigvar-master.zip"` is the name of the path to the downloaded ZIP file. 
+
 <!-- See vignettes for detailed examples of using sigvar on real datasets. -->
 
 The package has been tested on R version 4.1.2 on a Redhat Linux
