@@ -2,7 +2,14 @@
 title: "Carcinogen exposure is associated with increased diversity of signature activity within tumors."
 author: "Laurane Mangé"
 date: '2024-05-16'
-output: html_document
+output:
+  BiocStyle::html_document:
+    toc: true
+    toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{supplement_carcinogen_figure_altered}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}

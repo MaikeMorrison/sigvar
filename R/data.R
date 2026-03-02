@@ -398,6 +398,9 @@
 #' Data from: Moody et al. Nat Genet (2021)
 "ESCC_countries_SBS.refs"
 
+#' Metadata accompanying mutational signatures for lung cancer in never smokers.
+#'
+#' Data from: Zhang et al. Nat Genet (2021)
 "Sherlock_LCINS.metadata"
 
 #' Single base substitution signature attributions found in Lung cancer in never smokers.
