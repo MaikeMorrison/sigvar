@@ -12,6 +12,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 URL: https://github.com/MaikeMorrison/sigvar
 BugReports: https://github.com/MaikeMorrison/sigvar/issues
+biocViews:StatisticalMethod, Visualization, DriverMutation 
 Imports:
     dplyr,
     ggplot2,
