@@ -12,7 +12,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 URL: https://github.com/MaikeMorrison/sigvar
 BugReports: https://github.com/MaikeMorrison/sigvar/issues
-biocViews:StatisticalMethod, Visualization, DriverMutation 
 Imports:
     dplyr,
     ggplot2,
@@ -49,7 +48,7 @@ Suggests:
     lsa,
     patchwork,
     tidyverse
-biocViews: Software, WholeGenome, SomaticMutation, StructuralVariation
+biocViews: Software, WholeGenome, SomaticMutation, StructuralVariation, StatisticalMethod, Visualization, DriverMutation 
 Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
