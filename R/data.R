@@ -438,11 +438,6 @@
 "smoker_sigs_chen_cossim"
 
 
-#' Supplementary table from Moody et al. Nat Genet 2021.
-#'
-#' Data from: Moody et al. Nat Genet (2021)
-"tab15"
-
 
 #' Driver mutations from the intogen website for gene EGFR in lung adenocarcinomas
 #'

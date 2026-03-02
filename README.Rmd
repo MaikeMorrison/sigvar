@@ -64,6 +64,17 @@ vignette("tutorial", package = "sigvar")
 ```
 
 
+## Dependencies 
+dplyr, ggplot2, rlang,  tidyr, readr, stringr, tibble, ggh4x, glue, ggtext, ggforce, scales, GenomicFeatures,
+    GenomeInfoDb,
+    BSgenome.Hsapiens.UCSC.hg38,
+    BSgenome.Hsapiens.UCSC.hg19,
+    BSgenome.Mmusculus.UCSC.mm10,
+    Biostrings,
+    rtracklayer,
+    TxDb.Hsapiens.UCSC.hg38.knownGene,
+    TxDb.Mmusculus.UCSC.mm10.knownGene
+
 <!-- ## Example -->
 
 <!-- This is a basic example which shows you how to import results from SigProfiler and plot the signature attributions: -->
