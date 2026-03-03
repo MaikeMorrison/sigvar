@@ -57,8 +57,8 @@ chem_abbreviations = data.frame(chemical = c("1-trans-delta-9-TetrahydrocannabJn
 
 
 riva_relab = mutsig_carcinogens_mice_SBS %>% left_join(chem_abbreviations) %>%
-  select(Sample, chemical = chem_name, dose_numeric, Tissue, mSBS1:mSBS_N3) %>%
-  filter(Tissue %in% c("liver", "lung")) 
+  dplyr::select(Sample, chemical = chem_name, dose_numeric, Tissue, mSBS1:mSBS_N3) %>%
+  dplyr::filter(Tissue %in% c("liver", "lung")) 
 ```
 
 Then we format the data to fit our SVA analysis. This includes defining the chemicals as factors, filtering out signatures under 5%, and normalizing the resulting matrix.
@@ -91,7 +91,7 @@ riva_var = sigvar(sig_activity = riva_relab_norm,
                   group = c("chemical", "Tissue")) %>% 
   `colnames<-`(c("chemical", "Tissue", "group", "across", "mean_within"))
 
-riva_within = riva_relab_norm %>% select(chemical, Tissue) %>%
+riva_within = riva_relab_norm %>% dplyr::select(chemical, Tissue) %>%
   mutate(within = apply(riva_relab_norm, 1, het, K = 11, S = riva_cossim)) %>%  
   left_join(riva_var)
 ```
@@ -119,10 +119,10 @@ chemical_tissue = list()
 i = 1
  set.seed(1)
  for(chem in setdiff(chems, "Spontaneous")){
-   riva_chem_spontaneous = filter(riva_relab_norm, chemical %in% c("Spontaneous", chem))
-   riva_chem = filter(riva_relab_norm, chemical == chem)
+   riva_chem_spontaneous = dplyr::filter(riva_relab_norm, chemical %in% c("Spontaneous", chem))
+   riva_chem = dplyr::filter(riva_relab_norm, chemical == chem)
    for(tissue in unique(riva_chem$Tissue)){
-     riva_bootstrap_list_greater[[i]] = sigvar::sigboot(sig_activity = riva_chem_spontaneous %>% filter(Tissue == tissue),
+     riva_bootstrap_list_greater[[i]] = sigvar::sigboot(sig_activity = riva_chem_spontaneous %>% dplyr::filter(Tissue == tissue),
                     K = 11, S = riva_cossim,
                     group = c("chemical", "Tissue"), 
                     n_replicates = 1000, seed = 1, alternative = "greater")
@@ -186,8 +186,8 @@ bold_list = sig2 %>% group_by(chemical) %>%
   summarise(min_within = min(mean_within_sample_diversity)) %>% 
   mutate(chemical_bold = ifelse(min_within < 0.1, paste0("**", chemical, "**"),
                                 as.character(chemical))) %>% 
-  select(chemical, chemical_bold) %>% distinct() %>%
-  filter(chemical != "Spontaneous") %>%
+  dplyr::select(chemical, chemical_bold) %>% distinct() %>%
+  dplyr::filter(chemical != "Spontaneous") %>%
   rbind(c("Spontaneous", "**Spontaneous**"))
 
 
@@ -198,9 +198,9 @@ riva_within_sig2  = left_join(riva_within, sig2,
 sig2 = left_join(sig2, bold_list)
 
 
-chems_ordered = riva_within_sig2 %>% filter(Tissue == "liver") %>%
+chems_ordered = riva_within_sig2 %>% dplyr::filter(Tissue == "liver") %>%
   arrange(-mean_within) %>%
-  select(chemical_bold) %>% unique %>% unlist
+  dplyr::select(chemical_bold) %>% unique %>% unlist
 
 riva_within_sig2$chemical_ordered = factor(riva_within_sig2$chemical_bold, 
                                            ordered = TRUE,
@@ -214,13 +214,13 @@ riva_1d = ggplot(riva_within_sig2, aes(y = chemical_ordered, x = within)) +
   geom_point(aes(x = mean_within, y = chemical_ordered), size = 3, alpha = 0) +
   
   geom_vline(aes(xintercept = mean_within),
-             data = riva_within_sig2 %>% filter(chemical == "Spontaneous"), 
+             data = riva_within_sig2 %>% dplyr::filter(chemical == "Spontaneous"), 
              linewidth = 1, color = "#3A488AFF", alpha = 0.7) +
   
   geom_violin(fill = "#3A488AFF", color = NA, width = 0.9, alpha = 0.7,
-              data = riva_within_sig2 %>% filter(chemical == "Spontaneous")) + 
+              data = riva_within_sig2 %>% dplyr::filter(chemical == "Spontaneous")) + 
   geom_violin(aes(fill = significance), color = NA, width = 1.3, alpha = 0.7,
-              data = riva_within_sig2 %>% filter(chemical != "Spontaneous")) + 
+              data = riva_within_sig2 %>% dplyr::filter(chemical != "Spontaneous")) + 
   geom_point(aes(x = mean_within, y = chemical_bold), size = 2.5, alpha = 0.3) +
   
   facet_grid(~ifelse(Tissue == "liver", 
@@ -301,15 +301,15 @@ We first fetch the spontaneous samples for both tissue types and compute the 2 m
 
 ```{r riva normal samples mean and sd}
 # generate samples from spontaneous pop using normale distrib
-chemical_counts_liver <- riva_relab_norm %>% filter(Tissue=="liver") %>% group_by(chemical) %>% count()
-chemical_counts_lung <- riva_relab_norm %>% filter(Tissue=="lung") %>% group_by(chemical) %>% count()
+chemical_counts_liver <- riva_relab_norm %>% dplyr::filter(Tissue=="liver") %>% group_by(chemical) %>% count()
+chemical_counts_lung <- riva_relab_norm %>% dplyr::filter(Tissue=="lung") %>% group_by(chemical) %>% count()
 
 # number of samples per substance group
 chemical_counts_liver <- setorder(chemical_counts_liver[-1,],"chemical")
 chemical_counts_lung <- setorder(chemical_counts_lung[-1,],"chemical")
 
-liver_spont <- riva_relab_norm %>% filter(Tissue=="liver", chemical=="Spontaneous")
-lung_spont <- riva_relab_norm %>% filter(Tissue=="lung", chemical=="Spontaneous")
+liver_spont <- riva_relab_norm %>% dplyr::filter(Tissue=="liver", chemical=="Spontaneous")
+lung_spont <- riva_relab_norm %>% dplyr::filter(Tissue=="lung", chemical=="Spontaneous")
 # mean within-sample div of spont liver 
 mean_within_liver_spont <- riva_within$mean_within[riva_within$group=='Spontaneous_liver'][1]
 # mean within-sample div of spont lung 
@@ -326,8 +326,8 @@ The `riva_within` dataframe contains the original within-sample diversity and ac
 
 ```{r riva normal samples generate}
 
-riva_within_sim_liver <- setorder(riva_within %>% filter(Tissue=="liver", chemical!="Spontaneous"),"chemical")
-riva_within_sim_lung <- setorder(riva_within %>% filter(Tissue=="lung", chemical!="Spontaneous"), "chemical")
+riva_within_sim_liver <- setorder(riva_within %>% dplyr::filter(Tissue=="liver", chemical!="Spontaneous"),"chemical")
+riva_within_sim_lung <- setorder(riva_within %>% dplyr::filter(Tissue=="lung", chemical!="Spontaneous"), "chemical")
 
 # list of within-sample div values generated under normal distrib for liver
 # number of samples generated = number of samples in each group from original data
@@ -349,7 +349,7 @@ Next, we regroup in a single dataframe named `riva_within_sim` both dataframes c
 ```{r riva normal samples final df}
 # dataframe with info for each generated sample :
 # chemical, tissue, within-sample div, group (chemical+tissue), across sample het., mean within-sample div of the group the sample belongs to 
-riva_within_sim <- rbind(riva_within_sim_liver, riva_within_sim_lung, riva_within %>% filter(Tissue=="liver",chemical=="Spontaneous"), riva_within %>% filter(Tissue=="lung",chemical=="Spontaneous"))
+riva_within_sim <- rbind(riva_within_sim_liver, riva_within_sim_lung, riva_within %>% dplyr::filter(Tissue=="liver",chemical=="Spontaneous"), riva_within %>% dplyr::filter(Tissue=="lung",chemical=="Spontaneous"))
 
 ```
 
@@ -409,8 +409,8 @@ bold_list = sig2 %>% group_by(chemical) %>%
   summarise(min_within = min(mean_within_sample_diversity)) %>% 
   mutate(chemical_bold = ifelse(min_within < 0.1, paste0("**", chemical, "**"),
                                 as.character(chemical))) %>% 
-  select(chemical, chemical_bold) %>% distinct() %>%
-  filter(chemical != "Spontaneous") %>%
+  dplyr::select(chemical, chemical_bold) %>% distinct() %>%
+  dplyr::filter(chemical != "Spontaneous") %>%
   rbind(c("Spontaneous", "**Spontaneous**"))
 
 
@@ -421,9 +421,9 @@ riva_within_sim_sig2  = left_join(riva_within_sim, sig2,
 sig2 = left_join(sig2, bold_list)
 
 
-chems_ordered = riva_within_sim_sig2 %>% filter(Tissue == "liver") %>%
+chems_ordered = riva_within_sim_sig2 %>% dplyr::filter(Tissue == "liver") %>%
   arrange(-mean_within) %>%
-  select(chemical_bold) %>% unique %>% unlist
+  dplyr::select(chemical_bold) %>% unique %>% unlist
 
 riva_within_sim_sig2$chemical_ordered = factor(riva_within_sim_sig2$chemical_bold, 
                                            ordered = TRUE,
@@ -437,13 +437,13 @@ riva_1d = ggplot(riva_within_sim_sig2, aes(y = chemical_ordered, x = within)) +
   geom_point(aes(x = mean_within, y = chemical_ordered), size = 3, alpha = 0) +
   
   geom_vline(aes(xintercept = mean_within),
-             data = riva_within_sim_sig2 %>% filter(chemical == "Spontaneous"), 
+             data = riva_within_sim_sig2 %>% dplyr::filter(chemical == "Spontaneous"), 
              linewidth = 1, color = "#3A488AFF", alpha = 0.7) +
   
   geom_violin(fill = "#3A488AFF", color = NA, width = 0.9, alpha = 0.7,
-              data = riva_within_sim_sig2 %>% filter(chemical == "Spontaneous")) + 
+              data = riva_within_sim_sig2 %>% dplyr::filter(chemical == "Spontaneous")) + 
   geom_violin(aes(fill = significance), color = NA, width = 1.3, alpha = 0.7,
-              data = riva_within_sim_sig2 %>% filter(chemical != "Spontaneous")) + 
+              data = riva_within_sim_sig2 %>% dplyr::filter(chemical != "Spontaneous")) + 
   geom_point(aes(x = mean_within, y = chemical_bold), size = 2.5, alpha = 0.3) +
   
   facet_grid(~ifelse(Tissue == "liver", 

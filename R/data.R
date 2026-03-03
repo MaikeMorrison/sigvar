@@ -66,6 +66,21 @@
 "mutsig_carcinogens_mice_SBS"
 
 
+#' Definitions of murine single base substitution mutational signatures
+#'
+#' Single Base Substitution mutational signature definitions
+#' from Riva et al. Nat Genet 52, 1189–1197 (2020). https://doi.org/10.1038/s41588-020-0692-4
+#'
+#' @format ## `mutsig_carcinogens_mice_SBS.refs`
+#' A tibble with 96 rows and 13 columns:
+#' \describe{
+#'   \item{Type}{Substitution type (e.g., C>A, T>G)}
+#'   \item{Subtype}{Substitution type with 5' and 3' context (e.g., A[C>A]A)}
+#'   \item{mSBS5, ..., mSBS_N3}{Proportion of mutations in each class for each signature}
+#' }
+"mutsig_carcinogens_mice_SBS.refs"
+
+
 
 
 #' Bootstrap p-values comparing SVA results for carcinogen-exposed murine tumors to spontaneous tumors
