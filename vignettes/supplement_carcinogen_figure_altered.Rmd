@@ -30,7 +30,6 @@ library(stringr)
 library(tidyverse)
 library(patchwork)
 library(ggtext)
-library(beepr)
 library(data.table)
 library(ggplot2)
 ```
@@ -112,7 +111,6 @@ We then compute the new Pvalues of all mean within-sample diversities. Each run 
 
 ### New pvals : 
 
-tictoc::tic()
 #Compute Riva stats
 riva_bootstrap_list_greater = list()
 chemical_tissue = list()
@@ -131,8 +129,6 @@ i = 1
      i = i + 1
    }
  }
- tictoc::toc()
- beepr::beep()
 ```
 
 We now want a dataframe containing all the information necessary to plot figure 2a. We create `riva5percent_p_values_greater` based on the bootstrap Pvalues file from the sigvar package. This dataframe has 7 columns : group 1 (chemical + tissue), chemical, tissue, group 2 (spontaneous + tissue), Pvalue for across-sample heterogeneity, Pvalue for within-sample diversity, Pvalue for pooled diversity (this column is now full of NAs). We adjust every row (every comparison between 2 groups of samples) with the corresponding values from `riva_bootstrap_list_greater`.
