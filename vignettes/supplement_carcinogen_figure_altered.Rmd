@@ -23,14 +23,11 @@ This document gives the code used to produce the analyses and figures pertaining
 ## Libraries necessary
 
 ```{r libraries, warning = FALSE, message = FALSE}
-library("FAVA")
 library(sigvar)
-library(readr)
 library(stringr)
 library(tidyverse)
 library(patchwork)
 library(ggtext)
-library(data.table)
 library(ggplot2)
 ```
 
@@ -301,8 +298,8 @@ chemical_counts_liver <- riva_relab_norm %>% dplyr::filter(Tissue=="liver") %>% 
 chemical_counts_lung <- riva_relab_norm %>% dplyr::filter(Tissue=="lung") %>% group_by(chemical) %>% count()
 
 # number of samples per substance group
-chemical_counts_liver <- setorder(chemical_counts_liver[-1,],"chemical")
-chemical_counts_lung <- setorder(chemical_counts_lung[-1,],"chemical")
+chemical_counts_liver <- arrange(chemical_counts_liver[-1,],"chemical")
+chemical_counts_lung <- arrange(chemical_counts_lung[-1,],"chemical")
 
 liver_spont <- riva_relab_norm %>% dplyr::filter(Tissue=="liver", chemical=="Spontaneous")
 lung_spont <- riva_relab_norm %>% dplyr::filter(Tissue=="lung", chemical=="Spontaneous")
@@ -322,8 +319,8 @@ The `riva_within` dataframe contains the original within-sample diversity and ac
 
 ```{r riva normal samples generate}
 
-riva_within_sim_liver <- setorder(riva_within %>% dplyr::filter(Tissue=="liver", chemical!="Spontaneous"),"chemical")
-riva_within_sim_lung <- setorder(riva_within %>% dplyr::filter(Tissue=="lung", chemical!="Spontaneous"), "chemical")
+riva_within_sim_liver <- arrange(riva_within %>% dplyr::filter(Tissue=="liver", chemical!="Spontaneous"),"chemical")
+riva_within_sim_lung <- arrange(riva_within %>% dplyr::filter(Tissue=="lung", chemical!="Spontaneous"), "chemical")
 
 # list of within-sample div values generated under normal distrib for liver
 # number of samples generated = number of samples in each group from original data

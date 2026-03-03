@@ -17,7 +17,6 @@ Imports:
     ggplot2,
     rlang,
     tidyr,
-    readr,
     stringr,
     ggh4x,
     glue,
@@ -50,6 +49,6 @@ Suggests:
 biocViews: Software, WholeGenome, SomaticMutation, StructuralVariation, StatisticalMethod, Visualization, DriverMutation 
 Config/testthat/edition: 3
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5)
 LazyData: true
 VignetteBuilder: knitr

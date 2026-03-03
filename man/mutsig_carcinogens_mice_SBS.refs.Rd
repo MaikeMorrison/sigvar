@@ -10,7 +10,7 @@
 A tibble with 96 rows and 13 columns:
 \describe{
 \item{Type}{Substitution type (e.g., C>A, T>G)}
-\item{Subtype}{Substitution type with 5' and 3' context (e.g., A\link{C>A}A)}
+\item{Subtype}{Substitution type with 5' and 3' context (e.g., ACA)}
 \item{mSBS5, ..., mSBS_N3}{Proportion of mutations in each class for each signature}
 }
 }
