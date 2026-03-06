@@ -466,3 +466,26 @@
 #'
 #' Data from: Intogen database
 "TP53_drivers_intogen_LUAD"
+
+
+#'Counts of each context class for the main transcript of gene EGFR
+#'
+#' Data from: Ensembl
+"EGFR_context_counts_ordered"
+
+
+#'Counts of each context class for the main transcript of gene TP53
+#'
+#' Data from: Ensembl
+"TP53_context_counts_ordered"
+
+
+#'SBS96 spectrum from the intogen website for gene EGFR in lung adenocarcinomas
+#'
+#' Data from: Intogen database
+"EGFR_drivers_intogen_SBS96"
+
+#'SBS96 spectrum from the intogen website for gene TP53 in lung adenocarcinomas
+#'
+#' Data from: Intogen database
+"TP53_drivers_intogen_SBS96"
