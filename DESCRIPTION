@@ -31,7 +31,8 @@ Imports:
     Biostrings,
     rtracklayer,
     TxDb.Hsapiens.UCSC.hg38.knownGene,
-    TxDb.Mmusculus.UCSC.mm10.knownGene
+    TxDb.Mmusculus.UCSC.mm10.knownGene,
+    lifecycle
 Suggests: 
     knitr,
     rmarkdown,

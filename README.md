@@ -5,9 +5,11 @@
 
 <!-- badges: start -->
 
+[![R-CMD-check](https://github.com/MaikeMorrison/sigvar/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MaikeMorrison/sigvar/actions/workflows/R-CMD-check.yaml)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![R-CMD-check](https://github.com/MaikeMorrison/sigvar/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MaikeMorrison/sigvar/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The R package *sigvar* implements **sig**nature **var**iability
