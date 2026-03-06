@@ -4,6 +4,10 @@
 # sigvar
 
 <!-- badges: start -->
+
+[![License:
+MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![R-CMD-check](https://github.com/MaikeMorrison/sigvar/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MaikeMorrison/sigvar/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The R package *sigvar* implements **sig**nature **var**iability
@@ -37,12 +41,6 @@ mutational signature data, such as:
 - `plot_dots`: Plot the mean mutational signature contributions of one
   or more groups of samples
 
-Finally, *sigvar* includes other accessory functions for investigating driver mutations:
-
-- `get_SBS96_spectrum`: compute the mutational spectrum of a given transcript
-
-- `get_SBS96_driver_spectrum`: compute the mutational spectrum of a list of driver mutations
-
 ## Installation
 
 You can install the development version of *sigvar* from
@@ -58,14 +56,6 @@ devtools::install_github("MaikeMorrison/sigvar", dependencies = TRUE, build_vign
 Installation time ranges from 1 to 5 minutes depending on whether
 dependencies also need to be installed. Run time is expected to be a few
 minutes on a typical desktop computer.
-
-If the installation directly from GitHub does not work, download the code as a ZIP file (click the green "Code" button and then "Download ZIP") and then run:
-
-``` r
-devtools::install_local(path = "path/to/Downloads/sigvar-master.zip")
-```
-
-where `"path/to/Downloads/sigvar-master.zip"` is the name of the path to the downloaded ZIP file. 
 
 <!-- See vignettes for detailed examples of using sigvar on real datasets. -->
 
@@ -84,11 +74,13 @@ following R code after package installation:
 vignette("tutorial", package = "sigvar")
 ```
 
-A vignette explaining how to compute the mutational spectrum of cancer driver genes and the probability of driver mutations given a sample's mutational spectrum is also available 
+## Dependencies
 
-``` r
-vignette("Drivers", package = "sigvar")
-```
+dplyr, ggplot2, rlang, tidyr, readr, stringr, tibble, ggh4x, glue,
+ggtext, ggforce, scales, GenomicFeatures, GenomeInfoDb,
+BSgenome.Hsapiens.UCSC.hg38, BSgenome.Hsapiens.UCSC.hg19,
+BSgenome.Mmusculus.UCSC.mm10, Biostrings, rtracklayer,
+TxDb.Hsapiens.UCSC.hg38.knownGene, TxDb.Mmusculus.UCSC.mm10.knownGene
 
 <!-- ## Example -->
 <!-- This is a basic example which shows you how to import results from SigProfiler and plot the signature attributions: -->
