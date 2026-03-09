@@ -1,7 +1,6 @@
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# sigvar
+# sigvar <img src="man/figures/sigvar_logo_v1.png" align="right" width="200" style="margin-left:50px;"/>
 
 <!-- badges: start -->
 
