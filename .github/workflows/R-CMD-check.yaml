@@ -6,13 +6,11 @@ on:
   pull_request:
 
 name: R-CMD-check.yaml
-
 permissions: read-all
 
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
-
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
 
     strategy:
@@ -31,9 +29,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
       - uses: r-lib/actions/setup-pandoc@v2
-
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
@@ -48,9 +44,23 @@ jobs:
           BiocManager::install("Biostrings", ask = FALSE, force = TRUE)
         shell: Rscript {0}
 
+      - name: Install dependencies manually for oldrel-1 (pak cannot resolve ggrepel)
+        if: matrix.config.r == 'oldrel-1'
+        run: |
+          install.packages("remotes")
+          # Install pinned ggrepel FIRST before ggpubr pulls in the latest
+          remotes::install_version("ggrepel", version = "0.9.5", 
+                                   repos = "https://cran.r-project.org",
+                                   upgrade = "never")
+          # Then install remaining deps, telling remotes never to upgrade ggrepel
+          remotes::install_deps(dependencies = TRUE, upgrade = "never")
+          install.packages("rcmdcheck")
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@v2
+        if: matrix.config.r != 'oldrel-1'
         with:
-          extra-packages: any::rcmdcheck, ggrepel=?ignore-before-r=4.5.0
+          extra-packages: any::rcmdcheck
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
