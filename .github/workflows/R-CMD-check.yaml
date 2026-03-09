@@ -48,16 +48,9 @@ jobs:
           BiocManager::install("Biostrings", ask = FALSE, force = TRUE)
         shell: Rscript {0}
 
-      - name: Pin ggrepel version for oldrel-1 (R 4.4)
-        if: matrix.config.r == 'oldrel-1'
-        run: |
-          install.packages("remotes")
-          remotes::install_version("ggrepel", version = "0.9.5", repos = "https://cran.r-project.org")
-        shell: Rscript {0}
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: any::rcmdcheck, ggrepel=?ignore-before-r=4.5.0
           needs: check
 
       - uses: r-lib/actions/check-r-package@v2
