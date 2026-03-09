@@ -48,11 +48,22 @@ jobs:
         if: matrix.config.r == 'oldrel-1'
         run: |
           install.packages("remotes")
+          install.packages("BiocManager")
           # Install pinned ggrepel FIRST before ggpubr pulls in the latest
           remotes::install_version("ggrepel", version = "0.9.5", 
                                    repos = "https://cran.r-project.org",
                                    upgrade = "never")
-          # Then install remaining deps, telling remotes never to upgrade ggrepel
+          # Install Bioconductor dependencies
+          BiocManager::install(c(
+            "GenomicFeatures",
+            "BSgenome.Hsapiens.UCSC.hg38",
+            "BSgenome.Hsapiens.UCSC.hg19",
+            "BSgenome.Mmusculus.UCSC.mm10",
+            "rtracklayer",
+            "TxDb.Hsapiens.UCSC.hg38.knownGene",
+            "TxDb.Mmusculus.UCSC.mm10.knownGene"
+          ), ask = FALSE, update = FALSE)                         
+          # Then install remaining CRAN deps, telling remotes never to upgrade ggrepel
           remotes::install_deps(dependencies = TRUE, upgrade = "never")
           install.packages("rcmdcheck")
         shell: Rscript {0}
