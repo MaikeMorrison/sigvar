@@ -434,7 +434,7 @@
 "carcinogens_mice_SBS"
 
 
-#' Reference Single base substitution signatures found in mice exposed to 20 known or suspected carcinogens.
+#' Reference single base substitution signatures found in mice exposed to 20 known or suspected carcinogens.
 #'
 #' Data from: Riva et al. Nat Genet (2020)
 "carcinogens_mice_SBS.refs"

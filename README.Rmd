@@ -47,7 +47,7 @@ The *sigvar* package contains two core functions to perform signature variabilit
 You can install the development version of *sigvar* from [GitHub](https://github.com/MaikeMorrison/sigvar) with:
 
 ```{r, eval=FALSE}
-install.packages("devtools") # run only if devtools not already installed
+# install.packages("devtools") # run only if devtools not already installed
 devtools::install_github("MaikeMorrison/sigvar", dependencies = TRUE, build_vignettes = TRUE)
 ```
 
@@ -64,6 +64,17 @@ A tutorial on the usage of *sigvar* is available in the `tutorial` vignette, whi
 
 ```{r, eval = FALSE}
 vignette("tutorial", package = "sigvar")
+```
+
+## Vignettes
+
+There are also several vignettes that reproduce figures and analyses from Morrison et al. These vignettes can be accessed via the following R code after package installation:
+
+```{r, eval = FALSE}
+vignette("carcinogen_figure", package = "sigvar")
+vignette("Drivers", package = "sigvar")
+vignette("geography_incidence_figure", package = "sigvar")
+vignette("supplement_carcinogen_figure_altered", package = "sigvar")
 ```
 
 
