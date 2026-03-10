@@ -12,28 +12,14 @@ A dataframe with 43 rows and 43 columns:
 \item{SBS1, ..., ID17}{Pairwise cosine similarities between mutational signatures.}
 }
 }
-
-\subsection{\code{ESCC_sig_similarity}}{
-
-A dataframe with 3 rows and 3 columns:
-\describe{
-\item{Smoking, ..., Ageing}{Pairwise cosine similarities between mutational signatures.}
-}
-}
 }
 \source{
 \url{https://doi.org/10.1038/s41588-021-00928-6}
-
-\url{https://doi.org/10.1038/s41588-019-0569-6}
 }
 \usage{
-ESCC_sig_similarity
-
 ESCC_sig_similarity
 }
 \description{
 Data from: Moody, S., Senkin, S., Islam, S.M.A. et al. Mutational signatures in esophageal squamous cell carcinoma from eight countries with varying incidence. Nat Genet 53, 1553–1563 (2021).
-
-Data from: Chen, J., Yang, H., Teo, A.S.M. et al. Genomic landscape of lung adenocarcinoma in East Asians. Nat Genet 52, 177–186 (2020).
 }
 \keyword{datasets}

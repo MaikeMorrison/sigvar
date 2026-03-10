@@ -3,14 +3,23 @@
 \docType{data}
 \name{smoker_sigs_chen_cossim}
 \alias{smoker_sigs_chen_cossim}
-\title{Cosine similarity matrix of Single base substitution signatures found in lung adenocarcinomas in Asia.}
+\title{Cosine similarity of smoking, APOBEC, and ageing mutational signatures found in a sample of East Asian lung adenocarcinoma patients.}
 \format{
-An object of class \code{matrix} (inherits from \code{array}) with 3 rows and 3 columns.
+\subsection{\code{smoker_sigs_chen_cossim}}{
+
+A dataframe with 3 rows and 3 columns:
+\describe{
+\item{Smoking, ..., Ageing}{Pairwise cosine similarities between mutational signatures.}
+}
+}
+}
+\source{
+\url{https://doi.org/10.1038/s41588-019-0569-6}
 }
 \usage{
 smoker_sigs_chen_cossim
 }
 \description{
-Data from: Chen et al. Nat Genet (2020)
+Data from: Chen, J., Yang, H., Teo, A.S.M. et al. Genomic landscape of lung adenocarcinoma in East Asians. Nat Genet 52, 177–186 (2020).
 }
 \keyword{datasets}
