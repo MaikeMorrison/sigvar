@@ -3,7 +3,7 @@
 \docType{data}
 \name{carcinogens_mice_SBS.refs}
 \alias{carcinogens_mice_SBS.refs}
-\title{Reference Single base substitution signatures found in mice exposed to 20 known or suspected carcinogens.}
+\title{Reference single base substitution signatures found in mice exposed to 20 known or suspected carcinogens.}
 \format{
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 96 rows and 13 columns.
 }

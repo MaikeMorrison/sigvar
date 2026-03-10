@@ -395,13 +395,13 @@
 #'
 #' Data from: Chen, J., Yang, H., Teo, A.S.M. et al. Genomic landscape of lung adenocarcinoma in East Asians. Nat Genet 52, 177–186 (2020).
 #'
-#' @format ## `ESCC_sig_similarity`
+#' @format ## `smoker_sigs_chen_cossim`
 #' A dataframe with 3 rows and 3 columns:
 #' \describe{
 #' \item{Smoking, ..., Ageing}{Pairwise cosine similarities between mutational signatures.}
 #' }
 #' @source <https://doi.org/10.1038/s41588-019-0569-6>
-"ESCC_sig_similarity"
+"smoker_sigs_chen_cossim"
 
 #' Single base substitution signature attributions found in esophageal squamous cell carcinoma across countries with varying incidence.
 #'
@@ -449,12 +449,6 @@
 #'
 #' Data from: Morton et al. Science (2021)
 "radiation_sigs_morton_cossim"
-
-#' Cosine similarity matrix of Single base substitution signatures found in lung adenocarcinomas in Asia.
-#'
-#' Data from: Chen et al. Nat Genet (2020)
-"smoker_sigs_chen_cossim"
-
 
 
 #' Driver mutations from the intogen website for gene EGFR in lung adenocarcinomas
