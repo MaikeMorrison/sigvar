@@ -90,6 +90,8 @@ following R code after package installation:
 vignette("tutorial", package = "sigvar")
 ```
 
+The run time of the tutorial is under 5 minutes.
+
 ## Vignettes
 
 There are also several vignettes that reproduce figures and analyses

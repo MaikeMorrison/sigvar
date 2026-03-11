@@ -79,6 +79,7 @@ A tutorial on the usage of *sigvar* is available in the `tutorial` vignette, whi
 vignette("tutorial", package = "sigvar")
 ```
 
+The run time of the tutorial is under 5 minutes. 
 
 ## Vignettes
 
