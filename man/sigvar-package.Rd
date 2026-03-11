@@ -5,7 +5,7 @@
 \alias{sigvar-package}
 \title{sigvar: Quantify and visualize variability of mutational signatures within and across samples}
 \description{
-This package allows to import mutational signature attribution (a.k.a. exposure) matrices and compute, visualize, and test their variabilities within and across samples.
+This package allows users to import mutational signature attribution (a.k.a. exposure) matrices and compute, visualize, and test their variabilities within and across samples.
 }
 \seealso{
 Useful links:
