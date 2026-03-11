@@ -16,7 +16,7 @@ A ggplot2 bar chart depicting SBS mutational spectra
 Plot an SBS mutational spectrum
 }
 \examples{
-SBS_table = dplyr::select(COSMIC3.3.1_SBS, SBS1, SBS5)
+SBS_table <- dplyr::select(COSMIC3.3.1_SBS, SBS1, SBS5)
 plot_SBS_spectrum(SBS_table)
 
 }

@@ -20,7 +20,7 @@ that sum to 1 (\code{K}) must be specified.}
 
 \item{group}{Optional; a string specifying the name of the column that describes which group each row (sample) belongs to. Use if \code{matrices} is a single matrix containing multiple groups of samples you wish to compare.}
 
-\item{time}{Optional; a string specifying the name of the column that describes the sampling time for each row. Include if you wish to weight FAVA by the distance between samples.}
+\item{time}{Optional; a string specifying the name of the column that describes the sampling time for each row. Include if you wish to weight the samples by the distance between them in the visualization.}
 
 \item{w}{Optional; a vector of length \code{I} with non-negative entries that sum to 1. Entry \code{w[i]} represents the weight placed on row \code{i} in the computation of the mean abundance of each category across rows. The default value is \code{w = rep(1/nrow(relab_matrix), nrow(relab_matrix))}.}
 
@@ -37,7 +37,7 @@ or \code{arrange = FALSE}, neither order is changed.}
 A ggplot object containing a bar plot visualization of the relative abundance matrix.
 }
 \description{
-This function enables graphical visualization of a matrix of compostional data.
+This function enables graphical visualization of a matrix of compositional data.
 In the output plot, each vertical bar represents a single vector;
 the height of each color in the bar corresponds to the abundance of each category
 in that vector. Because this function produces a
@@ -48,7 +48,8 @@ standard ggplot2 syntax.
 
 # Make an example matrix of compositional data
 # Each row is an individual. Rows sum to 1.
-population_A = matrix(c(
+population_A <- matrix(
+  c(
     .5, .3, .2,
     .4, .2, .4,
     .5, .4, .1,
@@ -57,42 +58,48 @@ population_A = matrix(c(
   ),
   nrow = 5,
   byrow = TRUE
-  )
+)
 
-  plot_signature_prop(relab_matrix = population_A,
-              K = 3, # How many categories per vector?
-              arrange = FALSE
-              )
-  plot_signature_prop(relab_matrix = population_A,
-              K = 3, # How many categories per vector?
-              arrange = "horizontal"
-              )
-  plot_signature_prop(relab_matrix = population_A,
-              K = 3, # How many categories per vector?
-              arrange = "vertical"
-              )
-   plot_signature_prop(relab_matrix = population_A,
-              K = 3, # How many categories per vector?
-              arrange = TRUE  # could also be "both"
-              )
+plot_signature_prop(
+  relab_matrix = population_A,
+  K = 3, # How many categories per vector?
+  arrange = FALSE
+)
+plot_signature_prop(
+  relab_matrix = population_A,
+  K = 3, # How many categories per vector?
+  arrange = "horizontal"
+)
+plot_signature_prop(
+  relab_matrix = population_A,
+  K = 3, # How many categories per vector?
+  arrange = "vertical"
+)
+plot_signature_prop(
+  relab_matrix = population_A,
+  K = 3, # How many categories per vector?
+  arrange = TRUE # could also be "both"
+)
 
 
 # You can modify the plot as you would any ggplot2 object
-plot_signature_prop(relab_matrix = population_A,
-              K = 3, # How many categories per vector?
-              arrange = TRUE
-              ) +
+plot_signature_prop(
+  relab_matrix = population_A,
+  K = 3, # How many categories per vector?
+  arrange = TRUE
+) +
   # Below are example, optional modifications to the default plot
   ggplot2::ggtitle("Population A") +
   ggplot2::scale_fill_brewer("Blues") +
   ggplot2::scale_color_brewer("Blues") +
   ggplot2::xlab("Individuals")
-  # Note that both scale_fill and scale_color are needed to change the color of the bars.
+# Note that both scale_fill and scale_color are needed to change the color of the bars.
 
 
-  # Plot a dataset which has 2 populations
+# Plot a dataset which has 2 populations
 
-  population_B = matrix(c(
+population_B <- matrix(
+  c(
     .9, 0, .1,
     .6, .4, 0,
     .7, 0, .3,
@@ -101,19 +108,22 @@ plot_signature_prop(relab_matrix = population_A,
   ),
   nrow = 5,
   byrow = TRUE
-  )
+)
 
 
-  populations_AB = cbind(data.frame(c("A", "A", "A", "A", "A",
-                                     "B", "B", "B", "B", "B")),
-                         rbind(population_A, population_B))
-  colnames(populations_AB) = c("population", "category_1", "category_2", "category_3")
+populations_AB <- cbind(
+  data.frame(c(
+    "A", "A", "A", "A", "A",
+    "B", "B", "B", "B", "B"
+  )),
+  rbind(population_A, population_B)
+)
+colnames(populations_AB) <- c("population", "category_1", "category_2", "category_3")
 
 
- plot_signature_prop(relab_matrix = populations_AB, group = "population")
- plot_signature_prop(relab_matrix = populations_AB, group = "population", arrange = "vertical")
- plot_signature_prop(relab_matrix = populations_AB, group = "population", arrange = "horizontal")
- plot_signature_prop(relab_matrix = populations_AB, group = "population", arrange = "both")
-
+plot_signature_prop(relab_matrix = populations_AB, group = "population")
+plot_signature_prop(relab_matrix = populations_AB, group = "population", arrange = "vertical")
+plot_signature_prop(relab_matrix = populations_AB, group = "population", arrange = "horizontal")
+plot_signature_prop(relab_matrix = populations_AB, group = "population", arrange = "both")
 
 }

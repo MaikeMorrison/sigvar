@@ -12,13 +12,13 @@ get_SBS96_spectrum(transcript = "ENST00000269305.9", organism = "Homo sapiens")
 \item{organism}{the name of the organism associated with the transcript (species)}
 }
 \value{
-A vector of size 96 containing the SBS spectrum of the transcript
+A a 96 x 1 matrix containing the SBS spectrum of the transcript
 }
 \description{
 get_SBS96_spectrum
 }
 \examples{
-#Run on
-spectrum = get_SBS96_spectrum(transcript = "ENST00000269305.9")
+# Run on
+spectrum <- get_SBS96_spectrum(transcript = "ENST00000269305.9")
 print(spectrum)
 }

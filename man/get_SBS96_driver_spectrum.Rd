@@ -9,15 +9,15 @@ get_SBS96_driver_spectrum(driverlist, genome = "hg38")
 \arguments{
 \item{driverlist}{a table containing a list of drivers alterations, with columns chr, pos, and alt}
 
-\item{genome}{a string indicating the reference genome (currently supports hg38 and hg19)}
+\item{genome}{a string indicating the reference genome (currently supports hg38, hg19, or mm10)}
 }
 \value{
-A vector of size 96 containing the SBS spectrum of the transcript
+A a named integer table (length 96) containing the SBS spectrum of the transcript
 }
 \description{
 get_SBS96_driver_spectrum
 }
 \examples{
-TP53_LUAD.driver.spectrum = get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
+TP53_LUAD.driver.spectrum <- get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
 print(TP53_LUAD.driver.spectrum)
 }

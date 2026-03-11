@@ -36,7 +36,7 @@ sigboot(
 
 \item{seed}{Optional; an integer to be used as a random seed for the simulations.}
 
-\item{alternative}{Optional; do you want to do a one- or two.sided test? Default is \code{alternative = "two.sided"}. If you wish to do a one-sided test, specify either \code{alternative = "less"} or \code{alternative = "greater"}.}
+\item{alternative}{Optional; do you want to do a one- or two-sided test? Default is \code{alternative = "two.sided"}. If you wish to do a one-sided test, specify either \code{alternative = "less"} or \code{alternative = "greater"}.}
 }
 \value{
 A named list containing the following entries:

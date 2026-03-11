@@ -33,12 +33,12 @@ sigvar(
 A data frame with columns corresponding to the across-sample variability and the mean within-sample variability for the provided samples.
 }
 \description{
-Across-sample variability is quantified by computing the population-genetic statistic Fst across the rows of the signature activity table. This method is based on the R package FAVA, which implements an Fst-based assessment of Variability across vectors of relative Abundances. Mean within-sample variability is quantified by computing the mean Gini-Simpson index across all samples. Specify \code{group} if your table of signature activities contains mutiple populations of samples which you wish to compare. Specifying \code{S} allows \code{sigvar} to account for the pairwise cosine similarity among signatures. Specifying \code{w} or \code{time} allows for uneven weighting of the samples.
+Across-sample variability is quantified by computing the population-genetic statistic Fst across the rows of the signature activity table. This method is based on the R package FAVA, which implements an Fst-based assessment of Variability across vectors of relative Abundances. Mean within-sample variability is quantified by computing the mean Gini-Simpson index across all samples. Specify \code{group} if your table of signature activities contains multiple populations of samples which you wish to compare. Specifying \code{S} allows \code{sigvar} to account for the pairwise cosine similarity among signatures. Specifying \code{w} or \code{time} allows for uneven weighting of the samples.
 }
 \examples{
 # Compute the across-sample and mean within-sample variability of  mutational signatures
 # in ESCC samples grouped by country
 # We provide a cosine similarity matrix in order to account for cosine similarity among signatures
- sigvar(sig_activity = smoker_sigs_chen, K = 3, group = "Smoker", S = smoker_sigs_chen_cossim)
+sigvar(sig_activity = smoker_sigs_chen, K = 3, group = "Smoker", S = smoker_sigs_chen_cossim)
 
 }

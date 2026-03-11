@@ -19,6 +19,6 @@ Compute the cosine similarity matrix for a set of mutational signatures.
 # Compute the cosine similarity matrix for the lung cancer
 # in never smoker datasets from Zhang et al. 2021
 
- cossim(ref_sigs = as.matrix(Sherlock_LCINS_SBS.refs[,1:14]))
+cossim(ref_sigs = as.matrix(Sherlock_LCINS_SBS.refs[, 1:14]))
 
 }

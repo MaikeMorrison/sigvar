@@ -1,7 +1,7 @@
 # sigvar
 #' Compute the within-sample diversity and across-sample heterogeneity of mutational signature activity in one or multiple populations of samples.
 #'
-#' Across-sample variability is quantified by computing the population-genetic statistic Fst across the rows of the signature activity table. This method is based on the R package FAVA, which implements an Fst-based assessment of Variability across vectors of relative Abundances. Mean within-sample variability is quantified by computing the mean Gini-Simpson index across all samples. Specify \code{group} if your table of signature activities contains mutiple populations of samples which you wish to compare. Specifying \code{S} allows \code{sigvar} to account for the pairwise cosine similarity among signatures. Specifying \code{w} or \code{time} allows for uneven weighting of the samples.
+#' Across-sample variability is quantified by computing the population-genetic statistic Fst across the rows of the signature activity table. This method is based on the R package FAVA, which implements an Fst-based assessment of Variability across vectors of relative Abundances. Mean within-sample variability is quantified by computing the mean Gini-Simpson index across all samples. Specify \code{group} if your table of signature activities contains multiple populations of samples which you wish to compare. Specifying \code{S} allows \code{sigvar} to account for the pairwise cosine similarity among signatures. Specifying \code{w} or \code{time} allows for uneven weighting of the samples.
 #'
 #' @param sig_activity A matrix or data frame with rows containing non-negative entries that sum to 1. Each row represents a sample, each column represents a mutational signature, and each entry represents the abundance of that signature in the sample. If \code{sig_activity} contains any metadata, it must be on the left-hand side of the matrix, the right \code{K} entries of each row must sum to 1, and \code{K} must be specified. Otherwise, all entries of each row must sum to 1.
 #' @param K Optional; an integer specifying the number of mutational signatures included in \code{sig_activity}. Default is \code{K=ncol(sig_activity)}.
@@ -18,7 +18,7 @@
 #' # Compute the across-sample and mean within-sample variability of  mutational signatures
 #' # in ESCC samples grouped by country
 #' # We provide a cosine similarity matrix in order to account for cosine similarity among signatures
-#'  sigvar(sig_activity = smoker_sigs_chen, K = 3, group = "Smoker", S = smoker_sigs_chen_cossim)
+#' sigvar(sig_activity = smoker_sigs_chen, K = 3, group = "Smoker", S = smoker_sigs_chen_cossim)
 #'
 sigvar <- function(sig_activity,
                    K = NULL,
@@ -26,20 +26,31 @@ sigvar <- function(sig_activity,
                    S = NULL,
                    w = NULL,
                    time = NULL,
-                   normalized = FALSE){
-
-  if(is.null(group)){
-    var_table = data.frame(across_sample_heterogeneity = fst(relab_matrix = sig_activity, K = K, S = S, w = w,
-                                                             time = time, group = group, normalized = normalized),
-                           mean_within_sample_diversity = het_mean(relab_matrix = sig_activity, K = K, S = S, w = w,
-                                                                   time = time, group = group))
-  }else{
-    var_table = dplyr::full_join(fst(relab_matrix = sig_activity, K = K, S = S, w = w,
-                                     time = time, group = group, normalized = normalized),
-                                 het_mean(relab_matrix = sig_activity, K = K, S = S, w = w,
-                                          time = time, group = group))
-    cols = ncol(var_table)
-    colnames(var_table)[(cols-1):cols] = c("across_sample_heterogeneity", "mean_within_sample_diversity")
+                   normalized = FALSE) {
+  if (is.null(group)) {
+    var_table <- data.frame(
+      across_sample_heterogeneity = fst(
+        relab_matrix = sig_activity, K = K, S = S, w = w,
+        time = time, group = group, normalized = normalized
+      ),
+      mean_within_sample_diversity = het_mean(
+        relab_matrix = sig_activity, K = K, S = S, w = w,
+        time = time, group = group
+      )
+    )
+  } else {
+    var_table <- dplyr::full_join(
+      fst(
+        relab_matrix = sig_activity, K = K, S = S, w = w,
+        time = time, group = group, normalized = normalized
+      ),
+      het_mean(
+        relab_matrix = sig_activity, K = K, S = S, w = w,
+        time = time, group = group
+      )
+    )
+    cols <- ncol(var_table)
+    colnames(var_table)[(cols - 1):cols] <- c("across_sample_heterogeneity", "mean_within_sample_diversity")
   }
 
 
@@ -59,13 +70,15 @@ sigvar <- function(sig_activity,
 #' # Compute the cosine similarity matrix for the lung cancer
 #' # in never smoker datasets from Zhang et al. 2021
 #'
-#'  cossim(ref_sigs = as.matrix(Sherlock_LCINS_SBS.refs[,1:14]))
+#' cossim(ref_sigs = as.matrix(Sherlock_LCINS_SBS.refs[, 1:14]))
 #'
-cossim <- function(ref_sigs){
-  res = t(ref_sigs)%*%ref_sigs/matrix(sqrt(colSums(ref_sigs**2)),
-                                      nrow = ncol(ref_sigs),ncol=ncol(ref_sigs))/matrix(sqrt(colSums(ref_sigs**2)),
-                                                                                        nrow = ncol(ref_sigs),
-                                                                                        ncol=ncol(ref_sigs),byrow = T)
-  diag(res)=1
+cossim <- function(ref_sigs) {
+  res <- t(ref_sigs) %*% ref_sigs / matrix(sqrt(colSums(ref_sigs**2)),
+    nrow = ncol(ref_sigs), ncol = ncol(ref_sigs)
+  ) / matrix(sqrt(colSums(ref_sigs**2)),
+    nrow = ncol(ref_sigs),
+    ncol = ncol(ref_sigs), byrow = T
+  )
+  diag(res) <- 1
   return(res)
 }

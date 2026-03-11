@@ -53,9 +53,10 @@ corresponding to the mean relative activity of mutations to that
 signature.
 }
 \examples{
-  # Make an example matrix.
-  # Each row is a sample. Rows sum to 1.
-sig_activity = matrix(c(
+# Make an example matrix.
+# Each row is a sample. Rows sum to 1.
+sig_activity <- matrix(
+  c(
     "A", .4, .2, .4,
     "A", .5, .3, .2,
     "A", .5, .4, .1,
@@ -64,14 +65,16 @@ sig_activity = matrix(c(
   ),
   nrow = 5,
   byrow = TRUE
-  )
+)
 
-  colnames(sig_activity) = c("pop", "SBS1", "SBS2", "SBS3")
-  sig_activity = dplyr::mutate(data.frame(sig_activity), dplyr::across(c(SBS1, SBS2, SBS3),
-                                                 as.numeric))
+colnames(sig_activity) <- c("pop", "SBS1", "SBS2", "SBS3")
+sig_activity <- dplyr::mutate(data.frame(sig_activity), dplyr::across(
+  c(SBS1, SBS2, SBS3),
+  as.numeric
+))
 
 plot_dots(sig_activity,
- K = 3, # How many categories per vector?
+  K = 3, # How many categories per vector?
   group = "pop"
 )
 }
