@@ -22,7 +22,7 @@ We employ the normalization employed in the \href{https://github.com/MaikeMorris
 \href{https://doi.org/10.1111/1755-0998.13647}{Morrison, Alcala, and Rosenberg (2020)}.
 }
 \examples{
-# Compute the weighted fst of
+# Compute the normalized fst of
 # the following compositional vectors:
 q1 <- c(1, 0, 0, 0)
 q2 <- c(0.5, 0.5, 0, 0)

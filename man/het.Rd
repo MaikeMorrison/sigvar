@@ -17,7 +17,7 @@ het(q, K = length(q), S = diag(K))
 A numeric value between 0 and 1.
 }
 \description{
-This function computes the Gini-Simpson index, a statistical measure of variability also known as the Gini-Simpson index, of vector of non-negative entries which sum to 1. The function returns a number between 0 and 1 which quantifies the variability of the vector. Values of 0 are achieved when the vector is a permutation of (1,0,..., 0). The value approaches 1 as the number of categories K increases when the vector is equal to (1/K, 1/K, ..., 1/K).
+This function computes the Gini-Simpson index, a statistical measure of variability also known as the heterozygosity, of a vector of non-negative entries which sum to 1. The function returns a number between 0 and 1 which quantifies the variability of the vector. Values of 0 are achieved when the vector is a permutation of (1,0,..., 0). The value approaches 1 as the number of categories K increases when the vector is equal to (1/K, 1/K, ..., 1/K).
 }
 \examples{
 # Compute unweighted Gini-Simpson index:

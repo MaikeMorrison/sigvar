@@ -114,7 +114,7 @@ process_relab <- function(relab_matrix,
 # het -----------------------------------------------------------------
 #' Compute the Gini-Simpson index of a compositional vector
 #'
-#' This function computes the Gini-Simpson index, a statistical measure of variability also known as the Gini-Simpson index, of vector of non-negative entries which sum to 1. The function returns a number between 0 and 1 which quantifies the variability of the vector. Values of 0 are achieved when the vector is a permutation of (1,0,..., 0). The value approaches 1 as the number of categories K increases when the vector is equal to (1/K, 1/K, ..., 1/K).
+#' This function computes the Gini-Simpson index, a statistical measure of variability also known as the heterozygosity, of a vector of non-negative entries which sum to 1. The function returns a number between 0 and 1 which quantifies the variability of the vector. Values of 0 are achieved when the vector is a permutation of (1,0,..., 0). The value approaches 1 as the number of categories K increases when the vector is equal to (1/K, 1/K, ..., 1/K).
 #'
 #' @param q A vector with \code{K=length(q)} non-negative entries that sum to 1.
 #' @param K Optional; an integer specifying the number of categories in the data. Default is \code{K=length(q)}.
@@ -150,7 +150,7 @@ het <- function(q, K = length(q), S = diag(K)) {
 # het_mean -----------------------------------------------------------------
 #' Compute the mean Gini-Simpson index of the rows in a matrix of compositional vectors
 #'
-#' This function computes the mean Gini-Simpson index, a statistical measure of variability also known as the Gini-Simpson index, of a set of vectors of non-negative entries which sum to 1. The function returns a number between 0 and 1 which quantifies the mean variability of the vectors. Values of 0 are achieved when each vector is a permutation of (1,0,..., 0). The value approaches 1 as the number of categories K increases when the vectors are equal to (1/K, 1/K, ..., 1/K).
+#' This function computes the mean Gini-Simpson index, a statistical measure of variability also known as the heterozygosity, of a set of vectors of non-negative entries which sum to 1. The function returns a number between 0 and 1 which quantifies the mean variability of the vectors. Values of 0 are achieved when each vector is a permutation of (1,0,..., 0). The value approaches 1 as the number of categories K increases when the vectors are equal to (1/K, 1/K, ..., 1/K).
 #'
 #' @param relab_matrix A matrix or data frame with rows containing non-negative entries that sum to 1. Each row represents
 #' a sample, each column represents a category, and each entry represents the abundance of that category in the sample.
@@ -181,7 +181,7 @@ het <- function(q, K = length(q), S = diag(K)) {
 #'
 #' het_mean(relative_abundances)
 #'
-#' # Incoporating weights:
+#' # Incorporating weights:
 #'
 #' # Compute mean Gini-Simpson index ignoring
 #' # rows 2 and 3
@@ -306,7 +306,7 @@ het_mean <- function(relab_matrix,
 #'
 #' het_pooled(relative_abundances)
 #'
-#' # Incoporating weights:
+#' # Incorporating weights:
 #'
 #' # Compute pooled Gini-Simpson index ignoring
 #' # rows 2 and 3
@@ -418,7 +418,7 @@ het_pooled <- function(relab_matrix,
 #' @param K Optional; an integer specifying the number of categories in the data. Default is \code{K=ncol(relab_matrix)}.
 #' @returns A numeric value between 0 and 1.
 #' @examples
-#' # Compute the weighted fst of
+#' # Compute the normalized fst of
 #' # the following compositional vectors:
 #' q1 <- c(1, 0, 0, 0)
 #' q2 <- c(0.5, 0.5, 0, 0)
@@ -574,7 +574,7 @@ time_weights <- function(times, group = NULL) {
 #' @param w Optional; a vector of length \code{I} with non-negative entries that sum to 1. Entry \code{w[i]} represents the weight placed on row \code{i} in the computation of the mean abundance of each category across rows. The default value is \code{w = rep(1/nrow(relab_matrix), nrow(relab_matrix))}.
 #' @param time Optional; a string specifying the name of the column that describes the sampling time for each row. Include if you wish to weight Fst by the distance between samples.
 #' @param group Optional; a string (or vector of strings) specifying the name(s) of the column(s) that describes which group(s) each row (sample) belongs to. Use if \code{relab_matrix} is a single matrix containing multiple groups of samples you wish to compare.
-#' @param normalized Optional; should normalized Fst be used? Default is \code{normalized = FALSE}; use \code{normalized = TRUE} to compute normalized Fst. Fst can only be normalized if it is not weighted.
+#' @param normalized Optional; should normalized Fst be used? Default is \code{normalized = FALSE}; use \code{normalized = TRUE} to compute normalized Fst. Fst can only be normalized if no weighting/similarity options are used (i.e., \code{w}, \code{S}, or \code{time} cannot be specified).
 #' @returns A numeric value between 0 and 1.
 #' @examples
 #' # Compute the Fst of

@@ -27,7 +27,7 @@ each row must sum to 1.}
 A numeric value between 0 and 1.
 }
 \description{
-This function computes the mean Gini-Simpson index, a statistical measure of variability also known as the Gini-Simpson index, of a set of vectors of non-negative entries which sum to 1. The function returns a number between 0 and 1 which quantifies the mean variability of the vectors. Values of 0 are achieved when each vector is a permutation of (1,0,..., 0). The value approaches 1 as the number of categories K increases when the vectors are equal to (1/K, 1/K, ..., 1/K).
+This function computes the mean Gini-Simpson index, a statistical measure of variability also known as the heterozygosity, of a set of vectors of non-negative entries which sum to 1. The function returns a number between 0 and 1 which quantifies the mean variability of the vectors. Values of 0 are achieved when each vector is a permutation of (1,0,..., 0). The value approaches 1 as the number of categories K increases when the vectors are equal to (1/K, 1/K, ..., 1/K).
 }
 \examples{
 # To compute the mean Gini-Simpson index of
@@ -47,7 +47,7 @@ relative_abundances <- matrix(c(q1, q2, q3, q4),
 
 het_mean(relative_abundances)
 
-# Incoporating weights:
+# Incorporating weights:
 
 # Compute mean Gini-Simpson index ignoring
 # rows 2 and 3

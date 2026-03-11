@@ -31,7 +31,7 @@ each row must sum to 1.}
 
 \item{group}{Optional; a string (or vector of strings) specifying the name(s) of the column(s) that describes which group(s) each row (sample) belongs to. Use if \code{relab_matrix} is a single matrix containing multiple groups of samples you wish to compare.}
 
-\item{normalized}{Optional; should normalized Fst be used? Default is \code{normalized = FALSE}; use \code{normalized = TRUE} to compute normalized Fst. Fst can only be normalized if it is not weighted.}
+\item{normalized}{Optional; should normalized Fst be used? Default is \code{normalized = FALSE}; use \code{normalized = TRUE} to compute normalized Fst. Fst can only be normalized if no weighting/similarity options are used (i.e., \code{w}, \code{S}, or \code{time} cannot be specified).}
 }
 \value{
 A numeric value between 0 and 1.

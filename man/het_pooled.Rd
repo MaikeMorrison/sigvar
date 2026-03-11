@@ -55,7 +55,7 @@ relative_abundances <- matrix(c(q1, q2, q3, q4),
 
 het_pooled(relative_abundances)
 
-# Incoporating weights:
+# Incorporating weights:
 
 # Compute pooled Gini-Simpson index ignoring
 # rows 2 and 3
