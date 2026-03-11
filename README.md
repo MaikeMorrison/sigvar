@@ -49,8 +49,22 @@ You can install the development version of *sigvar* from
 [GitHub](https://github.com/MaikeMorrison/sigvar) with:
 
 ``` r
-# install.packages("devtools") # run only if devtools not already installed
+# Ensure devtools is installed
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+
+# Install the package from GitHub
 devtools::install_github("MaikeMorrison/sigvar", dependencies = TRUE, build_vignettes = TRUE)
+```
+
+The package will ultimately be available on Bioconductor. When it is,
+you will be able to install it with:
+
+``` r
+# Ensure BiocManager is installed
+if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+
+# Install the package from Bioconductor 
+BiocManager::install("sigvar")
 ```
 
 <!-- The package requires packages `dplyr`, `ggplot2`, `rlang`, `tidyr`, and `readr`. They will all be installed automatically by the command above.  -->
