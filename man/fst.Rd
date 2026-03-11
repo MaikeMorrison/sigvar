@@ -37,36 +37,38 @@ each row must sum to 1.}
 A numeric value between 0 and 1.
 }
 \description{
-This function computes the population genetic statistic Fst on any matrix with rows that sum to 1. Values of 0 are achieved when each row is a permutation of (1,0,..., 0) and at least two categories have non-zero abundance across all rows. The value equals 1 when each row is identical.
+This function computes the population genetic statistic Fst on any matrix with rows that sum to 1. Values of 1 are achieved when each row is a permutation of (1,0,..., 0) and at least two categories have non-zero abundance across all rows. The value equals 0 when each row is identical.
 }
 \examples{
 # Compute the Fst of
 # the following compositional vectors:
-q1 = c(1,   0,   0,   0)
-q2 = c(0.5, 0.5, 0,   0)
-q3 = c(1/4, 1/4, 1/4, 1/4)
-q4 = c(0,   0,   1,   0)
-relative_abundances = matrix(c(q1, q2, q3, q4),
-                  byrow = TRUE, nrow = 4)
+q1 <- c(1, 0, 0, 0)
+q2 <- c(0.5, 0.5, 0, 0)
+q3 <- c(1 / 4, 1 / 4, 1 / 4, 1 / 4)
+q4 <- c(0, 0, 1, 0)
+#
+relative_abundances <- matrix(c(q1, q2, q3, q4),
+  byrow = TRUE, nrow = 4
+)
 
 fst(relative_abundances)
 
-# Incoporating weights:
+# Incorporating weights:
 
 # Compute fst ignoring
 # rows 2 and 3
-row_weights = c(0.5, 0, 0, 0.5)
+row_weights <- c(0.5, 0, 0, 0.5)
 fst(relative_abundances, w = row_weights)
 
 # Compute fst assuming that
 # categories 1 and 2 are identical:
-similarity_matrix = diag(4)
-similarity_matrix[1,2] = 1
-similarity_matrix[2,1] = 1
+similarity_matrix <- diag(4)
+similarity_matrix[1, 2] <- 1
+similarity_matrix[2, 1] <- 1
 fst(relative_abundances, S = similarity_matrix)
 
 # Assume categories 1 and 2 are identical AND
 # ignore rows 2 and 4:
-row_weights = c(0.5, 0, 0.5, 0)
+row_weights <- c(0.5, 0, 0.5, 0)
 fst(relative_abundances, w = row_weights, S = similarity_matrix)
 }

@@ -17,11 +17,10 @@
 #'
 #' @return A named list containing the following entries:
 #' \itemize{
-#' \item \code{P_values}: The probability of observing the observed difference in variability between each pair of groups if there were no difference between groups. Computed as the fraction of bootstrap differences greater than or equal to the observed difference. Depends on what \code{alternative} is specified ("greater", "lesser", or "two.sided").
+#' \item \code{P_values}: The probability of observing the observed difference in variability between each pair of groups if there were no difference between groups. Computed as the fraction of bootstrap differences greater than or equal to the observed difference. Depends on what \code{alternative} is specified ("greater", "less", or "two.sided").
 #' \item \code{bootstrap_distribution_plot}: The distribution of bootstrap replicate differences in each variability value. The observed differences are shown in red. The further the red points are from 0, the more significant the statistical difference between groups.
-#' \item \code{observed_stats}: The observed diversity statistics for the groups.
-#' \item \code{bootstrap_stats}: The bootstrap replicate diversity statistics for the groups.
-#' \item \code{bootstrap_replicates}: The bootstrap replicate matrices, reported only if  \code{save_replicates = TRUE}.}
+#' \item \code{observed_difference}: The observed difference in diversity statistics between the groups.
+#' \item \code{bootstrap_difference}: The bootstrap replicate difference in diversity statistics between the groups.}
 #'
 #' @import utils
 #' @export
@@ -30,9 +29,11 @@
 #' # Estimate the uncertainty in the across-sample and mean within-sample variability of
 #' # mutational signatures in ESCC samples grouped by country
 #' # We provide a cosine similarity matrix in order to account for cosine similarity among signatures
-#' smoker_boot = sigboot(sig_activity = smoker_sigs_chen, K = 3, n_replicates = 500,
-#'                     group = "Smoker", S = smoker_sigs_chen_cossim,
-#'                     seed = 1)
+#' smoker_boot <- sigboot(
+#'   sig_activity = smoker_sigs_chen, K = 3, n_replicates = 500,
+#'   group = "Smoker", S = smoker_sigs_chen_cossim,
+#'   seed = 1
+#' )
 #'
 #' # We find that there is a strong, significant difference between smokers and non-smokers
 #' # in their mean within-sample diversity, but that the difference in across-sample heterogeneity
@@ -44,70 +45,75 @@
 #' # between these two groups
 #' smoker_boot$bootstrap_distribution_plot
 sigboot <- function(sig_activity,
-                           n_replicates,
-                           group,
-                           K = NULL,
-                           S = NULL,
-                           w = NULL,
-                           time = NULL,
-                           normalized = FALSE,
-                           seed = NULL,
-                           # save_replicates = FALSE,
-                           alternative = "two.sided"){
-
+                    n_replicates,
+                    group,
+                    K = NULL,
+                    S = NULL,
+                    w = NULL,
+                    time = NULL,
+                    normalized = FALSE,
+                    seed = NULL,
+                    # save_replicates = FALSE,
+                    alternative = "two.sided") {
   # To appease R cmd check
   P_value <- P_value_numeric <- Comparison <- Difference <- combn <- Statistic <- . <- NULL
 
-  if((!is.null(time)) && (!is.null(w))){
+  if ((!is.null(time)) && (!is.null(w))) {
     stop("Please specify either time or w, but not both.")
   }
 
   # Set random seed (optional)
-  if(!is.null(seed)){
+  if (!is.null(seed)) {
     set.seed(seed)
   }
 
   # If multiple grouping variables are provided, make a new grouping column
-  multiple_groups = FALSE
-  if(length(group)>1){
-    multiple_groups = TRUE
-    sig_activity = dplyr::mutate(sig_activity,
-                                 group =  apply( sig_activity[ , group ] , 1 , paste , collapse = "_" ),
-                                 .before = 1)
-    group_multiple = group
-    group = "group"
+  multiple_groups <- FALSE
+  if (length(group) > 1) {
+    multiple_groups <- TRUE
+    sig_activity <- dplyr::mutate(sig_activity,
+      group = apply(sig_activity[, group], 1, paste, collapse = "_"),
+      .before = 1
+    )
+    group_multiple <- group
+    group <- "group"
 
-    group_table = dplyr::distinct(dplyr::select(sig_activity, dplyr::all_of(c("group", group_multiple))))
+    group_table <- dplyr::distinct(dplyr::select(sig_activity, dplyr::all_of(c("group", group_multiple))))
 
-    sig_activity = sig_activity %>%
+    sig_activity <- sig_activity %>%
       dplyr::select(-dplyr::all_of(group_multiple))
   }
 
 
-  relab_check_out = relab_checker(relab = sig_activity, K = K, group = group, time = time)
+  relab_check_out <- relab_checker(relab = sig_activity, K = K, group = group, time = time)
 
-  relab_clean = relab_check_out$relab_matrix
-  groups = relab_check_out$group
-  times = relab_check_out$time
-  K = ncol(relab_clean)
-  if(is.null(w) & !is.null(time)){
-    w = time_weights(times = times, group = groups)
+  relab_clean <- relab_check_out$relab_matrix
+  groups <- relab_check_out$group
+  times <- relab_check_out$time
+  K <- ncol(relab_clean)
+  if (is.null(w) & !is.null(time)) {
+    w <- time_weights(times = times, group = groups)
   }
 
   # How many groups are there in the data? Do we need to do multiple pairwise comparisons?
-  if(length(unique(groups)) < 2){
-    stop(paste0("bootstrap_fava must be provided with multiple groups to compare. The grouping column '",
-                group,
-                "' contains only the following group: '",
-                groups, "'\n" ))
+  if (length(unique(groups)) < 2) {
+    stop(paste0(
+      "bootstrap_fava must be provided with multiple groups to compare. The grouping column '",
+      group,
+      "' contains only the following group: '",
+      groups, "'\n"
+    ))
   }
-  if(length(unique(groups)) == 2){
-    bootstrap_list = pairwise_comparison(group_pair = unique(groups), relab_clean = relab_clean,
-                                         n_replicates = n_replicates, groups = groups, K = K, S = S, w = w,
-                                         normalized = normalized, alternative = alternative)
+  if (length(unique(groups)) == 2) {
+    bootstrap_list <- pairwise_comparison(
+      group_pair = unique(groups), relab_clean = relab_clean,
+      n_replicates = n_replicates, groups = groups, K = K, S = S, w = w,
+      normalized = normalized, alternative = alternative
+    )
 
 
-    p_values = rbind(bootstrap_list$P_value) %>% data.frame %>%
+    p_values <- rbind(bootstrap_list$P_value) %>%
+      data.frame() %>%
       mutate(Comparison = bootstrap_list$comparison, .before = 1)
 
     # data.frame(Comparison = bootstrap_list$comparison, P_value = bootstrap_list$P_value) %>%
@@ -115,63 +121,77 @@ sigboot <- function(sig_activity,
     #               P_value = ifelse(P_value_numeric==0, paste0("<", 1/n_replicates), P_value_numeric))
 
     # 2 - observed_difference
-    observed_difference = rbind(bootstrap_list$observed_difference) %>% data.frame %>%
+    observed_difference <- rbind(bootstrap_list$observed_difference) %>%
+      data.frame() %>%
       mutate(Comparison = bootstrap_list$comparison, .before = 1)
 
 
     # 3 - bootstrap_difference
-    bootstrap_difference = rbind(bootstrap_list$bootstrap_difference) %>% data.frame %>%
+    bootstrap_difference <- rbind(bootstrap_list$bootstrap_difference) %>%
+      data.frame() %>%
       mutate(Comparison = bootstrap_list$comparison, .before = 1)
 
     # 4 - bootstrap_plot
-    bootstrap_plot = ggplot2::ggplot(data = bootstrap_difference %>%
-                                       tidyr::pivot_longer(cols = c("across_sample_heterogeneity",
-                                                                    "mean_within_sample_diversity"),
-                                                           names_to = "Statistic", values_to = "Difference"),
-                                     mapping = ggplot2::aes(x = Statistic, y = Difference)) +
+    bootstrap_plot <- ggplot2::ggplot(
+      data = bootstrap_difference %>%
+        tidyr::pivot_longer(
+          cols = c(
+            "across_sample_heterogeneity",
+            "mean_within_sample_diversity"
+          ),
+          names_to = "Statistic", values_to = "Difference"
+        ),
+      mapping = ggplot2::aes(x = Statistic, y = Difference)
+    ) +
       ggplot2::geom_violin(fill = "grey", color = NA, alpha = 0.6) +
       ggplot2::geom_boxplot(alpha = 0, width = 0.3) +
       ggplot2::geom_jitter(alpha = 0.3, width = 0.05, size = 2) +
       ggplot2::theme_bw() +
       ggplot2::ylab(paste0("Difference in statistic\n(", unique(bootstrap_difference$Comparison), ")")) +
       ggplot2::geom_point(data = observed_difference %>%
-                            tidyr::pivot_longer(cols = c("across_sample_heterogeneity",
-                                                         "mean_within_sample_diversity"),
-                                                names_to = "Statistic", values_to = "Difference"), color = "red", size = 5) +
-      ggplot2::scale_x_discrete(labels = c("across_sample_heterogeneity" = "Across-sample\nheterogeneity",
-                                           "mean_within_sample_diversity" = "Mean within-\nsample diversity"))
+        tidyr::pivot_longer(
+          cols = c(
+            "across_sample_heterogeneity",
+            "mean_within_sample_diversity"
+          ),
+          names_to = "Statistic", values_to = "Difference"
+        ), color = "red", size = 5) +
+      ggplot2::scale_x_discrete(labels = c(
+        "across_sample_heterogeneity" = "Across-sample\nheterogeneity",
+        "mean_within_sample_diversity" = "Mean within-\nsample diversity"
+      ))
 
 
-
-    return(list(P_values = p_values,
-                bootstrap_distribution_plot = bootstrap_plot,
-                observed_difference = observed_difference,
-                bootstrap_difference = bootstrap_difference))
-
-  }else{
+    return(list(
+      P_values = p_values,
+      bootstrap_distribution_plot = bootstrap_plot,
+      observed_difference = observed_difference,
+      bootstrap_difference = bootstrap_difference
+    ))
+  } else {
     # Make a list of all unique pairs of groups
-    group_pairs = t(combn(unique(groups), 2))
+    group_pairs <- t(combn(unique(groups), 2))
 
     # Do the bootstrap comparison procedure for each group:
-    bootstrap_list = list()
-    for(pair in 1:nrow(group_pairs)){
-      group_pair = group_pairs[pair,]
+    bootstrap_list <- list()
+    for (pair in 1:nrow(group_pairs)) {
+      group_pair <- group_pairs[pair, ]
 
-      bootstrap_list[[pair]] = pairwise_comparison(group_pair = group_pair, relab_clean = relab_clean, n_replicates = n_replicates,
-                                                   groups = groups, K = K, S = S, w = w,
-                                                   normalized = normalized, alternative = alternative)
-
-
+      bootstrap_list[[pair]] <- pairwise_comparison(
+        group_pair = group_pair, relab_clean = relab_clean, n_replicates = n_replicates,
+        groups = groups, K = K, S = S, w = w,
+        normalized = normalized, alternative = alternative
+      )
     }
 
     # Combine all elements from each category
 
     # 1 - P-values
-    p_values = lapply(bootstrap_list, function(pair) c(Comparison = pair$comparison, pair$P_value)) %>%
+    p_values <- lapply(bootstrap_list, function(pair) c(Comparison = pair$comparison, pair$P_value)) %>%
       do.call(rbind, .) %>%
       data.frame() %>%
       dplyr::mutate(across(-Comparison, as.numeric))
-                    # P_value = ifelse(P_value_numeric==0, paste0("<", 1/n_replicates), P_value_numeric))
+    # P_value = ifelse(P_value_numeric==0, paste0("<", 1/n_replicates), P_value_numeric))
 
     # cbind(data.frame(t(combn(groups, 2))) %>% `colnames<-`(c("group_1", "group_2")),
     #                lapply(bootstrap_list, function(list) list$P_values) %>%
@@ -182,42 +202,56 @@ sigboot <- function(sig_activity,
     #   list$bootstrap_distribution_plot) %>% `names<-`(apply(group_pairs, 1, paste0, collapse = "--"))
 
     # 2 - observed_difference
-    observed_difference = lapply(bootstrap_list, function(list) c(Comparison = list$comparison, list$observed_difference)) %>%
-      do.call(rbind, .) %>% data.frame   %>%
+    observed_difference <- lapply(bootstrap_list, function(list) c(Comparison = list$comparison, list$observed_difference)) %>%
+      do.call(rbind, .) %>%
+      data.frame() %>%
       dplyr::mutate(across(-Comparison, as.numeric),
-                    Comparison= unlist(Comparison))
+        Comparison = unlist(Comparison)
+      )
     # observed_difference$Comparison = stringr::str_replace_all(observed_difference$Comparison, ' - ', " -\n")
     # if(multiple_groups){ observed_difference = left_join(group_table, observed_difference) }
 
 
     # 3 - bootstrap_difference
-    bootstrap_difference = lapply(bootstrap_list, function(list) mutate(list$bootstrap_difference, Comparison =list$comparison, .before = 1)) %>%
+    bootstrap_difference <- lapply(bootstrap_list, function(list) mutate(list$bootstrap_difference, Comparison = list$comparison, .before = 1)) %>%
       do.call(rbind, .) %>%
       data.frame()
-      # tidyr::pivot_longer(cols = dplyr::everything(), names_to = "Comparison", values_to = "Difference")
+    # tidyr::pivot_longer(cols = dplyr::everything(), names_to = "Comparison", values_to = "Difference")
     # bootstrap_difference$Comparison = stringr::str_replace_all(bootstrap_difference$Comparison, '\\.\\.\\.', " -\n")
 
     # if(multiple_groups){ bootstrap_difference = left_join(group_table, bootstrap_difference) }
 
     # 4 - bootstrap_plot
 
-    bootstrap_plot = ggplot2::ggplot(data = bootstrap_difference %>%
-                      tidyr::pivot_longer(cols = c("across_sample_heterogeneity",
-                                                   "mean_within_sample_diversity"),
-                                          names_to = "Statistic", values_to = "Difference"),
-                    mapping = ggplot2::aes(x = Statistic, y = Difference)) +
+    bootstrap_plot <- ggplot2::ggplot(
+      data = bootstrap_difference %>%
+        tidyr::pivot_longer(
+          cols = c(
+            "across_sample_heterogeneity",
+            "mean_within_sample_diversity"
+          ),
+          names_to = "Statistic", values_to = "Difference"
+        ),
+      mapping = ggplot2::aes(x = Statistic, y = Difference)
+    ) +
       ggplot2::geom_violin(fill = "grey", color = NA, alpha = 0.6) +
       ggplot2::geom_boxplot(alpha = 0, width = 0.3) +
       ggplot2::geom_jitter(alpha = 0.3, width = 0.05, size = 2) +
       ggplot2::theme_bw() +
       ggplot2::ylab(paste0("Difference in statistic")) +
-      ggplot2::facet_wrap(~ Comparison) +
+      ggplot2::facet_wrap(~Comparison) +
       ggplot2::geom_point(data = observed_difference %>%
-                            tidyr::pivot_longer(cols = c("across_sample_heterogeneity",
-                                                         "mean_within_sample_diversity"),
-                                                names_to = "Statistic", values_to = "Difference"), color = "red", size = 5) +
-          ggplot2::scale_x_discrete(labels = c("across_sample_heterogeneity" = "Across-sample\nheterogeneity",
-                                               "mean_within_sample_diversity" = "Mean within-\nsample diversity"))
+        tidyr::pivot_longer(
+          cols = c(
+            "across_sample_heterogeneity",
+            "mean_within_sample_diversity"
+          ),
+          names_to = "Statistic", values_to = "Difference"
+        ), color = "red", size = 5) +
+      ggplot2::scale_x_discrete(labels = c(
+        "across_sample_heterogeneity" = "Across-sample\nheterogeneity",
+        "mean_within_sample_diversity" = "Mean within-\nsample diversity"
+      ))
 
     # bootstrap_plot = ggplot2::ggplot(data = bootstrap_difference, mapping = ggplot2::aes(x = Comparison, y = Difference)) +
     #   ggplot2::geom_violin(fill = "grey", color = NA, alpha = 0.6) +
@@ -232,74 +266,79 @@ sigboot <- function(sig_activity,
     # bootstrap_replicates = lapply(bootstrap_list, function(list) list$bootstrap_replicates) %>%
     #   do.call(rbind, .)
 
-    return(list(P_values = p_values,
-                bootstrap_distribution_plot = bootstrap_plot,
-                observed_difference = observed_difference,
-                bootstrap_difference = bootstrap_difference))
-
+    return(list(
+      P_values = p_values,
+      bootstrap_distribution_plot = bootstrap_plot,
+      observed_difference = observed_difference,
+      bootstrap_difference = bootstrap_difference
+    ))
   }
 }
-
 
 
 pairwise_comparison <- function(group_pair,
                                 relab_clean,
                                 n_replicates,
                                 groups,
-
                                 K,
                                 S,
                                 w,
                                 # time,
                                 normalized,
-
                                 # save_replicates,
-                                alternative){
+                                alternative) {
   # To appease R cmd check
   . <- NULL
 
   # Confirm there are only two groups provided
-  if(length(group_pair) != 2){
+  if (length(group_pair) != 2) {
     stop(paste0("There must be exactly 2 groups. There are ", length(groups), " groups in the provided relab_pair matrix."))
   }
 
 
-
   # Split the data into the two groups
-  A = relab_clean[groups == group_pair[[1]],]
-  B = relab_clean[groups == group_pair[[2]],]
-  pooled = rbind(A, B)
+  A <- relab_clean[groups == group_pair[[1]], ]
+  B <- relab_clean[groups == group_pair[[2]], ]
+  pooled <- rbind(A, B)
 
 
-  m = nrow(A)
-  n = nrow(B)
-  N = m+n
-  if(!is.null(w)){
-    wA = w[groups == group_pair[[1]]]
-    wB = w[groups == group_pair[[2]]]
-    wPooled = c(wA, wB)
-  }else{wPooled = NULL; wA = NULL; wB = NULL}
+  m <- nrow(A)
+  n <- nrow(B)
+  N <- m + n
+  if (!is.null(w)) {
+    wA <- w[groups == group_pair[[1]]]
+    wB <- w[groups == group_pair[[2]]]
+    wPooled <- c(wA, wB)
+  } else {
+    wPooled <- NULL
+    wA <- NULL
+    wB <- NULL
+  }
 
   # Generate bootstrap replicates of the pooled groups
-  rep_list = list()
-  for(rep in 1:n_replicates){
-    a_samp = sample(1:N, m, replace = TRUE)
-    b_samp = sample(1:N, n, replace = TRUE)
+  rep_list <- list()
+  for (rep in 1:n_replicates) {
+    a_samp <- sample(1:N, m, replace = TRUE)
+    b_samp <- sample(1:N, n, replace = TRUE)
 
-    rep_list[[rep]] = list(A = a_samp, B = b_samp)
+    rep_list[[rep]] <- list(A = a_samp, B = b_samp)
   }
 
   # Compute statistics for each replicate
-  bootstrap_differences = lapply(rep_list,
-                                 function(rep){
-                                   # Compute for A
-                                   sigvar(sig_activity = pooled[rep$A,], K = K, S = S, normalized = normalized,
-                                          w = `if`(is.null(NULL), NULL, wPooled[rep$A]/sum(wPooled[rep$A]))) -
-                                     # Compute for B
-                                     sigvar(sig_activity = pooled[rep$B,], K = K, S = S, normalized = normalized,
-                                            w = `if`(is.null(NULL), NULL, wPooled[rep$B]/sum(wPooled[rep$B])))
-                                 }
-
+  bootstrap_differences <- lapply(
+    rep_list,
+    function(rep) {
+      # Compute for A
+      sigvar(
+        sig_activity = pooled[rep$A, ], K = K, S = S, normalized = normalized,
+        w = `if`(is.null(NULL), NULL, wPooled[rep$A] / sum(wPooled[rep$A]))
+      ) -
+        # Compute for B
+        sigvar(
+          sig_activity = pooled[rep$B, ], K = K, S = S, normalized = normalized,
+          w = `if`(is.null(NULL), NULL, wPooled[rep$B] / sum(wPooled[rep$B]))
+        )
+    }
   ) %>%
     do.call(rbind, .) %>%
     data.frame()
@@ -307,53 +346,47 @@ pairwise_comparison <- function(group_pair,
   # bootstrap_stats$Difference = bootstrap_stats[,group_pair[[1]]] - bootstrap_stats[,group_pair[[2]]]
 
   # Compute the difference between the two original populations
-  observed_difference = sigvar(sig_activity = A, K = K, S = S, normalized = normalized, w = wA) -
+  observed_difference <- sigvar(sig_activity = A, K = K, S = S, normalized = normalized, w = wA) -
     sigvar(sig_activity = B, K = K, S = S, normalized = normalized, w = wB)
 
-  diff_label = paste0( #"Difference (",
-    group_pair[[1]], " - ", group_pair[[2]]#, ")"
+  diff_label <- paste0( # "Difference (",
+    group_pair[[1]], " - ", group_pair[[2]] # , ")"
   )
 
   # COMPUTE P-VALUES
-  if(alternative == "greater"){
-    p_val = mapply(col = bootstrap_differences, true = observed_difference,
-                   FUN = function(col, true){mean(col >= true)})
-  } else if(alternative == "less"){
-    p_val =  mapply(col = bootstrap_differences, true = observed_difference,
-                    FUN = function(col, true){mean(col <= true)})
-  } else if(alternative == "two.sided"){
+  if (alternative == "greater") {
+    p_val <- mapply(
+      col = bootstrap_differences, true = observed_difference,
+      FUN = function(col, true) {
+        mean(col >= true)
+      }
+    )
+  } else if (alternative == "less") {
+    p_val <- mapply(
+      col = bootstrap_differences, true = observed_difference,
+      FUN = function(col, true) {
+        mean(col <= true)
+      }
+    )
+  } else if (alternative == "two.sided") {
     # two.sided p-value is from pg 212, eqn 15.26 of Efron and Tibshirani book
-    p_val =  mapply(col = bootstrap_differences, true = observed_difference,
-                    FUN = function(col, true){mean(abs(col) >= abs(true))})
+    p_val <- mapply(
+      col = bootstrap_differences, true = observed_difference,
+      FUN = function(col, true) {
+        mean(abs(col) >= abs(true))
+      }
+    )
   } else {
     stop("Valid options for alternative are 'greater', 'less', and 'two.sided'.")
   }
 
-  return(list(comparison = diff_label,
-              P_value = p_val,
-              observed_difference = observed_difference,
-              bootstrap_difference = bootstrap_differences
+  return(list(
+    comparison = diff_label,
+    P_value = p_val,
+    observed_difference = observed_difference,
+    bootstrap_difference = bootstrap_differences
   ))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # sigboot <- function(sig_activity,

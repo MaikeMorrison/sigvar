@@ -24,12 +24,14 @@ We employ the normalization employed in the \href{https://github.com/MaikeMorris
 \examples{
 # Compute the weighted fst of
 # the following compositional vectors:
-q1 = c(1,   0,   0,   0)
-q2 = c(0.5, 0.5, 0,   0)
-q3 = c(1/4, 1/4, 1/4, 1/4)
-q4 = c(0,   0,   1,   0)
-relative_abundances = matrix(c(q1, q2, q3, q4),
-                  byrow = TRUE, nrow = 4)
+q1 <- c(1, 0, 0, 0)
+q2 <- c(0.5, 0.5, 0, 0)
+q3 <- c(1 / 4, 1 / 4, 1 / 4, 1 / 4)
+q4 <- c(0, 0, 1, 0)
+#
+relative_abundances <- matrix(c(q1, q2, q3, q4),
+  byrow = TRUE, nrow = 4
+)
 
 fst_norm(relative_abundances)
 }

@@ -32,17 +32,18 @@ This function computes the mean Gini-Simpson index, a statistical measure of var
 \examples{
 # To compute the mean Gini-Simpson index of
 # the following compositional vectors...
-q1 = c(1,   0,   0,   0)
-q2 = c(0.5, 0.5, 0,   0)
-q3 = c(1/4, 1/4, 1/4, 1/4)
-q4 = c(0,   0,   1,   0)
+q1 <- c(1, 0, 0, 0)
+q2 <- c(0.5, 0.5, 0, 0)
+q3 <- c(1 / 4, 1 / 4, 1 / 4, 1 / 4)
+q4 <- c(0, 0, 1, 0)
 
 # we could compute the mean manually:
 mean(sapply(list(q1, q2, q3, q4), het))
 
 # Or we could use het_mean:
-relative_abundances = matrix(c(q1, q2, q3, q4),
-                  byrow = TRUE, nrow = 4)
+relative_abundances <- matrix(c(q1, q2, q3, q4),
+  byrow = TRUE, nrow = 4
+)
 
 het_mean(relative_abundances)
 
@@ -50,18 +51,18 @@ het_mean(relative_abundances)
 
 # Compute mean Gini-Simpson index ignoring
 # rows 2 and 3
-row_weights = c(0.5, 0, 0, 0.5)
+row_weights <- c(0.5, 0, 0, 0.5)
 het_mean(relative_abundances, w = row_weights)
 
 # Compute mean Gini-Simpson index assuming that
 # categories 1 and 2 are identical:
-similarity_matrix = diag(4)
-similarity_matrix[1,2] = 1
-similarity_matrix[2,1] = 1
+similarity_matrix <- diag(4)
+similarity_matrix[1, 2] <- 1
+similarity_matrix[2, 1] <- 1
 het_mean(relative_abundances, S = similarity_matrix)
 
 # Assume categories 1 and 2 are identical AND
 # ignore rows 2 and 4:
-row_weights = c(0.5, 0, 0.5, 0)
+row_weights <- c(0.5, 0, 0.5, 0)
 het_mean(relative_abundances, w = row_weights, S = similarity_matrix)
 }

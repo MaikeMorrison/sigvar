@@ -25,8 +25,8 @@ het(q = c(0.4, 0.3, 0.3))
 
 # Compute Gini-Simpson index assuming that
 # categories 1 and 2 are identical:
-similarity_matrix = diag(3)
-similarity_matrix[1,2] = 1
-similarity_matrix[2,1] = 1
+similarity_matrix <- diag(3)
+similarity_matrix[1, 2] <- 1
+similarity_matrix[2, 1] <- 1
 het(q = c(0.4, 0.3, 0.3), S = similarity_matrix)
 }

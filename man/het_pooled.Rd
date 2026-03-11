@@ -39,18 +39,19 @@ This function computes the Gini-Simpson index of a "pooled" vector equal to \cod
 \examples{
 # To compute the pooled Gini-Simpson index of
 # the following compositional vectors...
-q1 = c(1,   0,   0,   0)
-q2 = c(0.5, 0.5, 0,   0)
-q3 = c(1/4, 1/4, 1/4, 1/4)
-q4 = c(0,   0,   1,   0)
+q1 <- c(1, 0, 0, 0)
+q2 <- c(0.5, 0.5, 0, 0)
+q3 <- c(1 / 4, 1 / 4, 1 / 4, 1 / 4)
+q4 <- c(0, 0, 1, 0)
 
 # we could compute the mean manually:
-qPooled = (q1 + q2 + q3 + q4)/4
+qPooled <- (q1 + q2 + q3 + q4) / 4
 het(qPooled)
 
 # Or we could use het_pooled:
-relative_abundances = matrix(c(q1, q2, q3, q4),
-                  byrow = TRUE, nrow = 4)
+relative_abundances <- matrix(c(q1, q2, q3, q4),
+  byrow = TRUE, nrow = 4
+)
 
 het_pooled(relative_abundances)
 
@@ -58,18 +59,18 @@ het_pooled(relative_abundances)
 
 # Compute pooled Gini-Simpson index ignoring
 # rows 2 and 3
-row_weights = c(0.5, 0, 0, 0.5)
+row_weights <- c(0.5, 0, 0, 0.5)
 het_pooled(relative_abundances, w = row_weights)
 
 # Compute pooled Gini-Simpson index assuming that
 # categories 1 and 2 are identical:
-similarity_matrix = diag(4)
-similarity_matrix[1,2] = 1
-similarity_matrix[2,1] = 1
+similarity_matrix <- diag(4)
+similarity_matrix[1, 2] <- 1
+similarity_matrix[2, 1] <- 1
 het_pooled(relative_abundances, S = similarity_matrix)
 
 # Assume categories 1 and 2 are identical AND
 # ignore rows 2 and 4:
-row_weights = c(0.5, 0, 0.5, 0)
+row_weights <- c(0.5, 0, 0.5, 0)
 het_pooled(relative_abundances, w = row_weights, S = similarity_matrix)
 }
