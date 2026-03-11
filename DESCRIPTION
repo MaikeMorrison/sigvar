@@ -1,6 +1,6 @@
 Package: sigvar
 Title: Quantify and visualize variability of mutational signatures within and across samples
-Version: 0.0.2
+Version: 0.99.0
 Authors@R: c(person("Maike", "Morrison", , "maikem@stanford.edu", role = c("aut"),
               comment = c(ORCID = "0000-0003-0430-1401")),
             person("Nicolas", "Alcala", , "alcalan@iarc.who.int", role = c("aut", "cre"),
