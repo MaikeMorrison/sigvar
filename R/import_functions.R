@@ -40,7 +40,7 @@ import_SigProfiler <- function(folder = ".") {
 #' @param transcript the ensembl ID of the transcript
 #' @param organism the name of the organism associated with the transcript (species)
 #'
-#' @return A a 96 x 1 matrix containing the SBS spectrum of the transcript
+#' @return A 96 x 1 matrix containing the SBS spectrum of the transcript
 #' @export
 #'
 #' @examples
@@ -66,7 +66,7 @@ import_SigProfiler <- function(folder = ".") {
 get_SBS96_spectrum <- function(transcript = "ENST00000269305.9", organism = "Homo sapiens") {
   if (sub("_| ", "", tolower(organism)) == "homosapiens") txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene::TxDb.Hsapiens.UCSC.hg38.knownGene
   if (sub("_| ", "", tolower(organism)) == "musmusculus") txdb <- TxDb.Mmusculus.UCSC.mm10.knownGene::TxDb.Mmusculus.UCSC.mm10.knownGene
-  if (!exists("txdb")) stop("Organism not found. Valid answers are homo sapiens")
+  if (!exists("txdb")) stop("Organism not found. Valid answers are Homo sapiens or Mus musculus.")
   SBS32_Subtypes <- c(
     "ACA", "ACC", "ACG", "ACT",
     "CCA", "CCC", "CCG", "CCT",

@@ -12,7 +12,7 @@ A tibble with 29 rows and 7 columns:
 \item{group}{Organ of tumor and exposure status}
 \item{chemical}{Exposure substance}
 \item{Tissue}{Tissue of origin}
-\item{group_2}{Tumor/exposure reference each tumor/exposure group was compared to (either "Spontaneous_liver"  or"Spontaneous_lung" )}
+\item{group_2}{Tumor/exposure reference each tumor/exposure group was compared to (either "Spontaneous_liver"  or "Spontaneous_lung" )}
 \item{across_sample_heterogeneity}{P-values comparing values of across-sample heterogeneity between group and group_2}
 \item{mean_within_sample_diversity}{P-values comparing values of within-sample diversity between group and group_2}
 \item{pooled_diversity}{P-values comparing the pooled diversity between group and group_2}

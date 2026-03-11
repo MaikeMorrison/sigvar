@@ -21,7 +21,7 @@ A tibble with 96 rows and 68 columns:
 COSMIC3.0_SBS
 }
 \description{
-COSMIC 3.0 Single base subtitutions mutational signatures
+COSMIC 3.0 Single base substitutions mutational signatures
 from the COSMIC website
 }
 \keyword{datasets}

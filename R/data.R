@@ -81,8 +81,6 @@
 "mutsig_carcinogens_mice_SBS.refs"
 
 
-
-
 #' Bootstrap p-values comparing SVA results for carcinogen-exposed murine tumors to spontaneous tumors
 #'
 #' Data on single Base Substitution mutational signature attributions
@@ -94,14 +92,12 @@
 #'   \item{group}{Organ of tumor and exposure status}
 #'   \item{chemical}{Exposure substance}
 #'   \item{Tissue}{Tissue of origin}
-#'   \item{group_2}{Tumor/exposure reference each tumor/exposure group was compared to (either "Spontaneous_liver"  or"Spontaneous_lung" )}
+#'   \item{group_2}{Tumor/exposure reference each tumor/exposure group was compared to (either "Spontaneous_liver"  or "Spontaneous_lung" )}
 #'   \item{across_sample_heterogeneity}{P-values comparing values of across-sample heterogeneity between group and group_2}
 #'   \item{mean_within_sample_diversity}{P-values comparing values of within-sample diversity between group and group_2}
 #'   \item{pooled_diversity}{P-values comparing the pooled diversity between group and group_2}
 #' }
 "mutsig_carcinogens_mice_bootstrap_p_vals"
-
-
 
 
 #' Copy Number and Single Base Substitution mutational signatures for 120 malignant pleural mesothelioma from the MESOMICS cohort
@@ -129,7 +125,7 @@
 
 #' Single base substitution reference signatures for COSMIC3.0
 #'
-#' COSMIC 3.0 Single base subtitutions mutational signatures
+#' COSMIC 3.0 Single base substitutions mutational signatures
 #' from the COSMIC website
 #'
 #' @format ## `COSMIC3.0_SBS`
@@ -143,7 +139,7 @@
 
 #' Single base substitution reference signatures for COSMIC3.3.1
 #'
-#' COSMIC 3.3.1 Single base subtitutions mutational signatures
+#' COSMIC 3.3.1 Single base substitutions mutational signatures
 #' from the COSMIC website
 #'
 #' @format ## `COSMIC3.3.1_SBS`
@@ -213,7 +209,7 @@
 
 #' Mice Single base substitution reference signatures for COSMIC3.3.1
 #'
-#' Mice COSMIC 3.3.1 Single base subtitutions mutational signatures
+#' Mice COSMIC 3.3.1 Single base substitutions mutational signatures
 #' from the COSMIC website
 #'
 #' @format ## `COSMIC3.3.1_SBS_mm10`
@@ -295,7 +291,6 @@
 "ESCC_sig_activity"
 
 
-
 #' Activity of SBS, DBS, and ID mutational signatures in a global sample of renal cell carcinoma cases.
 #'
 #' Data from: Senkin et al. (2023). Geographic variation of mutagenic exposures in kidney cancer genomes. MedRxiv, 14, 2023.06.20.23291538. https://doi.org/10.1101/2023.06.20.23291538
@@ -338,9 +333,6 @@
 "ESCC_sig_similarity"
 
 
-
-
-
 #' Activity of SBS mutational signatures in samples of lung cancer in never smokers
 #'
 #' Data from: Zhang et al. (2021). Genomic and evolutionary classification of lung cancer in never smokers. Nature Genetics, 53(9), 1348–1359. https://doi.org/10.1038/s41588-021-00920-0
@@ -370,7 +362,6 @@
 #' }
 #' @source <https://doi.org/10.1038/s41588-021-00920-0>
 "zhang_sig_similarity"
-
 
 
 #' Activity of Smoking, APOBEC, and Ageing mutational signatures in a sample of East Asian lung adenocarcinoma patients.
@@ -462,24 +453,24 @@
 "TP53_drivers_intogen_LUAD"
 
 
-#'Counts of each context class for the main transcript of gene EGFR
+#' Counts of each context class for the main transcript of gene EGFR
 #'
 #' Data from: Ensembl
 "EGFR_context_counts_ordered"
 
 
-#'Counts of each context class for the main transcript of gene TP53
+#' Counts of each context class for the main transcript of gene TP53
 #'
 #' Data from: Ensembl
 "TP53_context_counts_ordered"
 
 
-#'SBS96 spectrum from the intogen website for gene EGFR in lung adenocarcinomas
+#' SBS96 spectrum from the intogen website for gene EGFR in lung adenocarcinomas
 #'
 #' Data from: Intogen database
 "EGFR_drivers_intogen_SBS96"
 
-#'SBS96 spectrum from the intogen website for gene TP53 in lung adenocarcinomas
+#' SBS96 spectrum from the intogen website for gene TP53 in lung adenocarcinomas
 #'
 #' Data from: Intogen database
 "TP53_drivers_intogen_SBS96"

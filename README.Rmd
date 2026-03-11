@@ -79,7 +79,18 @@ vignette("supplement_carcinogen_figure_altered", package = "sigvar")
 
 
 ## Dependencies 
-dplyr, ggplot2, rlang,  tidyr, readr, stringr, tibble, ggh4x, glue, ggtext, ggforce, scales, GenomicFeatures,
+   dplyr,
+    readr,
+    ggplot2,
+    rlang,
+    tidyr,
+    stringr,
+    ggh4x,
+    glue,
+    ggtext,
+    ggforce,
+    scales,
+    GenomicFeatures,
     GenomeInfoDb,
     BSgenome.Hsapiens.UCSC.hg38,
     BSgenome.Hsapiens.UCSC.hg19,
@@ -87,7 +98,8 @@ dplyr, ggplot2, rlang,  tidyr, readr, stringr, tibble, ggh4x, glue, ggtext, ggfo
     Biostrings,
     rtracklayer,
     TxDb.Hsapiens.UCSC.hg38.knownGene,
-    TxDb.Mmusculus.UCSC.mm10.knownGene
+    TxDb.Mmusculus.UCSC.mm10.knownGene,
+    lifecycle
 
 <!-- ## Example -->
 

@@ -18,7 +18,7 @@ plot_signature_prop(
 If \code{relab_matrix} contains any metadata, it must be on the left-hand side of the matrix and the number of entries
 that sum to 1 (\code{K}) must be specified.}
 
-\item{group}{Optional; a string specifying the name of the column that describes which group each row (sample) belongs to. Use if \code{matrices} is a single matrix containing multiple groups of samples you wish to compare.}
+\item{group}{Optional; a string specifying the name of the column that describes which group each row (sample) belongs to. Use if \code{relab_matrix} is a single matrix containing multiple groups of samples you wish to compare.}
 
 \item{time}{Optional; a string specifying the name of the column that describes the sampling time for each row. Include if you wish to weight the samples by the distance between them in the visualization.}
 
