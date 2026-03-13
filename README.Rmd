@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```
 
 
-# sigvar
+# sigvar <img src="man/figures/sigvar_logo_v1.png" align="right" width="130" style="margin-left:50px;"/>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/MaikeMorrison/sigvar/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/MaikeMorrison/sigvar/actions/workflows/R-CMD-check.yaml)
