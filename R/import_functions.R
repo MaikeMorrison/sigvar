@@ -47,7 +47,7 @@ import_SigProfiler <- function(folder = ".") {
 #' # Run on
 #' spectrum <- get_SBS96_spectrum(transcript = "ENST00000269305.9")
 #' print(spectrum)
-#' @importFrom GenomicFeatures makeTxDbFromBiomart
+#' @importFrom txdbmaker makeTxDbFromBiomart
 #' @importFrom GenomicFeatures exons
 #' @importFrom GenomeInfoDb seqlevelsStyle
 #' @importFrom BSgenome.Hsapiens.UCSC.hg38 BSgenome.Hsapiens.UCSC.hg38

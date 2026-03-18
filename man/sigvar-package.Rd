@@ -20,7 +20,7 @@ Useful links:
 
 Authors:
 \itemize{
-  \item Maike Morrison \email{maikem@stanford.edu} (\href{https://orcid.org/0000-0003-0430-1401}{ORCID})
+  \item Maike Morrison \email{maike.morrison@gmail.com} (\href{https://orcid.org/0000-0003-0430-1401}{ORCID})
 }
 
 }
