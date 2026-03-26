@@ -20,7 +20,8 @@
 #' \item \code{P_values}: The probability of observing the observed difference in variability between each pair of groups if there were no difference between groups. Computed as the fraction of bootstrap differences greater than or equal to the observed difference. Depends on what \code{alternative} is specified ("greater", "less", or "two.sided").
 #' \item \code{bootstrap_distribution_plot}: The distribution of bootstrap replicate differences in each variability value. The observed differences are shown in red. The further the red points are from 0, the more significant the statistical difference between groups.
 #' \item \code{observed_difference}: The observed difference in diversity statistics between the groups.
-#' \item \code{bootstrap_difference}: The bootstrap replicate difference in diversity statistics between the groups.}
+#' \item \code{bootstrap_difference}: The bootstrap replicate difference in diversity statistics between the groups.
+#' }
 #'
 #' @import utils
 #' @export
