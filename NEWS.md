@@ -1,7 +1,13 @@
+# sigvar 0.99.1 (April 2026)
+
+* Removed sigvar.Rproj and made sure gitignore files were correct
+
+* Tracked down formatting errors in the documentation
+
+# sigvar 0.99.0 (March 2026)
+
+* Prepared package for submission to bioconductor. 
+
 # sigvar 0.0.1 (April 2023)
 
 * Added a `NEWS.md` file to track changes to the package.
-
-# 0.99.0 (March 2026)
-
-* Prepared package for submission to bioconductor. 
