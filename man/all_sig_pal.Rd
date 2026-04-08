@@ -7,10 +7,7 @@
 \format{
 \subsection{\code{all_sig_pal}}{
 
-A vector of colors for mutational signature activities
-\describe{
-Hex color codes for mutational signatures
-}
+A vector of HEX color codes for mutational signature activities.
 }
 }
 \usage{

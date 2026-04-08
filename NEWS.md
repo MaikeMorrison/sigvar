@@ -1,8 +1,12 @@
+# sigvar 0.99.2 (April 2026)
+
+* Fixed formatting issues in documentation for `all_sig_pal` and `sbs_palette` data objects.
+
 # sigvar 0.99.1 (April 2026)
 
-* Removed sigvar.Rproj and made sure gitignore files were correct
+* Removed sigvar.Rproj and made sure gitignore files were correct.
 
-* Tracked down formatting errors in the documentation
+* Tracked down formatting errors in the documentation.
 
 # sigvar 0.99.0 (March 2026)
 

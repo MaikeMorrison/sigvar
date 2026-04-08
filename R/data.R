@@ -255,10 +255,7 @@
 #' from the Pan Cancer Whole-Genome consortium (PCAWG). Oct 19 2019 version
 #'
 #' @format ## `sbs_palette`
-#' A vector of colors for COSMIC SBS signatures
-#' \describe{
-#' RGB codes for COSMIC signatures
-#' }
+#' A vector of RGB color codes for COSMIC SBS signatures.
 #' @source <https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples>
 "sbs_palette"
 
@@ -268,10 +265,7 @@
 #' signatures.
 #'
 #' @format ## `all_sig_pal`
-#' A vector of colors for mutational signature activities
-#' \describe{
-#' Hex color codes for mutational signatures
-#' }
+#' A vector of HEX color codes for mutational signature activities.
 "all_sig_pal"
 
 

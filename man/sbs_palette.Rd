@@ -7,10 +7,7 @@
 \format{
 \subsection{\code{sbs_palette}}{
 
-A vector of colors for COSMIC SBS signatures
-\describe{
-RGB codes for COSMIC signatures
-}
+A vector of RGB color codes for COSMIC SBS signatures.
 }
 }
 \source{
