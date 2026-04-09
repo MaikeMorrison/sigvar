@@ -1,3 +1,7 @@
+# sigvar 0.99.3 (April 2026)
+
+* Removed "cre" (maintainer) status from Nicolas Alcala to satisfy bioconductor requirements. 
+
 # sigvar 0.99.2 (April 2026)
 
 * Fixed formatting issues in documentation for `all_sig_pal` and `sbs_palette` data objects.
