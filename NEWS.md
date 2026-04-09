@@ -1,3 +1,7 @@
+# sigvar 0.99.4 (April 2026)
+
+* Joined support site, iterating version number to trigger re-check of package. 
+
 # sigvar 0.99.3 (April 2026)
 
 * Removed "cre" (maintainer) status from Nicolas Alcala to satisfy bioconductor requirements. 
