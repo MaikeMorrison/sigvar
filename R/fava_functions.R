@@ -518,7 +518,7 @@ S_checker <- function(S, K, relab_matrix = NULL) {
 time_weights <- function(times, group = NULL) {
   if (is.null(group)) {
     I <- length(times)
-    T <- times[I] - times[1]
+    time_span <- times[I] - times[1]
 
     if (I < 2) {
       stop("times must have length greater than 1.")
@@ -532,14 +532,14 @@ time_weights <- function(times, group = NULL) {
       di[i] <- times[i + 1] - times[i - 1]
     }
     di[I] <- times[I] - times[I - 1]
-    return(di / (2 * T))
+    return(di / (2 * time_span))
   } else {
     wi <- c()
     for (name in unique(group)) {
       time_name <- times[which(group == name)]
 
       I <- length(time_name)
-      T <- time_name[I] - time_name[1]
+      time_span <- time_name[I] - time_name[1]
 
       if (I < 2) {
         stop("Within each group, times must have length greater than 1.")
@@ -548,11 +548,11 @@ time_weights <- function(times, group = NULL) {
         stop("Within each group, times must be increasing. Each entry must be greater than the previous entry.")
       }
 
-      wi <- c(wi, (time_name[2] - time_name[1]) / (2 * T))
+      wi <- c(wi, (time_name[2] - time_name[1]) / (2 * time_span))
       for (i in 2:(I - 1)) {
-        wi <- c(wi, (time_name[i + 1] - time_name[i - 1]) / (2 * T))
+        wi <- c(wi, (time_name[i + 1] - time_name[i - 1]) / (2 * time_span))
       }
-      wi <- c(wi, (time_name[I] - time_name[I - 1]) / (2 * T))
+      wi <- c(wi, (time_name[I] - time_name[I - 1]) / (2 * time_span))
     }
     return(wi)
   }

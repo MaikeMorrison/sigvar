@@ -16,15 +16,15 @@
 #' @importFrom readr read_tsv
 import_SigProfiler <- function(folder = ".") {
   # find activity files within the folder
-  input_files <- list.files(folder, pattern = "Activities[_refit]*.txt", recursive = T, full.names = T)
+  input_files <- list.files(folder, pattern = "Activities[_refit]*.txt", recursive = TRUE, full.names = TRUE)
   # get name (de novo or COSMIC)
-  input_files.names <- sapply(list.files(folder, pattern = "Activities[_refit]*.txt", recursive = T, full.names = F), function(x) {
+  input_files.names <- sapply(list.files(folder, pattern = "Activities[_refit]*.txt", recursive = TRUE, full.names = FALSE), function(x) {
     tmp <- strsplit(x, "/")[[1]]
     tmp <- tmp[length(tmp) - 2]
   })
   # if multiple solutions, keep only suggested solutions instead of all NMF solutions
-  if (length(grep(input_files, pattern = "Suggested", value = F)) > 0) {
-    input_files.tokeep <- grep(input_files, pattern = "Suggested", value = F)
+  if (length(grep(input_files, pattern = "Suggested", value = FALSE)) > 0) {
+    input_files.tokeep <- grep(input_files, pattern = "Suggested", value = FALSE)
   } else {
     input_files.tokeep <- 1:length(input_files)
   }

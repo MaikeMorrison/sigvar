@@ -77,7 +77,7 @@ cossim <- function(ref_sigs) {
     nrow = ncol(ref_sigs), ncol = ncol(ref_sigs)
   ) / matrix(sqrt(colSums(ref_sigs**2)),
     nrow = ncol(ref_sigs),
-    ncol = ncol(ref_sigs), byrow = T
+    ncol = ncol(ref_sigs), byrow = TRUE
   )
   diag(res) <- 1
   return(res)

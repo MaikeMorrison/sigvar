@@ -92,11 +92,11 @@ relab_sample_weighter <- function(relab, K = NULL, time = NULL, w = NULL, group 
 
   if (is.null(group)) {
     if (is.null(w) & (!is.null(time))) {
-      t <- relab_matrix_clean$time
-      w <- time_weights(t)
-      T <- max(t) - min(t)
+      sample_times <- relab_matrix_clean$time
+      w <- time_weights(sample_times)
+      time_span <- max(sample_times) - min(sample_times)
 
-      return(relab[rep(1:length(w), round(w * T * 2)), ])
+      return(relab[rep(1:length(w), round(w * time_span * 2)), ])
     } else if (is.null(time) & !is.null(w)) {
       return(relab[rep(1:length(w), round(w * 800)), ])
     } else {
@@ -111,11 +111,11 @@ relab_sample_weighter <- function(relab, K = NULL, time = NULL, w = NULL, group 
       group_sub <- relab_matrix_clean$group == g
 
       if (is.null(w) & (!is.null(time))) {
-        t_sub <- (relab_matrix_clean$time)[group_sub]
-        w_sub <- time_weights(t_sub)
-        T <- max(t_sub) - min(t_sub)
+        sample_times_sub <- (relab_matrix_clean$time)[group_sub]
+        w_sub <- time_weights(sample_times_sub)
+        time_span <- max(sample_times_sub) - min(sample_times_sub)
 
-        df_list[[i]] <- relab[group_sub, ][rep(1:length(w_sub), round(w_sub * T * 2)), ]
+        df_list[[i]] <- relab[group_sub, ][rep(1:length(w_sub), round(w_sub * time_span * 2)), ]
       } else if (is.null(time) & !is.null(w)) {
         df_list[[i]] <- relab[group_sub, ][rep(1:length(w), round(w * 800)), ]
       } else {
