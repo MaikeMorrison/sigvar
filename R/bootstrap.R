@@ -24,6 +24,7 @@
 #' }
 #'
 #' @import utils
+#' @importFrom withr with_seed
 #' @export
 #'
 #' @examples
@@ -63,12 +64,9 @@ sigboot <- function(sig_activity,
     stop("Please specify either time or w, but not both.")
   }
 
-  # Set random seed (optional)
-  if (!is.null(seed)) {
-    set.seed(seed)
-  }
-
-  # If multiple grouping variables are provided, make a new grouping column
+  # Define the main bootstrap computation
+  bootstrap_computation <- function() {
+    # If multiple grouping variables are provided, make a new grouping column
   multiple_groups <- FALSE
   if (length(group) > 1) {
     multiple_groups <- TRUE
@@ -381,12 +379,21 @@ pairwise_comparison <- function(group_pair,
     stop("Valid options for alternative are 'greater', 'less', and 'two.sided'.")
   }
 
-  return(list(
-    comparison = diff_label,
-    P_value = p_val,
-    observed_difference = observed_difference,
-    bootstrap_difference = bootstrap_differences
-  ))
+    return(list(
+      comparison = diff_label,
+      P_value = p_val,
+      observed_difference = observed_difference,
+      bootstrap_difference = bootstrap_differences
+    ))
+  }
+
+  # If a seed is provided, use with_seed to set it locally for this function
+  # This ensures reproducibility without affecting the global random state
+  if (!is.null(seed)) {
+    return(withr::with_seed(seed, bootstrap_computation()))
+  } else {
+    return(bootstrap_computation())
+  }
 }
 
 
