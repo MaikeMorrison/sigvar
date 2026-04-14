@@ -14,6 +14,12 @@ greater than the previous entry.}
 sampling time. Use if there are samples from multiple replicates or subjects
 in one data set.}
 }
+\value{
+A numeric vector of weights with length equal to the length of \code{times}.
+Each weight represents the normalized temporal distance between adjacent samples.
+Weights sum to 1 when \code{group} is NULL, or sum to the number of unique groups
+when \code{group} is specified.
+}
 \description{
 This function takes a vector of sampling times, \eqn{t = (t_1, t_2, \ldots, t_I)}{latex}
 and computes a normalized vector which can be used to weight each sample based on

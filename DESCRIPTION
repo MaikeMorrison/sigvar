@@ -1,9 +1,9 @@
 Package: sigvar
 Title: Quantify and visualize variability of mutational signatures within and across samples
 Version: 0.99.5
-Authors@R: c(person("Maike", "Morrison", , "maike.morrison@gmail.com", role = c("aut", "cre"),
+Authors@R: c(person("Maike", "Morrison", , "maike.morrison@gmail.com", role = c("aut"),
               comment = c(ORCID = "0000-0003-0430-1401")),
-            person("Nicolas", "Alcala", , "alcalan@iarc.who.int", role = c("aut"),
+            person("Nicolas", "Alcala", , "alcalan@iarc.who.int", role = c("aut", "cre"),
               comment = c(ORCID = "0000-0002-5961-5064")))
 Description: This package allows users to import mutational signature attribution (a.k.a. exposure) matrices and compute, visualize, and test their variabilities within and across samples.
 License: MIT + file LICENSE

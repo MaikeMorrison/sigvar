@@ -508,6 +508,10 @@ S_checker <- function(S, K, relab_matrix = NULL) {
 #' @param group Optional; a character vector specifying the group identity of each
 #' sampling time. Use if there are samples from multiple replicates or subjects
 #' in one data set.
+#' @return A numeric vector of weights with length equal to the length of \code{times}.
+#' Each weight represents the normalized temporal distance between adjacent samples.
+#' Weights sum to 1 when \code{group} is NULL, or sum to the number of unique groups
+#' when \code{group} is specified.
 #' @examples
 
 #' time_vector = c(1, 8, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
