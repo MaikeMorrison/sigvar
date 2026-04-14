@@ -1,3 +1,7 @@
+# sigvar 0.99.7 (April 2026)
+
+* Remove sigvar.Rproj from online version.
+
 # sigvar 0.99.6 (April 2026)
 
 * Update for bioconductor warnings---T/F variable names, remove set.seed, confirm documentation completeness.
