@@ -1,3 +1,5 @@
+# sigvar 0.99.6
+
 # sigvar 0.99.5 (April 2026)
 
 * Added sigvar to watched tags on the support site, iterating version to trigger re-check of package. 
