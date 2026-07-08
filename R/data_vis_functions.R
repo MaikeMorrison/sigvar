@@ -21,9 +21,6 @@ Q_checker <- function(Q, K, rep) {
   # convert Q matrix entries to numbers
   Q <- data.matrix(Q)
 
-  # Name Q matrix columns q1, q2, ..., qK
-  # colnames(Q) <- paste0("q",1:K)
-
   # Check if Q matrix has any missing values, and give warning if necessary
   if (any(is.na(Q))) {
     # Identify location of missing entries
@@ -332,13 +329,6 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
 
   signatures <- colnames(sig_activity)[(ncol(sig_activity) - K + 1):ncol(sig_activity)]
 
-  #  if(facet_true){
-  #   signatures = colnames(sig_activity)[colnames(sig_activity)!=group & colnames(sig_activity)!=facet ][1:min(K,ncol(sig_activity)-1)]
-  # }else{
-  #   signatures = colnames(sig_activity)[colnames(sig_activity)!=group][1:min(K,ncol(sig_activity)-1)]
-  # }
-
-
   if (facet_true) {
     sig_activity_sigs <- cbind(
       data.frame(
@@ -444,7 +434,6 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
         title.position = "top",
         direction = "horizontal"
       ),
-      # max_size = max_dotsize,
       limits = c(threshold, 1), range = c(-1, max_dotsize),
       breaks = c(0.5, 1),
       name = "Proportion of\ntumors with\nsignature"
@@ -500,23 +489,13 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
       }
     } +
     ggplot2::theme_bw() +
-    # ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3)) +
-    # {if(!pivot)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}  +
-
     {
       if (pivot) ggplot2::coord_flip()
     } +
-    # {if(pivot)
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-    # }+
-
-    # {if(pivot & !facet_true)ggplot2::theme(legend.position = "top")}+
-    # {if(pivot & !facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barwidth = 3))}+
-    # {if(pivot & facet_true)ggplot2::guides(color = ggplot2::guide_colourbar(barheight = 3))}+
-
     {
       if (facet_true & pivot & facets_few) ggforce::facet_col(dplyr::vars(facet), scales = "free_y", space = "free")
-    } + # This used to have ncol = 1 when it was facet_wrap
+    } +
     {
       if (facet_true & pivot & !facets_few) ggplot2::facet_grid(. ~ facet, scales = "free_y", space = "free_y")
     } +

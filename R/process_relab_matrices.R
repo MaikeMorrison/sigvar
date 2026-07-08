@@ -24,8 +24,6 @@ relab_checker <- function(relab, K = NULL, rep = NULL, group = NULL, time = NULL
   # convert relab matrix entries to numbers
   relab <- data.matrix(relab)
 
-  # Name relab matrix columns q1, q2, ..., qK
-  # colnames(relab) <- paste0("q",1:K)
 
   # Check if relab matrix has any missing values, and give warning if necessary
   if (any(is.na(relab))) {
@@ -119,7 +117,6 @@ relab_sample_weighter <- function(relab, K = NULL, time = NULL, w = NULL, group 
       } else if (is.null(time) & !is.null(w)) {
         df_list[[i]] <- relab[group_sub, ][rep(1:length(w), round(w * 800)), ]
       } else {
-        # warning("Please provide either time or w to relab_sample_weighter function.")
         return(relab)
       }
       i <- i + 1
