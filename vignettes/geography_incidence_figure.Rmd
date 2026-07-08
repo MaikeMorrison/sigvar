@@ -29,6 +29,11 @@ knitr::opts_chunk$set(
 library(tidyverse)
 library(patchwork)
 library(sigvar)
+
+data(ESCC_sig_activity, package = "sigvar")
+data(rcc_sig_activity, package = "sigvar")
+data(all_sig_pal, package = "sigvar")
+
 ```
 
 ## ESCC data
@@ -377,7 +382,7 @@ plot_legend_rcc <- ggplot() + geom_raster(aes(x = 1:10, y = 2:11,
 rcc_relab = ((romania_relab / lithuania_relab ) | 
                cowplot::get_legend(plot_legend_rcc) ) +
   plot_layout(widths = c(2,1))
-# rcc_relab
+rcc_relab
 ```
 
 
@@ -416,8 +421,6 @@ escc_inset
 escc_scatter_inset = escc_scatter_lim +
   ggrepel::geom_text_repel(aes(label = Country,  color = incidence), 
                            show.legend = FALSE, size = 4, force_pull = 0)
-# + annotation_custom(grob = ggplotGrob(escc_inset),
-# xmin = 0.6, xmax = 0.7, ymin = 0.045, ymax = 0.14)
 escc_scatter_inset
 ```
 
@@ -488,12 +491,8 @@ rcc_arrows
 
 
 
-
-
-
 # ASSEMBLE PANELS
 ```{r, fig.height=8, fig.width=20}
-# spacing = c(t = 0.2, l = 1, b = 0.2, r = 1)
 panels = cowplot::plot_grid(
   escc_dot_plot + theme(legend.position = "none")+ 
     theme(plot.margin = unit(c(t=0, l=1, b=1, r=0), "lines")),
@@ -519,3 +518,9 @@ panels = cowplot::plot_grid(
 panels
 ```
 
+
+# Session information
+
+```{r}
+sessionInfo()
+```

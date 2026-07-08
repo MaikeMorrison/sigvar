@@ -20,7 +20,7 @@ A tibble with 2,670 rows and 14 columns:
 \url{https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples}
 }
 \usage{
-PCAWG_SigProfiler_COSMIC_DBS
+data(PCAWG_SigProfiler_COSMIC_DBS)
 }
 \description{
 Double Base Substitution mutational signature attributions to COSMIC signatures

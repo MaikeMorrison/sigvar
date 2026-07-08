@@ -10,7 +10,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Mutational signatures of carcinogens}
+  %\VignetteIndexEntry{Signature Variability Analysis of the mutational signatures of driver alterations with sigvar}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -44,6 +44,9 @@ This vignettes analyses the intogen dataset included in the sigvar package. For 
 ## Lung cancer in never smokers (LCINS)
 We retrieve the signature files from the sigvar package
 ```{r }
+data(Sherlock_LCINS_SBS, package = "sigvar")
+data(Sherlock_LCINS_SBS.refs, package = "sigvar")
+
 Sherlock_LCINS_SBS
 Sherlock_LCINS_SBS.refs
 ```
@@ -72,6 +75,7 @@ TP53_spectrum = get_SBS96_spectrum(transcript="ENST00000269305.9")
 
 Get the SBS spectrum of driver *TP53* mutations in LUAD from the intogen database:
 ```{r}
+data(TP53_drivers_intogen_LUAD, package = "sigvar")
 TP53_driver_spectrum = get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
 ```
 
@@ -104,6 +108,8 @@ Sherlock_LCINS_SBS_GS = sapply(1:nrow(Sherlock_LCINS_SBS), function(i) het(Sherl
 We test the relationship between probability of driver mutations, within-tumor variability, and passive smoking
 
 ```{r }
+data(Sherlock_LCINS.metadata, package = "sigvar")
+
 Sherlock_LCINS_SBS_res = bind_cols(prob.TP53=prob_Sherlock_TP53_drivers  ,
                                    GS=Sherlock_LCINS_SBS_GS,
                                    passive_smoking=Sherlock_LCINS.metadata$passive_smoking)
@@ -141,6 +147,6 @@ ggplot(tibble(Type= str_extract(names(TP53_driver_prop),"[ACGT]>[ACGT]"),
 
 # Session information
 
-```{r }
+```{r}
 sessionInfo()
 ```

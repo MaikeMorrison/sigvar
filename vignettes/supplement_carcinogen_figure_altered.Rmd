@@ -1,17 +1,17 @@
 ---
 title: "Carcinogen exposure is associated with increased diversity of signature activity within tumors."
 author: "Laurane Mangé"
-date: '2024-05-16'
+date: "`r Sys.Date()`"
 output:
   BiocStyle::html_document:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{supplement_carcinogen_figure_altered}
+  %\VignetteIndexEntry{Carcinogen exposure is associated with increased diversity of signature activity within tumors}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-
+  
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
@@ -35,7 +35,6 @@ After installing and loading the necessary packages, we start by removing signat
 
 We first define the color palette we will use for figure 2.
 ```{r color palette}
-
 pal =   c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51") %>%
   `names<-`(c("Non-smoker", "Unexposed to\nasbestos", "Passive smoker", "Exposed to\nasbestos", "Smoker"))
 ```
@@ -43,6 +42,8 @@ pal =   c("#264653", "#2a9d8f", "#e9c46a", "#f4a261", "#e76f51") %>%
 We then prepare the Riva et al. data for our analysis. First, we fetch the necessary data.
 
 ```{r fetch data}
+data(mutsig_carcinogens_mice_SBS.refs, package = "sigvar")
+data(mutsig_carcinogens_mice_SBS, package = "sigvar")
 
 ## Riva et al. mice carcinogen data
 
@@ -112,48 +113,49 @@ We then compute the new Pvalues of all mean within-sample diversities. Each run 
 riva_bootstrap_list_greater = list()
 chemical_tissue = list()
 i = 1
- set.seed(1)
- for(chem in setdiff(chems, "Spontaneous")){
-   riva_chem_spontaneous = dplyr::filter(riva_relab_norm, chemical %in% c("Spontaneous", chem))
-   riva_chem = dplyr::filter(riva_relab_norm, chemical == chem)
-   for(tissue in unique(riva_chem$Tissue)){
-     riva_bootstrap_list_greater[[i]] = sigvar::sigboot(sig_activity = riva_chem_spontaneous %>% dplyr::filter(Tissue == tissue),
-                    K = 11, S = riva_cossim,
-                    group = c("chemical", "Tissue"), 
-                    n_replicates = 1000, seed = 1, alternative = "greater")
-
-     chemical_tissue[[i]] = c()
-     i = i + 1
-   }
- }
+set.seed(1)
+for(chem in setdiff(chems, "Spontaneous")){
+  riva_chem_spontaneous = dplyr::filter(riva_relab_norm, chemical %in% c("Spontaneous", chem))
+  riva_chem = dplyr::filter(riva_relab_norm, chemical == chem)
+  for(tissue in unique(riva_chem$Tissue)){
+    riva_bootstrap_list_greater[[i]] = sigvar::sigboot(sig_activity = riva_chem_spontaneous %>% dplyr::filter(Tissue == tissue),
+                                                       K = 11, S = riva_cossim,
+                                                       group = c("chemical", "Tissue"), 
+                                                       n_replicates = 1000, seed = 1, alternative = "greater")
+    
+    chemical_tissue[[i]] = c()
+    i = i + 1
+  }
+}
 ```
 
 We now want a dataframe containing all the information necessary to plot figure 2a. We create `riva5percent_p_values_greater` based on the bootstrap Pvalues file from the sigvar package. This dataframe has 7 columns : group 1 (chemical + tissue), chemical, tissue, group 2 (spontaneous + tissue), Pvalue for across-sample heterogeneity, Pvalue for within-sample diversity, Pvalue for pooled diversity (this column is now full of NAs). We adjust every row (every comparison between 2 groups of samples) with the corresponding values from `riva_bootstrap_list_greater`.
 
 ```{r plot df riva5percent}
- 
- #Copy format and data from the bootstrap Pvalues file in the sigvar package
- riva5percent_p_values_greater <- mutsig_carcinogens_mice_bootstrap_p_vals
 
- # Is the spontaneous group 1st or 2nd in the comparison ?
- # 1st group in column 1 (should be chemical+organ) and 2nd in column 4 (should be spont+organ)
- for(i in 1:nrow(riva5percent_p_values_greater)){
-   if(str_detect(sub("\\ -.*", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison),"Spont")){
-     riva5percent_p_values_greater[i,4] <- sub("\\ -.*", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
-     riva5percent_p_values_greater[i,1] <- sub(".*- ", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
-   }
-   else{
-     riva5percent_p_values_greater[i,1] <- sub("\\ -.*", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
-     riva5percent_p_values_greater[i,4] <- sub(".*- ", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
-   }
-   
+#Copy format and data from the bootstrap Pvalues file in the sigvar package
+data(mutsig_carcinogens_mice_bootstrap_p_vals, package = "sigvar")
+riva5percent_p_values_greater <- mutsig_carcinogens_mice_bootstrap_p_vals
 
-   riva5percent_p_values_greater[i,2] <- sub("\\_.*", "", riva5percent_p_values_greater[i,1])
-   riva5percent_p_values_greater[i,3] <- sub(".*_", "", riva5percent_p_values_greater[i,1])
-   riva5percent_p_values_greater[i,7] <- NA
-   riva5percent_p_values_greater[i,5] <- riva_bootstrap_list_greater[[i]]$P_values$across_sample_heterogeneity
-   riva5percent_p_values_greater[i,6] <- riva_bootstrap_list_greater[[i]]$P_values$mean_within_sample_diversity
- }
+# Is the spontaneous group 1st or 2nd in the comparison ?
+# 1st group in column 1 (should be chemical+organ) and 2nd in column 4 (should be spont+organ)
+for(i in 1:nrow(riva5percent_p_values_greater)){
+  if(str_detect(sub("\\ -.*", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison),"Spont")){
+    riva5percent_p_values_greater[i,4] <- sub("\\ -.*", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
+    riva5percent_p_values_greater[i,1] <- sub(".*- ", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
+  }
+  else{
+    riva5percent_p_values_greater[i,1] <- sub("\\ -.*", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
+    riva5percent_p_values_greater[i,4] <- sub(".*- ", "", riva_bootstrap_list_greater[[i]]$P_values$Comparison)
+  }
+  
+  
+  riva5percent_p_values_greater[i,2] <- sub("\\_.*", "", riva5percent_p_values_greater[i,1])
+  riva5percent_p_values_greater[i,3] <- sub(".*_", "", riva5percent_p_values_greater[i,1])
+  riva5percent_p_values_greater[i,7] <- NA
+  riva5percent_p_values_greater[i,5] <- riva_bootstrap_list_greater[[i]]$P_values$across_sample_heterogeneity
+  riva5percent_p_values_greater[i,6] <- riva_bootstrap_list_greater[[i]]$P_values$mean_within_sample_diversity
+}
 
 sig2 = riva5percent_p_values_greater
 ```
@@ -234,16 +236,16 @@ riva_1d = ggplot(riva_within_sig2, aes(y = chemical_ordered, x = within)) +
             data = riva_within_sig2, size = 5,
             fontface = "bold", vjust = 0.5, hjust = 1) +
   scale_fill_manual(values = signif_pal) +
-   scale_color_manual(values = signif_pal) + 
-
+  scale_color_manual(values = signif_pal) + 
+  
   geom_richtext(
     data = data.frame(label = "
   <span style='color:#DABD61FF'> \U00B7   <i>P</i> < 0.10</span><br>
   <span style='color:#D95F30FF'>*  <i>P</i> < 0.05</span><br>
   <span style='color:#BE3428FF'>**    <i>P</i> < 0.01</span><br>
    <span style='color:#620800'>***    <i>P</i> < 0.001</span>",
-                      Tissue = "liver"),
-    aes(x = 0.34, y = "Diethanolamine", label = label), color = "grey")
+  Tissue = "liver"),
+  aes(x = 0.34, y = "Diethanolamine", label = label), color = "grey")
 
 
 # Add arrows
@@ -277,7 +279,7 @@ riva_arrows <- base_within_only +
 
 
 panels5percent = patchwork::wrap_plots((riva_arrows), 
-                               widths = 1.3) + 
+                                       widths = 1.3) + 
   plot_annotation(tag_levels = "a")
 
 panels5percent
@@ -408,7 +410,7 @@ bold_list = sig2 %>% group_by(chemical) %>%
 
 
 riva_within_sim_sig2  = left_join(riva_within_sim, sig2, 
-                              by = c("chemical", "Tissue", "group")) %>%
+                                  by = c("chemical", "Tissue", "group")) %>%
   left_join(bold_list)
 
 sig2 = left_join(sig2, bold_list)
@@ -419,10 +421,10 @@ chems_ordered = riva_within_sim_sig2 %>% dplyr::filter(Tissue == "liver") %>%
   dplyr::select(chemical_bold) %>% unique %>% unlist
 
 riva_within_sim_sig2$chemical_ordered = factor(riva_within_sim_sig2$chemical_bold, 
-                                           ordered = TRUE,
-                                           levels = c(setdiff(chems_ordered,
-                                                              "**Spontaneous**"), 
-                                                      "**Spontaneous**"))
+                                               ordered = TRUE,
+                                               levels = c(setdiff(chems_ordered,
+                                                                  "**Spontaneous**"), 
+                                                          "**Spontaneous**"))
 
 
 riva_1d = ggplot(riva_within_sim_sig2, aes(y = chemical_ordered, x = within)) +
@@ -465,8 +467,8 @@ riva_1d = ggplot(riva_within_sim_sig2, aes(y = chemical_ordered, x = within)) +
   <span style='color:#D95F30FF'>*  <i>P</i> < 0.05</span><br>
   <span style='color:#BE3428FF'>**    <i>P</i> < 0.01</span><br>
    <span style='color:#620800'>***    <i>P</i> < 0.001</span>",
-                      Tissue = "liver"), 
-    aes(x = 0.34, y = "Primaclone", label = label), color = "grey")
+  Tissue = "liver"), 
+  aes(x = 0.34, y = "Primaclone", label = label), color = "grey")
 
 # Add arrows
 
@@ -499,7 +501,7 @@ riva_arrows <- base_within_only +
 
 
 panels_sim = patchwork::wrap_plots((riva_arrows), 
-                               widths = 1.3) + 
+                                   widths = 1.3) + 
   plot_annotation(tag_levels = "a")
 
 panels_sim
@@ -517,3 +519,10 @@ both_fig2A
 With every run of this code the results vary slightly, however we can still make a few key observations. We observe, in the null control for both organs (right figure b), that approximately half of the mean within-sample diversities are below the mean of the spontaneous groups and half are above. Furthermore, out of 20 substance groups for the liver and 9 for the lung, one of them has a near significant Pvalue (mean within-sample diversity Pvalue of 0.109 for lung sodium tungstate dihydrate). These two points illustrate the random aspect of the null control which shows no significant effects of the substances on the mice.
 
 Contrary to the previously mentioned figure, the version of figure 2a showing our SVA results without signatures under 5% (left figure a) has a higher number of significant Pvalues, as well as a higher portion of the mean within-sample diversities above the ones of the spontaneous groups. This shows that the substances have a general effect on the mice and that our results are robust.
+
+
+# Session information
+
+```{r}
+sessionInfo()
+```

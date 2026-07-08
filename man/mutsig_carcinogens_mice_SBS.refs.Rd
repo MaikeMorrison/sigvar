@@ -16,7 +16,7 @@ A tibble with 96 rows and 13 columns:
 }
 }
 \usage{
-mutsig_carcinogens_mice_SBS.refs
+data(mutsig_carcinogens_mice_SBS.refs)
 }
 \description{
 Single Base Substitution mutational signature definitions

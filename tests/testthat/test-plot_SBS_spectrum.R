@@ -1,7 +1,11 @@
-SBS_table_test = sigvar::COSMIC3.3.1_SBS[,1:5]
-SBS_table_big = SBS_table_test[,-1]*20
+# Load data from sigvar package:
+ds_info <- data(package = "sigvar")
+ds_names <- ds_info$results[, "Item"]
+ds_clean <- gsub(" .*$", "", ds_names)
+data(list = ds_clean, package = "sigvar")
 
-sigvar::plot_SBS_spectrum(sigvar::COSMIC3.3.1_SBS[,2:4])
+SBS_table_test <- COSMIC3.3.1_SBS[, 1:5]
+SBS_table_big <- SBS_table_test[, -1] * 20
 
 
 test_that("plot_SBS_spectrum checks for non numeric cols", {
@@ -10,7 +14,7 @@ test_that("plot_SBS_spectrum checks for non numeric cols", {
 
 
 test_that("plot_SBS_spectrum checks for 96 rows", {
-  expect_error(plot_SBS_spectrum(SBS_table_test[1:10,]))
+  expect_error(plot_SBS_spectrum(SBS_table_test[1:10, ]))
 })
 
 
@@ -20,6 +24,6 @@ test_that("plot_SBS_spectrum checks for colsums to 1", {
 
 
 test_that("plot_SBS_spectrum works fine when data is correctly formatted", {
-  expect_no_warning(plot_SBS_spectrum(SBS_table_test[,-1]))
+  expect_no_warning(plot_SBS_spectrum(SBS_table_test[, -1]))
 })
 #

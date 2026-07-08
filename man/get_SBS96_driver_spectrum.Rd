@@ -18,6 +18,7 @@ A a named integer table (length 96) containing the SBS spectrum of the transcrip
 get_SBS96_driver_spectrum
 }
 \examples{
+data(TP53_drivers_intogen_LUAD, package = "sigvar")
 TP53_LUAD.driver.spectrum <- get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
 print(TP53_LUAD.driver.spectrum)
 }

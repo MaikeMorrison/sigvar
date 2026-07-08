@@ -31,6 +31,8 @@
 #' # Estimate the uncertainty in the across-sample and mean within-sample variability of
 #' # mutational signatures in ESCC samples grouped by country
 #' # We provide a cosine similarity matrix in order to account for cosine similarity among signatures
+#' data(smoker_sigs_chen, package = "sigvar")
+#' data(smoker_sigs_chen_cossim, package = "sigvar")
 #' smoker_boot <- sigboot(
 #'   sig_activity = smoker_sigs_chen, K = 3, n_replicates = 500,
 #'   group = "Smoker", S = smoker_sigs_chen_cossim,

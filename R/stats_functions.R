@@ -18,6 +18,8 @@
 #' # Compute the across-sample and mean within-sample variability of  mutational signatures
 #' # in ESCC samples grouped by country
 #' # We provide a cosine similarity matrix in order to account for cosine similarity among signatures
+#' data(smoker_sigs_chen, package = "sigvar")
+#' data(smoker_sigs_chen_cossim, package = "sigvar")
 #' sigvar(sig_activity = smoker_sigs_chen, K = 3, group = "Smoker", S = smoker_sigs_chen_cossim)
 #'
 sigvar <- function(sig_activity,
@@ -69,7 +71,7 @@ sigvar <- function(sig_activity,
 #' @examples
 #' # Compute the cosine similarity matrix for the lung cancer
 #' # in never smoker datasets from Zhang et al. 2021
-#'
+#' data(Sherlock_LCINS_SBS.refs, package = "sigvar")
 #' cossim(ref_sigs = as.matrix(Sherlock_LCINS_SBS.refs[, 1:14]))
 #'
 cossim <- function(ref_sigs) {

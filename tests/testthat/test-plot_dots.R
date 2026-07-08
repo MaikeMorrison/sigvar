@@ -1,3 +1,10 @@
+# Load data from sigvar package:
+ds_info <- data(package = "sigvar")
+ds_names <- ds_info$results[, "Item"]
+ds_clean <- gsub(" .*$", "", ds_names)
+data(list = ds_clean, package = "sigvar")
+
+# define variables for use in tests 
 sig_activity = ESCC_sig_activity
 sig_activity[,-c(1:3)] = round(sig_activity[,-c(1:3)]*1000)
 group = "Country"

@@ -18,7 +18,7 @@ A tibble with 48 rows and 8 columns:
 \url{https://static-content.springer.com/esm/art\%3A10.1038\%2Fs41588-023-01321-1/MediaObjects/41588_2023_1321_MOESM4_ESM.xlsx}
 }
 \usage{
-COSMIC3.1_CN
+data(COSMIC3.1_CN)
 }
 \description{
 COSMIC 3.1 Copy Number mutational signatures

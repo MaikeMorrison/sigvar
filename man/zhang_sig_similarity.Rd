@@ -17,7 +17,7 @@ A dataframe with 14 rows and 14 columns:
 \url{https://doi.org/10.1038/s41588-021-00920-0}
 }
 \usage{
-zhang_sig_similarity
+data(zhang_sig_similarity)
 }
 \description{
 Data from: Zhang et al. (2021). Genomic and evolutionary classification of lung cancer in never smokers. Nature Genetics, 53(9), 1348–1359. https://doi.org/10.1038/s41588-021-00920-0

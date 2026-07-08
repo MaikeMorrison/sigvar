@@ -8,7 +8,7 @@
 An object of class \code{data.frame} with 356 rows and 16 columns.
 }
 \usage{
-radiation_sigs_morton
+data(radiation_sigs_morton)
 }
 \description{
 Data from: Morton et al. Science (2021)

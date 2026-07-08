@@ -520,6 +520,7 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
 #' @param SBS_table A matrix with rows corresponding to the 96 single-base substitutions and columns corresponding to distinct mutational spectra you wish to plot.
 #' @return A ggplot2 bar chart depicting SBS mutational spectra
 #' @examples
+#' data(COSMIC3.3.1_SBS, package = "sigvar")
 #' SBS_table <- dplyr::select(COSMIC3.3.1_SBS, SBS1, SBS5)
 #' plot_SBS_spectrum(SBS_table)
 #'
@@ -560,8 +561,9 @@ plot_SBS_spectrum <- function(SBS_table) {
     warning("At least one column did not sum to 1. The columns have each been divided by their sum so that they now sum to 1.")
   }
 
+  data(COSMIC3.3.1_SBS, package = "sigvar")
 
-  sbs <- sigvar::COSMIC3.3.1_SBS %>%
+  sbs <- COSMIC3.3.1_SBS %>%
     dplyr::select(Type)
   sbs$Sub <- stringr::str_split(sbs$Type, "\\[|\\]", simplify = TRUE)[, 2]
 

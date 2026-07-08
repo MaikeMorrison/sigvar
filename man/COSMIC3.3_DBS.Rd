@@ -18,7 +18,7 @@ A tibble with 78 rows and 12 columns:
 \url{https://cancer.sanger.ac.uk/signatures/downloads/}
 }
 \usage{
-COSMIC3.3_DBS
+data(COSMIC3.3_DBS)
 }
 \description{
 COSMIC 3.3 Double base mutational signatures

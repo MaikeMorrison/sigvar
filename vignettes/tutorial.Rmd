@@ -63,8 +63,6 @@ vignette("tutorial", package = "sigvar")
 
 We begin the tutorial by explaining what types of data are required to use the *sigvar* R package ([Data specifications]). We then conduct an example of signature variability analysis ([Example analysis]), using  data from [Moody et al. (2021)](https://www.nature.com/articles/s41588-021-00928-6) to explore the within-sample diversity and across-sample heterogeneity of mutational signature activities for esophageal squamous cell carcinoma (ESCC) samples from eight countries which vary dramatically in their ESCC incidences. We begin our example analysis by introducing the data ([Example data]) and demonstrating the data visualization functions of *sigvar* ([Visualize mutational signature activities]). We then perform [Signature variability analysis], visualize the results, and use [Bootstrapping] to determine the statistical significance of differences in SVA results between countries. 
 
-<!-- microbiome composition of three subjects over time, use FAVA to quantify the temporal variability across these microbiome samples, and explore these dynamics at a finer resolution using sliding windows over time. -->
-
 
 # Data specifications
 
@@ -86,7 +84,9 @@ As an example, we present below the definitions of the 79 COSMIC (v3.1) SBS muta
 
 ```{r, echo = FALSE}
 library(dplyr)
-knitr::kable(sigvar::COSMIC3.3.1_SBS %>% mutate(across(SBS1:SBS95, function(col) round(col, 3))))  %>%
+data(COSMIC3.3.1_SBS, package = "sigvar")
+
+knitr::kable(COSMIC3.3.1_SBS %>% mutate(across(SBS1:SBS95, function(col) round(col, 3))))  %>%
     kableExtra::scroll_box(width = "600px", height = "300px")
 ```
 
@@ -94,7 +94,7 @@ In order to convert a matrix of signature definitions such as this matrix to a p
 
 ```{r}
 # Exclude the first column, "Type", which defines each  mutational type
-cosmic_sbs_sim = sigvar::cossim(as.matrix(sigvar::COSMIC3.3.1_SBS[,-1]))
+cosmic_sbs_sim = sigvar::cossim(as.matrix(COSMIC3.3.1_SBS[,-1]))
 
 # View the first 10 rows and 5 columns of the similarity matrix
 cosmic_sbs_sim[1:10, 1:5]
@@ -132,6 +132,10 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(patchwork)
+
+# load data from the sigvar R package
+data(ESCC_sig_activity, package = "sigvar")
+data(ESCC_sig_similarity, package = "sigvar")
 ```
 
 ## Example data
@@ -215,6 +219,8 @@ Because `ESCC_sig_activity` contains metadata, we specify `K=43` so that only th
 Because `plot_signature_prop` returns a ggplot2 object, it can be modified with ggplot2 functions, such as `scale_color_manual` and `scale_fill_manual`.
 
 ```{r}
+data(all_sig_pal, package = "sigvar")
+
 plot_signature_prop(relab_matrix = ESCC_sig_activity, 
               K = 43, 
               group = "Country",
@@ -332,3 +338,10 @@ comparison_boot$P_values
 # Conclusion
 
 This concludes the tutorial on the *sigvar* R package for signature variability analysis. We hope you found it helpful! For guidance on specific functions, access the documentation by typing `?` into the R console (e.g., `?sigboot`). To see all available functions, type `?sigvar::`. For more details on signature variability analysis, see the paper ["Variability of mutational signatures is a footprint of carcinogens'' by Morrison et al](https://doi.org/10.1101/2023.11.23.23298821).   If you find a problem with the R package, please [open an issue on Github using this link](https://github.com/MaikeMorrison/sigvar/issues). 
+
+
+# Session information
+
+```{r}
+sessionInfo()
+```

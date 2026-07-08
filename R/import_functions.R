@@ -125,6 +125,7 @@ get_SBS96_spectrum <- function(transcript = "ENST00000269305.9", organism = "Hom
 #' @export
 #'
 #' @examples
+#' data(TP53_drivers_intogen_LUAD, package = "sigvar")
 #' TP53_LUAD.driver.spectrum <- get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
 #' print(TP53_LUAD.driver.spectrum)
 #' @importFrom BSgenome.Hsapiens.UCSC.hg38 BSgenome.Hsapiens.UCSC.hg38
