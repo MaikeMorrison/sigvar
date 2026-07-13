@@ -49,7 +49,7 @@ Suggests:
     lsa,
     patchwork,
     tidyverse
-biocViews: Software, WholeGenome, SomaticMutation, StructuralVariation, StatisticalMethod, Visualization, DriverMutation 
+biocViews: Software, WholeGenome, SomaticMutation, StructuralVariation, StatisticalMethod, Visualization, DriverMutation, DataImport 
 Config/testthat/edition: 3
 Depends: 
     R (>= 4.5)
