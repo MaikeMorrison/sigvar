@@ -10,7 +10,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "man/figures/README-",
   # out.width = "100%",
-  warning = FALSE, 
+  warning = FALSE,
   message = FALSE,
   fig.width = 8, fig.height = 3
 )
@@ -62,7 +62,7 @@ The package will ultimately be available on Bioconductor. When it is, you will b
 # Ensure BiocManager is installed
 if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
 
-# Install the package from Bioconductor 
+# Install the package from Bioconductor
 BiocManager::install("sigvar")
 ```
 

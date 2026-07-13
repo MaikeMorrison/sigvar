@@ -49,7 +49,8 @@ You can install the development version of sigvar from [GitHub](https://github.c
 ```{r install packages , eval=FALSE}
 install.packages("devtools") # run only if devtools not already installed
 devtools::install_github("MaikeMorrison/sigvar",
-                         dependencies = TRUE, build_vignettes = TRUE)
+  dependencies = TRUE, build_vignettes = TRUE
+)
 ```
 
 After installation, you can access this introductory vignette at an time by running:
@@ -86,15 +87,15 @@ As an example, we present below the definitions of the 79 COSMIC (v3.1) SBS muta
 library(dplyr)
 data(COSMIC3.3.1_SBS, package = "sigvar")
 
-knitr::kable(COSMIC3.3.1_SBS %>% mutate(across(SBS1:SBS95, function(col) round(col, 3))))  %>%
-    kableExtra::scroll_box(width = "600px", height = "300px")
+knitr::kable(COSMIC3.3.1_SBS %>% mutate(across(SBS1:SBS95, function(col) round(col, 3)))) %>%
+  kableExtra::scroll_box(width = "600px", height = "300px")
 ```
 
 In order to convert a matrix of signature definitions such as this matrix to a pairwise cosine similarity matrix, we recommend using the `cossim` function in the *sigvar* R package. Below we provide example code to both generate a similarity matrix from a matrix of mutational signature definitions and verify that its entries are between 0 and 1, and that its diagonal elements equal 1. 
 
 ```{r check cossim matrix}
 # Exclude the first column, "Type", which defines each  mutational type
-cosmic_sbs_sim = sigvar::cossim(as.matrix(COSMIC3.3.1_SBS[,-1]))
+cosmic_sbs_sim <- sigvar::cossim(as.matrix(COSMIC3.3.1_SBS[, -1]))
 
 # View the first 10 rows and 5 columns of the similarity matrix
 cosmic_sbs_sim[1:10, 1:5]
@@ -112,12 +113,12 @@ all(cosmic_sbs_sim <= 1)
 When including a cosine similarity matrix in `sigvar` or `sigboot`, it is important that the ordering of signatures in the similarity matrix matches the ordering in your signature activity matrix. You should reorder the rows and columns of your similarity matrix to match your activity matrix:
 
 ```{r demonstrate reordering cossim matrix}
-# Suppose this is the list of signatures included 
+# Suppose this is the list of signatures included
 # in your relative activity matrix:
-sigs = c("SBS95", "SBS10a", "SBS5", "SBS1", "SBS17b")
+sigs <- c("SBS95", "SBS10a", "SBS5", "SBS1", "SBS17b")
 
 # Re-order the rows and columns of the similarity matrix
-sim_reordered = cosmic_sbs_sim[sigs, sigs]
+sim_reordered <- cosmic_sbs_sim[sigs, sigs]
 
 sim_reordered
 ```
@@ -167,38 +168,53 @@ str(ESCC_sig_activity)
 Here are the first 40 rows and the first 20 columns of the relative abundance matrix, `ESCC_sig_activity`:
 
 ```{r show ESCC_sig_activity, echo=FALSE}
-knitr::kable(ESCC_sig_activity[1:40,1:20]) %>%
-    kableExtra::scroll_box(width = "600px", height = "300px")
+knitr::kable(ESCC_sig_activity[1:40, 1:20]) %>%
+  kableExtra::scroll_box(width = "600px", height = "300px")
 ```
 
 
 We also provide in the *sigvar* R package a pairwise similarity matrix, `ESCC_sig_similarity`, which contains the cosine similarity of every pair of mutational signatures in `ESCC_sig_activity`. Here are the first 20 rows and the first 20 columns of our example pairwise similarity matrix, `ESCC_sig_similarity`:
 
 ```{r show sim matrix for ESCC, echo = FALSE}
-knitr::kable(ESCC_sig_similarity[1:20, 1:20])  %>%
-    kableExtra::scroll_box(width = "600px", height = "300px")
+knitr::kable(ESCC_sig_similarity[1:20, 1:20]) %>%
+  kableExtra::scroll_box(width = "600px", height = "300px")
 ```
 
 Here is a heat map plot of the similarity matrix:
 
 ```{r cossim heat map, fig.height = 7, echo = FALSE}
 ggplot(ESCC_sig_similarity %>%
-         data.frame() %>%
-         mutate(name2 = rownames(ESCC_sig_similarity)) %>%
-         pivot_longer(cols = 1:43,
-                      values_to = "Similarity") %>% 
-         mutate(across(c(name, name2), 
-                       function(col) factor(col, ordered = TRUE, 
-                                            levels = colnames(ESCC_sig_similarity))))) +
-  geom_raster(aes(x = name,
-                  y = name2,
-                  fill = Similarity)) +
-  theme_minimal() + scale_fill_viridis_c() +
-  theme(axis.text.y = element_text(size = 6),
-        axis.text.x = element_text(size = 6,
-                                   angle = -90,
-                                   hjust = 0),
-        axis.title = element_blank())
+  data.frame() %>%
+  mutate(name2 = rownames(ESCC_sig_similarity)) %>%
+  pivot_longer(
+    cols = 1:43,
+    values_to = "Similarity"
+  ) %>%
+  mutate(across(
+    c(name, name2),
+    function(col) {
+      factor(col,
+        ordered = TRUE,
+        levels = colnames(ESCC_sig_similarity)
+      )
+    }
+  ))) +
+  geom_raster(aes(
+    x = name,
+    y = name2,
+    fill = Similarity
+  )) +
+  theme_minimal() +
+  scale_fill_viridis_c() +
+  theme(
+    axis.text.y = element_text(size = 6),
+    axis.text.x = element_text(
+      size = 6,
+      angle = -90,
+      hjust = 0
+    ),
+    axis.title = element_blank()
+  )
 ```
 
 Note that:
@@ -222,15 +238,17 @@ Because `plot_signature_prop` returns a ggplot2 object, it can be modified with 
 ```{r plot sig activity}
 data(all_sig_pal, package = "sigvar")
 
-plot_signature_prop(relab_matrix = ESCC_sig_activity, 
-              K = 43, 
-              group = "Country",
-              arrange = TRUE) + 
-  scale_color_manual(values = all_sig_pal)  + 
+plot_signature_prop(
+  relab_matrix = ESCC_sig_activity,
+  K = 43,
+  group = "Country",
+  arrange = TRUE
+) +
+  scale_color_manual(values = all_sig_pal) +
   scale_fill_manual(values = all_sig_pal)
 
-# all_sig_pal is a vector of hex color codes, each corresponding to 
-# one signature used in our paper. 
+# all_sig_pal is a vector of hex color codes, each corresponding to
+# one signature used in our paper.
 # Below we show the first 6 entries as an example.
 all_sig_pal[1:6]
 ```
@@ -239,10 +257,12 @@ all_sig_pal[1:6]
 We can also visualize the country-level mean signature activities with the function `plot_dots` in the *sigvar* R package. 
 
 ```{r dot plots, fig.width=8}
-plot_dots(sig_activity = ESCC_sig_activity, 
-          K = 43, group = "Country", 
-          facet = "Incidence_Level", 
-          pivot = TRUE)
+plot_dots(
+  sig_activity = ESCC_sig_activity,
+  K = 43, group = "Country",
+  facet = "Incidence_Level",
+  pivot = TRUE
+)
 ```
 
 
@@ -251,10 +271,12 @@ plot_dots(sig_activity = ESCC_sig_activity,
 Signature variability analysis can be conducted in a single line of code:
 
 ```{r compute sigvar}
-sigvar = sigvar(sig_activity = ESCC_sig_activity,
-             K = 43, 
-             S = ESCC_sig_similarity, 
-             group = "Country")
+sigvar <- sigvar(
+  sig_activity = ESCC_sig_activity,
+  K = 43,
+  S = ESCC_sig_similarity,
+  group = "Country"
+)
 
 knitr::kable(sigvar)
 ```
@@ -264,34 +286,45 @@ Signature variability analysis quantifies both the mean signature diversity with
 If we add to our sigvar results a column corresponding to the incidence of each country, we are able to determine if signature heterogeneity or diversity are associated with ESCC incidence. 
 
 ```{r sigvar by country}
-sigvar_incidence = ESCC_sig_activity %>% 
-  transmute(Country = as.character(Country), 
-            Incidence_Level) %>%
-  distinct %>%
+sigvar_incidence <- ESCC_sig_activity %>%
+  transmute(
+    Country = as.character(Country),
+    Incidence_Level
+  ) %>%
+  distinct() %>%
   right_join(sigvar)
-  
+
 knitr::kable(sigvar_incidence)
 
-ggplot(sigvar_incidence,
-       aes(x = mean_within_sample_diversity, 
-           y = across_sample_heterogeneity, 
-           color = Incidence_Level)) + 
+ggplot(
+  sigvar_incidence,
+  aes(
+    x = mean_within_sample_diversity,
+    y = across_sample_heterogeneity,
+    color = Incidence_Level
+  )
+) +
   geom_point(size = 4) +
   ggrepel::geom_text_repel(aes(label = Country)) +
   theme_bw()
 
-ggplot(sigvar_incidence %>% 
-         pivot_longer(cols = c("across_sample_heterogeneity", 
-                               "mean_within_sample_diversity"), 
-                      names_to = "Statistic", 
-                      values_to = "sigvar"),
-       aes(x = Incidence_Level, y = sigvar)) + 
+ggplot(
+  sigvar_incidence %>%
+    pivot_longer(
+      cols = c(
+        "across_sample_heterogeneity",
+        "mean_within_sample_diversity"
+      ),
+      names_to = "Statistic",
+      values_to = "sigvar"
+    ),
+  aes(x = Incidence_Level, y = sigvar)
+) +
   geom_boxplot(aes(color = Incidence_Level)) +
   geom_point(aes(color = Incidence_Level), size = 4, alpha = 0.6) +
-  facet_wrap(~ Statistic, scales = "free_y") + 
+  facet_wrap(~Statistic, scales = "free_y") +
   ggpubr::stat_compare_means(method = "t.test") +
-  theme_bw() 
-
+  theme_bw()
 ```
 
 We see that high-ESCC-incidence countries have more within-sample signature diversity and less across-sample heterogeneity than low-incidence countries.
@@ -318,13 +351,15 @@ We will demonstrate sigboot with an example comparing Japan ($n=37$ samples) to 
 This procedure is implemented in the function `sigboot`, which can conduct many pairwise comparisons. In the below example, we generate 500 bootstrap replicates  (`n_replicates = 500`) of the difference in sigvar values between each country (`group = "Country"`) in our signature activity matrix (`relab_matrix = ESCC_sig_activity`). We account for the cosine similarity between signatures in each computation (`S = ESCC_sig_similarity`). Because bootstrapping is a random process, running the code multiple times would give slightly different results. Setting a random seed (`seed = 1`) makes this result repeatable. If you wish to perform a one-sided statistical test, you can specify `alternative = "lesser"` or `alternative = "greater"`; the default value is `alternative = "two.sided"`.
 
 ```{r bootstrapping}
-comparison_boot = sigboot(sig_activity = ESCC_sig_activity %>% 
-                         filter(Country %in% c("Japan", "Kenya")),
-                       K = 43, 
-                       group = "Country",
-                       S = ESCC_sig_similarity,
-                       n_replicates = 500, 
-                       seed = 1)
+comparison_boot <- sigboot(
+  sig_activity = ESCC_sig_activity %>%
+    filter(Country %in% c("Japan", "Kenya")),
+  K = 43,
+  group = "Country",
+  S = ESCC_sig_similarity,
+  n_replicates = 500,
+  seed = 1
+)
 
 comparison_boot$bootstrap_distribution_plot
 ```
