@@ -24,22 +24,25 @@ Q_checker <- function(Q, K, rep) {
   # Check if Q matrix has any missing values, and give warning if necessary
   if (any(is.na(Q))) {
     # Identify location of missing entries
-    na.pos <- sapply(
-      which(is.na(Q)),
-      function(index) c(index %% nrow(Q), ceiling(index / nrow(Q)))
+    na.pos <- vapply(
+      X = which(is.na(Q)),
+      FUN = function(index) {
+        c(index %% nrow(Q), ceiling(index / nrow(Q)))
+      },
+      FUN.VALUE = numeric(2)
     ) %>%
       t()
     # Format missing entries as a string
     na.pos.format <- list()
-    for (row in 1:nrow(na.pos)) {
+    for (row in seq_len(nrow(na.pos))) {
       na.pos.format[row] <- paste0("(", na.pos[row, 1], ", ", na.pos[row, 2], ")")
     }
     na.pos.format.string <- as.character(na.pos.format) %>% paste(collapse = ", ")
 
-    stop(paste0(
+    stop(
       "There is at least one NA value in your signature activity matrix. The missing entries are found in the following positions: ",
       na.pos.format.string
-    ))
+    )
   }
 
   # check if matrix rows sum to 1, and give useful warnings if rounding is necessary
@@ -48,10 +51,10 @@ Q_checker <- function(Q, K, rep) {
     if (missing(rep)) {
       warning("At least one signature activity matrix has rows which do not sum to exactly 1. Rounding the sum of each row to 1 by dividing all entries by the sum of the row.")
     } else {
-      warning(paste0(
+      warning(
         "At least one of the rows of signature activity matrix number ", rep,
         " (restricted to the last K columns) does not sum to 1. Rounding the sum of each row to 1 by dividing all entries by the sum of the row."
-      ))
+      )
     }
     # Normalize each row of the matrix by dividing by the rowsums
     Q <- Q / sums
@@ -190,7 +193,7 @@ plot_signature_prop <- function(relab_matrix, group = NULL, time = NULL, w = NUL
 
 
   # Generate the data to plot
-  relab_plot <- dplyr::mutate(relab_edited, ID = 1:nrow(relab_edited), .before = 1)
+  relab_plot <- dplyr::mutate(relab_edited, ID = seq_len(nrow(relab_edited)), .before = 1)
 
 
   start <- 2 + (!is.null(group)) + (!is.null(time))
@@ -324,7 +327,7 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
   facets_few <- ifelse(facet_true, length(unique(unlist(sig_activity[facet]))) <= 4, FALSE)
 
   if (length(K) > 0) {
-    if (K > (ncol(sig_activity) - 1)) warning(paste0("K too large, not enough columns in K; K reduced to ncol(sig_activity)-1=", ncol(sig_activity) - 1))
+    if (K > (ncol(sig_activity) - 1)) warning("K too large, not enough columns in K; K reduced to ncol(sig_activity)-1=", ncol(sig_activity) - 1)
   }
 
   signatures <- colnames(sig_activity)[(ncol(sig_activity) - K + 1):ncol(sig_activity)]
@@ -547,11 +550,11 @@ plot_SBS_spectrum <- function(SBS_table) {
   SBS_table <- dplyr::select_if(SBS_table, is.numeric)
 
   if (col_count != ncol(SBS_table)) {
-    warning(paste0(
+    warning(
       "The ",
       col_count - ncol(SBS_table),
       " column(s) containing non-numeric values were omitted."
-    ))
+    )
   }
 
   # does SBS_table have only columns that sum to 1?

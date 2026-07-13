@@ -28,22 +28,25 @@ relab_checker <- function(relab, K = NULL, rep = NULL, group = NULL, time = NULL
   # Check if relab matrix has any missing values, and give warning if necessary
   if (any(is.na(relab))) {
     # Identify location of missing entries
-    na.pos <- sapply(
-      which(is.na(relab)),
-      function(index) c(index %% nrow(relab), ceiling(index / nrow(relab)))
+    na.pos <- vapply(
+      X = which(is.na(relab)),
+      FUN = function(index) {
+        c(index %% nrow(relab), ceiling(index / nrow(relab)))
+      },
+      FUN.VALUE = numeric(2)
     ) %>%
       t()
     # Format missing entries as a string
     na.pos.format <- list()
-    for (row in 1:nrow(na.pos)) {
+    for (row in seq_len(nrow(na.pos))) {
       na.pos.format[row] <- paste0("(", na.pos[row, 1], ", ", na.pos[row, 2], ")")
     }
     na.pos.format.string <- as.character(na.pos.format) %>% paste(collapse = ", ")
 
-    stop(paste0(
+    stop(
       "There is at least one NA value in your relab matrix. The missing entries are found in the following positions: ",
       na.pos.format.string
-    ))
+    )
   }
 
   # check if matrix rows sum to 1, and give useful warnings if rounding is necessary
@@ -52,10 +55,10 @@ relab_checker <- function(relab, K = NULL, rep = NULL, group = NULL, time = NULL
     if (is.null(rep)) {
       warning("At least one relab matrix has rows which do not sum to exactly 1. Rounding the sum of each row to 1 by dividing all entries by the sum of the row.")
     } else {
-      warning(paste0(
+      warning(
         "At least one of the rows of relab matrix number ", rep,
         " (restricted to the last K columns) does not sum to 1. Rounding the sum of each row to 1 by dividing all entries by the sum of the row."
-      ))
+      )
     }
     # Normalize each row of the matrix by dividing by the rowsums
     relab <- relab / sums
@@ -94,9 +97,9 @@ relab_sample_weighter <- function(relab, K = NULL, time = NULL, w = NULL, group 
       w <- time_weights(sample_times)
       time_span <- max(sample_times) - min(sample_times)
 
-      return(relab[rep(1:length(w), round(w * time_span * 2)), ])
+      return(relab[rep(seq_len(length(w)), round(w * time_span * 2)), ])
     } else if (is.null(time) & !is.null(w)) {
-      return(relab[rep(1:length(w), round(w * 800)), ])
+      return(relab[rep(seq_len(length(w)), round(w * 800)), ])
     } else {
       # warning("Please provide either time or w to relab_sample_weighter function.")
       return(relab)
@@ -113,9 +116,9 @@ relab_sample_weighter <- function(relab, K = NULL, time = NULL, w = NULL, group 
         w_sub <- time_weights(sample_times_sub)
         time_span <- max(sample_times_sub) - min(sample_times_sub)
 
-        df_list[[i]] <- relab[group_sub, ][rep(1:length(w_sub), round(w_sub * time_span * 2)), ]
+        df_list[[i]] <- relab[group_sub, ][rep(seq_len(length(w_sub)), round(w_sub * time_span * 2)), ]
       } else if (is.null(time) & !is.null(w)) {
-        df_list[[i]] <- relab[group_sub, ][rep(1:length(w), round(w * 800)), ]
+        df_list[[i]] <- relab[group_sub, ][rep(seq_len(length(w)), round(w * 800)), ]
       } else {
         return(relab)
       }
@@ -143,13 +146,13 @@ arrange_categories <- function(relab_matrix, arrange, K = NULL, group = NULL, ti
     relab_matrix_clean <- relab_matrix_clean[, colSums(relab_matrix_clean) > 0]
 
     if (is.null(colnames(relab_matrix_clean))) {
-      colnames(relab_matrix_clean) <- paste0("cat_", 1:K)
+      colnames(relab_matrix_clean) <- paste0("cat_", seq_len(K))
     }
 
 
-    if (any(colnames(relab_matrix_clean) %in% as.character(1:1000))) {
+    if (any(colnames(relab_matrix_clean) %in% as.character(seq_len(1000)))) {
       warning("relab_matrix has at least one numeric column name, which can cause errors when re-arranging the columns. The columns are being automatically renamed in order to avoid errors. If you wish to avoid this renaming, please rename the columns of relab_matrix.")
-      colnames(relab_matrix_clean) <- paste0("cat_", 1:K)
+      colnames(relab_matrix_clean) <- paste0("cat_", seq_len(K))
     }
 
 
@@ -159,11 +162,11 @@ arrange_categories <- function(relab_matrix, arrange, K = NULL, group = NULL, ti
     ordernames <- c(names(clustermeans))
 
     if (sum(clustermeans != 0) != K) {
-      warning(paste0(
+      warning(
         "Only plotting the ", sum(clustermeans != 0),
         " categories with non-zero abundances. If you are manually changing the fill or color of the plot, you can provide ",
         sum(clustermeans != 0), " colors, instead of ", K, "."
-      ))
+      )
     }
 
     if (arrange %in% c(TRUE, "both")) {

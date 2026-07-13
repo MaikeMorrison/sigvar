@@ -72,7 +72,7 @@ sigvar <- function(sig_activity,
 #' # Compute the cosine similarity matrix for the lung cancer
 #' # in never smoker datasets from Zhang et al. 2021
 #' data(Sherlock_LCINS_SBS.refs, package = "sigvar")
-#' cossim(ref_sigs = as.matrix(Sherlock_LCINS_SBS.refs[, 1:14]))
+#' cossim(ref_sigs = as.matrix(Sherlock_LCINS_SBS.refs[, seq_len(14)]))
 #'
 cossim <- function(ref_sigs) {
   res <- t(ref_sigs) %*% ref_sigs / matrix(sqrt(colSums(ref_sigs**2)),

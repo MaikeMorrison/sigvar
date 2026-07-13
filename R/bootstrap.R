@@ -98,12 +98,12 @@ sigboot <- function(sig_activity,
 
     # How many groups are there in the data? Do we need to do multiple pairwise comparisons?
     if (length(unique(groups)) < 2) {
-      stop(paste0(
+      stop(
         "bootstrap_fava must be provided with multiple groups to compare. The grouping column '",
         group,
         "' contains only the following group: '",
         groups, "'\n"
-      ))
+      )
     }
     if (length(unique(groups)) == 2) {
       bootstrap_list <- pairwise_comparison(
@@ -172,7 +172,7 @@ sigboot <- function(sig_activity,
 
       # Do the bootstrap comparison procedure for each group:
       bootstrap_list <- list()
-      for (pair in 1:nrow(group_pairs)) {
+      for (pair in seq_len(nrow(group_pairs))) {
         group_pair <- group_pairs[pair, ]
 
         bootstrap_list[[pair]] <- pairwise_comparison(
@@ -263,7 +263,7 @@ sigboot <- function(sig_activity,
 
     # Confirm there are only two groups provided
     if (length(group_pair) != 2) {
-      stop(paste0("There must be exactly 2 groups. There are ", length(groups), " groups in the provided relab_pair matrix."))
+      stop("There must be exactly 2 groups. There are ", length(groups), " groups in the provided relab_pair matrix.")
     }
 
 
@@ -288,9 +288,9 @@ sigboot <- function(sig_activity,
 
     # Generate bootstrap replicates of the pooled groups
     rep_list <- list()
-    for (rep in 1:n_replicates) {
-      a_samp <- sample(1:N, m, replace = TRUE)
-      b_samp <- sample(1:N, n, replace = TRUE)
+    for (rep in seq_len(n_replicates)) {
+      a_samp <- sample(seq_len(N), m, replace = TRUE)
+      b_samp <- sample(seq_len(N), n, replace = TRUE)
 
       rep_list[[rep]] <- list(A = a_samp, B = b_samp)
     }

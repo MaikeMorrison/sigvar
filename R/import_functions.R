@@ -18,15 +18,23 @@ import_SigProfiler <- function(folder = ".") {
   # find activity files within the folder
   input_files <- list.files(folder, pattern = "Activities[_refit]*.txt", recursive = TRUE, full.names = TRUE)
   # get name (de novo or COSMIC)
-  input_files.names <- sapply(list.files(folder, pattern = "Activities[_refit]*.txt", recursive = TRUE, full.names = FALSE), function(x) {
-    tmp <- strsplit(x, "/")[[1]]
-    tmp <- tmp[length(tmp) - 2]
-  })
+  input_files.names <- vapply(
+    list.files(folder,
+      pattern = "Activities[_refit]*.txt",
+      recursive = TRUE,
+      full.names = FALSE
+    ),
+    function(x) {
+      tmp <- strsplit(x, "/")[[1]]
+      tmp <- tmp[length(tmp) - 2]
+    },
+    FUN.VALUE = character(1)
+  )
   # if multiple solutions, keep only suggested solutions instead of all NMF solutions
   if (length(grep(input_files, pattern = "Suggested", value = FALSE)) > 0) {
     input_files.tokeep <- grep(input_files, pattern = "Suggested", value = FALSE)
   } else {
-    input_files.tokeep <- 1:length(input_files)
+    input_files.tokeep <- seq_len(length(input_files))
   }
   # read files
   Qlist <- lapply(input_files[input_files.tokeep], read_tsv)
