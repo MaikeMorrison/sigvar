@@ -561,7 +561,12 @@ plot_SBS_spectrum <- function(SBS_table) {
     warning("At least one column did not sum to 1. The columns have each been divided by their sum so that they now sum to 1.")
   }
 
-  data(COSMIC3.3.1_SBS, package = "sigvar")
+  # Create a temporary environment to safely load the data
+  tmp_env <- new.env()
+  utils::data("COSMIC3.3.1_SBS", package = "sigvar", envir = tmp_env)
+
+  # Assign to a standard variable name
+  COSMIC3.3.1_SBS <- tmp_env$COSMIC3.3.1_SBS
 
   sbs <- COSMIC3.3.1_SBS %>%
     dplyr::select(Type)
