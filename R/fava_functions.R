@@ -210,11 +210,7 @@ het_mean <- function(relab_matrix,
                      S = NULL,
                      w = NULL,
                      time = NULL,
-                     group = NULL
-                     # K = ncol(relab_matrix),
-                     # w = rep(1/nrow(relab_matrix), nrow(relab_matrix)),
-                     # S = diag(ncol(relab_matrix))
-) {
+                     group = NULL) {
   process_out <- process_relab(relab_matrix = relab_matrix, K = K, S = S, w = w, time = time, group = group)
 
   K <- process_out$K
@@ -229,7 +225,7 @@ het_mean <- function(relab_matrix,
   relab_grouping_vars <- process_out$relab_grouping_vars
 
   if (is.null(group)) {
-    het_mean_fast(relab_matrix_clean$relab_matrix, K, w, S)
+    het_mean_fast(relab_matrix_clean$relab_matrix, w, S)
   } else {
     gs_list <- c()
     for (subgroup in unique(relab_matrix_clean$group)) {
@@ -245,7 +241,7 @@ het_mean <- function(relab_matrix,
 
       gs_list <- c(
         gs_list,
-        het_mean_fast(relab_sub, K, w_sub, S)
+        het_mean_fast(relab_sub, w_sub, S)
       )
     }
     gs_df <- data.frame(unique(relab_matrix_clean$group), gs_list)
@@ -332,7 +328,7 @@ het_pooled <- function(relab_matrix,
   relab_grouping_vars <- process_out$relab_grouping_vars
 
   if (is.null(group)) {
-    het_pooled_fast(relab_matrix_clean$relab_matrix, K, w, S)
+    het_pooled_fast(relab_matrix_clean$relab_matrix, w, S)
   } else {
     gs_list <- c()
     for (subgroup in unique(relab_matrix_clean$group)) {
@@ -348,7 +344,7 @@ het_pooled <- function(relab_matrix,
 
       gs_list <- c(
         gs_list,
-        het_pooled_fast(relab_sub, K, w_sub, S)
+        het_pooled_fast(relab_sub, w_sub, S)
       )
     }
     gs_df <- data.frame(unique(relab_matrix_clean$group), gs_list)
@@ -606,9 +602,9 @@ fst <- function(relab_matrix,
     if (normalized) {
       fst_norm(relab_matrix = relab_matrix_clean$relab_matrix)
     } else {
-      (het_pooled_fast(relab_matrix_clean$relab_matrix, K, w, S) -
-        het_mean_fast(relab_matrix_clean$relab_matrix, K, w, S)) /
-        het_pooled_fast(relab_matrix_clean$relab_matrix, K, w, S)
+      (het_pooled_fast(relab_matrix_clean$relab_matrix, w, S) -
+        het_mean_fast(relab_matrix_clean$relab_matrix, w, S)) /
+        het_pooled_fast(relab_matrix_clean$relab_matrix, w, S)
     }
   } else {
     fst_list <- c()
@@ -627,9 +623,9 @@ fst <- function(relab_matrix,
         fst_list,
         ifelse(normalized,
           fst_norm(relab_matrix = relab_sub),
-          (het_pooled_fast(relab_sub, K, w_sub, S) -
-            het_mean_fast(relab_sub, K, w_sub, S)) /
-            het_pooled_fast(relab_sub, K, w_sub, S)
+          (het_pooled_fast(relab_sub, w_sub, S) -
+            het_mean_fast(relab_sub, w_sub, S)) /
+            het_pooled_fast(relab_sub, w_sub, S)
         )
       )
     }
@@ -646,12 +642,11 @@ fst <- function(relab_matrix,
 
 
 # fast versions of functions to use in fst function:
-het_fast <- function(q, S = diag(length(q)), K = length(q)) {
+het_fast <- function(q, S = diag(length(q))) {
   1 - sum(q * c(S %*% q))
 }
-
+ 
 het_mean_fast <- function(relab_matrix,
-                          K = ncol(relab_matrix),
                           w = rep(1 / nrow(relab_matrix), nrow(relab_matrix)),
                           S = diag(ncol(relab_matrix))) {
   I <- nrow(relab_matrix)
@@ -663,10 +658,8 @@ het_mean_fast <- function(relab_matrix,
 }
 
 het_pooled_fast <- function(relab_matrix,
-                            K = ncol(relab_matrix),
                             w = rep(1 / nrow(relab_matrix), nrow(relab_matrix)),
                             S = diag(ncol(relab_matrix))) {
-  I <- nrow(relab_matrix)
 
   het_fast(q = colSums(sweep(x = relab_matrix, MARGIN = 1, w, `*`)), S = S)
 }

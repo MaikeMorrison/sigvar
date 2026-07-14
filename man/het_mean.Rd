@@ -38,7 +38,7 @@ q3 <- c(1 / 4, 1 / 4, 1 / 4, 1 / 4)
 q4 <- c(0, 0, 1, 0)
 
 # we could compute the mean manually:
-mean(sapply(list(q1, q2, q3, q4), het))
+mean(vapply(X = list(q1, q2, q3, q4), FUN = het, FUN.VALUE = numeric(1)))
 
 # Or we could use het_mean:
 relative_abundances <- matrix(c(q1, q2, q3, q4),

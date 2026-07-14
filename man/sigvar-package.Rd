@@ -24,5 +24,11 @@ Authors:
   \item Maike Morrison \email{maike.morrison@gmail.com} (\href{https://orcid.org/0000-0003-0430-1401}{ORCID})
 }
 
+Other contributors:
+\itemize{
+  \item Worldwide Cancer Research (Grant 24-0106) [funder]
+  \item French Ligue Nationale Contre le Cancer [funder]
+}
+
 }
 \keyword{internal}

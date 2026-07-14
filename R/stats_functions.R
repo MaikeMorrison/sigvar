@@ -29,6 +29,37 @@ sigvar <- function(sig_activity,
                    w = NULL,
                    time = NULL,
                    normalized = FALSE) {
+  
+  if(!is.null(group)){
+    if(!(is.character(group))){
+      stop("group must be a character string or vector of strings specifying the name(s) of the grouping column.")
+    }}
+  
+  if(!is.null(K)){
+    if(!(is.numeric(K) && length(K) == 1 && (round(K) == K))){
+      stop("K must be a single integer.")
+    }}
+  
+  if(!is.null(S)){
+    if(!(is.matrix(S) | is.data.frame(S) | dplyr::is.tbl(S))){
+      stop("S must be a matrix, data frame, or tibble.")
+    }}
+  
+  if(!is.null(w)){
+    if(!(is.numeric(w) && length(w) > 1 && (round(sum(w),6)==1))){
+      stop("w must be a numeric vector that sums to 1.")
+    }}
+  
+  if(!is.null(time)){
+    if(!(is.character(time) && length(time) == 1)){
+      stop("time must be a character string specifying the name of the time column.")
+    }}
+  
+  if(!(normalized %in% c(TRUE, FALSE))){
+    stop("normalized must be TRUE or FALSE.")
+  }
+  
+  
   if (is.null(group)) {
     var_table <- data.frame(
       across_sample_heterogeneity = fst(
@@ -54,8 +85,8 @@ sigvar <- function(sig_activity,
     cols <- ncol(var_table)
     colnames(var_table)[(cols - 1):cols] <- c("across_sample_heterogeneity", "mean_within_sample_diversity")
   }
-
-
+  
+  
   return(var_table)
 }
 
@@ -75,11 +106,20 @@ sigvar <- function(sig_activity,
 #' cossim(ref_sigs = as.matrix(Sherlock_LCINS_SBS.refs[, seq_len(14)]))
 #'
 cossim <- function(ref_sigs) {
+  
+  if(!(is.matrix(ref_sigs) | is.data.frame(ref_sigs) | dplyr::is.tbl(ref_sigs))){
+    stop("ref_sigs must be a matrix, data frame, or tibble.")
+  }
+  if(any(round(colSums(ref_sigs), 5) !=1)){
+    stop("Columns of ref_sigs must sum to 1.")
+  }
+  
+  
   res <- t(ref_sigs) %*% ref_sigs / matrix(sqrt(colSums(ref_sigs**2)),
-    nrow = ncol(ref_sigs), ncol = ncol(ref_sigs)
+                                           nrow = ncol(ref_sigs), ncol = ncol(ref_sigs)
   ) / matrix(sqrt(colSums(ref_sigs**2)),
-    nrow = ncol(ref_sigs),
-    ncol = ncol(ref_sigs), byrow = TRUE
+             nrow = ncol(ref_sigs),
+             ncol = ncol(ref_sigs), byrow = TRUE
   )
   diag(res) <- 1
   return(res)
