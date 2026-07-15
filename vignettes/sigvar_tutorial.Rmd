@@ -422,7 +422,7 @@ plot_SBS_spectrum(data.frame(TP53_driver_spectrum) %>%
 
 We can compute the ratio of these two spectra in order to compute the proportion of mutations that are drivers in each of the 96 SBS contexts:
 
-```{r}
+```{r ratio of spectra}
 TP53_driver_prop <- TP53_driver_spectrum / TP53_spectrum
 
 TP53_driver_prop[1:10]
