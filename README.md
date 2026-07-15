@@ -17,8 +17,8 @@ MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.or
 The R package *sigvar* implements **sig**nature **var**iability
 analysis, a framework for the analysis of mutational signature
 activities within and across cancer samples. This R package accompanies
-the paper [“Variability of mutational signatures is a footprint of
-carcinogens’’ by Morrison et
+the paper [“Quantifying variability of cancer mutational signatures with
+sigvar’’ by Morrison et
 al.](https://doi.org/10.1101/2023.11.23.23298821); please refer to the
 paper for more details on the methods presented in this package.
 
@@ -65,7 +65,7 @@ you will be able to install it with:
 # Ensure BiocManager is installed
 if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
 
-# Install the package from Bioconductor 
+# Install the package from Bioconductor
 BiocManager::install("sigvar")
 ```
 
