@@ -45,20 +45,24 @@ The *sigvar* package contains two core functions to perform signature variabilit
 
 Install sigvar from Bioconductor using the following code:
 
-```{r install, eval = FALSE}
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
+```{r install bioconductor, eval = FALSE}
+if (!require("BiocManager", quietly = TRUE)){
+  install.packages("BiocManager")
+}
 
 BiocManager::install("sigvar")
 ```
 
 You can also install the development version of sigvar from [GitHub](https://github.com/MaikeMorrison/sigvar) with:
 
-```{r install packages , eval=FALSE}
-install.packages("devtools") # run only if devtools not already installed
+```{r install github, eval=FALSE}
+if (!require("devtools", quietly = TRUE)){
+  install.packages("devtools")
+}
+
 devtools::install_github("MaikeMorrison/sigvar",
-  dependencies = TRUE, build_vignettes = TRUE
-)
+                         dependencies = TRUE, 
+                         build_vignettes = TRUE)
 ```
 
 After installation, you can access this introductory vignette at an time by running:
@@ -73,14 +77,13 @@ browseVignettes("sigvar")
 
 ## Connection to other Bioconductor R packages
 
-There are several Bioconductor R packages available for the inference of mutational signatures, performing either de novo signature extraction (e.g., `RESOLVE`, `signeR`, `SomaticSignatures`) or fitting a mutational profile to a combination of known signatures (e.g., `YAPSA`). There are also broad packages that include these inference and fitting capabilities as well as downstream analyses and visualizations (e.g., `musicatk`, `MutationalPatterns`). 
+There are several Bioconductor R packages available for the inference of mutational signatures, performing either de novo signature extraction (e.g., *RESOLVE*, *signeR*, *SomaticSignatures*) or fitting a mutational profile to a combination of known signatures (e.g., *YAPSA*). There are also broad packages that include these inference and fitting capabilities as well as downstream analyses and visualizations (e.g., *musicatk*, *MutationalPatterns*). 
 
-The `sigvar` R package is downstream of all of these packages, computing novel diversity and heterogeneity statistics using a matrix of signature activities for different samples. Users of sigvar are welcome to use any of the above packages (or others) in order to produce this matrix of signature activities. The present tutorial begins with such signature activities in hand and proceeds by explaining how to use `sigvar` to perform the statistical analyses introduced by [Morrison et al.](https://doi.org/10.1101/2023.11.23.23298821). 
-
+The *sigvar* R package is downstream of all of these packages, computing the within-sample diversity and across-sample heterogeneity of mutational signature activities. Users of sigvar are welcome to use any of the above packages (or others) in order to generate mutational signature activities for analysis with *sigvar*. The present tutorial begins with such signature activities in hand and proceeds by explaining how to use *sigvar* to perform the statistical analyses introduced by [Morrison et al.](https://doi.org/10.1101/2023.11.23.23298821). While there is some overlap between the accessory functions of `sigvar` and existing packages (e.g., several other packages also include code to plot mutational signature profiles), the core capabilities of *sigvar* are entirely novel.  
 
 ## Overview
 
-We begin the tutorial by explaining what types of data are required to use the *sigvar* R package ([Data specifications]). We then conduct an example of signature variability analysis ([Example analysis]), using  data from [Moody et al. (2021)](https://www.nature.com/articles/s41588-021-00928-6) to explore the within-sample diversity and across-sample heterogeneity of mutational signature activities for esophageal squamous cell carcinoma (ESCC) samples from eight countries which vary dramatically in their ESCC incidences. We begin our example analysis by introducing the data ([Example data]) and demonstrating the data visualization functions of *sigvar* ([Visualize mutational signature activities]). We then perform [Signature variability analysis], visualize the results, and use [Bootstrapping] to determine the statistical significance of differences in sigvar results between countries. 
+We begin the tutorial by explaining what types of data are required to use the *sigvar* R package ([Data specifications]). We then conduct an example of signature variability analysis ([Example analysis]), using  data from [Moody et al. (2021)](https://www.nature.com/articles/s41588-021-00928-6) to explore the within-sample diversity and across-sample heterogeneity of mutational signature activities for esophageal squamous cell carcinoma (ESCC) samples from eight countries which vary dramatically in their ESCC incidences. We begin our example analysis by introducing the data ([Example data]) and demonstrating the data visualization functions of *sigvar* ([Visualize mutational signature activities]). We then perform [Signature variability analysis], visualize the results, and use [Bootstrapping] to determine the statistical significance of differences in sigvar results between countries. Finally, in [Additional *sigvar* capabilities], we introduce some useful accessory functions.
 
 
 # Data specifications
@@ -386,6 +389,43 @@ We see that, for the sigvar statistics `across_sample_heterogeneity` and `mean_w
 
 ```{r view p values}
 comparison_boot$P_values
+```
+
+# Additional *sigvar* capabilities
+
+`get_SBS96_spectrum` is a function to obtain the SBS96 spectrum of a transcript based on its ensembl ID. For example, to get the SBS96 spectrum of the gene TP53, we would run the following code: 
+
+```{r load TP53 spectrum}
+TP53_spectrum <- get_SBS96_spectrum(transcript = "ENST00000269305.9")
+
+# look at first 10 entries
+TP53_spectrum[1:10]
+```
+
+`get_SBS96_driver_spectrum` is a function to obtain the SBS spectrum of a table of driver alterations. Here, we load the table of TP53 driver mutations from the LUAD database. 
+
+```{r TP53 drivers}
+data(TP53_drivers_intogen_LUAD, package = "sigvar")
+TP53_driver_spectrum <- get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
+
+# look at first 10 entries
+TP53_driver_spectrum[1:10]
+```
+
+`plot_SBS96_spectrum` is a function to plot such a spectrum, such as the one below for TP53 driver mutations. 
+
+```{r plot TP53 SBS spectrum}
+plot_SBS_spectrum(data.frame(TP53_driver_spectrum) %>% 
+                    `colnames<-`(c("ref", "TP53")) %>% 
+                    select(TP53))
+```
+
+We can compute the ratio of these two spectra in order to compute the proportion of mutations that are drivers in each of the 96 SBS contexts:
+
+```{r}
+TP53_driver_prop <- TP53_driver_spectrum / TP53_spectrum
+
+TP53_driver_prop[1:10]
 ```
 
 

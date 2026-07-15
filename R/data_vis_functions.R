@@ -17,10 +17,10 @@ Q_checker <- function(Q, K, rep) {
   if (ncol(Q) > K) {
     Q <- Q[, (ncol(Q) - K + 1):ncol(Q)]
   }
-  
+
   # convert Q matrix entries to numbers
   Q <- data.matrix(Q)
-  
+
   # Check if Q matrix has any missing values, and give warning if necessary
   if (any(is.na(Q))) {
     # Identify location of missing entries
@@ -38,13 +38,13 @@ Q_checker <- function(Q, K, rep) {
       na.pos.format[row] <- paste0("(", na.pos[row, 1], ", ", na.pos[row, 2], ")")
     }
     na.pos.format.string <- as.character(na.pos.format) %>% paste(collapse = ", ")
-    
+
     stop(
       "There is at least one NA value in your signature activity matrix. The missing entries are found in the following positions: ",
       na.pos.format.string
     )
   }
-  
+
   # check if matrix rows sum to 1, and give useful warnings if rounding is necessary
   sums <- rowSums(Q) %>% round(5)
   if (any(sums != 1)) {
@@ -175,35 +175,38 @@ Q_checker <- function(Q, K, rep) {
 #' @importFrom rlang .data
 #' @export
 plot_signature_prop <- function(relab_matrix, group = NULL, time = NULL, w = NULL, K = NULL, arrange = FALSE) {
-  
-  if(!is.null(group)){
-    if(!(is.character(group))){
+  if (!is.null(group)) {
+    if (!(is.character(group))) {
       stop("group must be a character string or vector of strings specifying the name(s) of the grouping column.")
-    }}
-  if(!is.null(time)){
-    if(!(is.character(time) && length(time) == 1)){
+    }
+  }
+  if (!is.null(time)) {
+    if (!(is.character(time) && length(time) == 1)) {
       stop("time must be a character string specifying the name of the time column.")
-    }}
-  if(!is.null(w)){
-    if(!(is.numeric(w) && length(w) > 1 && (round(sum(w),6)==1))){
+    }
+  }
+  if (!is.null(w)) {
+    if (!(is.numeric(w) && length(w) > 1 && (round(sum(w), 6) == 1))) {
       stop("w must be a numeric vector that sums to 1.")
-    }}
-  if(!is.null(K)){
-    if(!(is.numeric(K) && length(K) == 1 && (round(K) == K))){
+    }
+  }
+  if (!is.null(K)) {
+    if (!(is.numeric(K) && length(K) == 1 && (round(K) == K))) {
       stop("K must be a single integer.")
-    }}
-  if(!(arrange %in% c(TRUE, FALSE, "horizontal", "vertical", "both"))){
+    }
+  }
+  if (!(arrange %in% c(TRUE, FALSE, "horizontal", "vertical", "both"))) {
     stop("arrange must be TRUE, FALSE, horizontal, vertical, or both.")
   }
-  
+
   relab_checker_out <- relab_checker(relab = relab_matrix, K = K, group = group, time = time)
-  
+
   K <- ncol(relab_checker_out$relab_matrix)
-  
+
   # Repeat rows to account for time or weight (w) if provided,
   # otherwise return relab_matrix unaltered
   relab_edited <- relab_sample_weighter(relab = relab_matrix, K = K, time = time, w = w, group = group)
-  
+
   # Re-arrange rows or columns as specified by arrange
   # otherwise return relab_edited unaltered
   relab_edited <- arrange_categories(
@@ -211,25 +214,25 @@ plot_signature_prop <- function(relab_matrix, group = NULL, time = NULL, w = NUL
     arrange = arrange,
     K = K, group = group, time = time
   )
-  
-  
+
+
   # Generate the data to plot
   relab_plot <- dplyr::mutate(relab_edited, ID = seq_len(nrow(relab_edited)), .before = 1)
-  
-  
+
+
   start <- 2 + (!is.null(group)) + (!is.null(time))
-  
+
   relab_plot_long <- tidyr::pivot_longer(relab_plot, cols = start:ncol(relab_plot))
-  
-  
+
+
   relab_plot_long$ID <- factor(relab_plot_long$ID, levels = unique(relab_plot$ID), ordered = TRUE)
   relab_plot_long$name <- factor(relab_plot_long$name, levels = colnames(relab_plot)[start:ncol(relab_plot)] %>% rev(), ordered = TRUE)
-  
+
   if (!is.null(group)) {
     if (is.null(relab_checker_out$group)) {
       stop("The group provided is not a column name in relab_matrix. Please provide a valid group.")
     }
-    
+
     ggplot2::ggplot(data = relab_plot_long, ggplot2::aes(
       fill = .data$name,
       color = .data$name,
@@ -327,54 +330,55 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
                       facet, threshold = 0) {
   # Satisfy R cmd check
   Signature <- . <- Mean_activity <- Proportion_present <- NULL
-  
-  if(!(is.character(group))){
+
+  if (!(is.character(group))) {
     stop("group must be a character string or vector of strings specifying the name(s) of the grouping column.")
   }
-  if(!(is.numeric(K) && length(K) == 1 && (round(K) == K))){
+  if (!(is.numeric(K) && length(K) == 1 && (round(K) == K))) {
     stop("K must be a single integer.")
   }
-  if(!(is.numeric(max_dotsize) && length(max_dotsize) == 1)){
+  if (!(is.numeric(max_dotsize) && length(max_dotsize) == 1)) {
     stop("max_dotsize must be a number.")
-  }  
-  if(!(pivot %in% c(TRUE, FALSE))){
+  }
+  if (!(pivot %in% c(TRUE, FALSE))) {
     stop("pivot must be TRUE or FALSE.")
   }
-  if(!(median %in% c(TRUE, FALSE))){
+  if (!(median %in% c(TRUE, FALSE))) {
     stop("median must be TRUE or FALSE.")
   }
-  if(!(normalized %in% c(TRUE, FALSE))){
+  if (!(normalized %in% c(TRUE, FALSE))) {
     stop("normalized must be TRUE or FALSE.")
   }
-  if(!missing(facet)){
-    if(!(is.character(facet) && (length(facet) == 1))){
+  if (!missing(facet)) {
+    if (!(is.character(facet) && (length(facet) == 1))) {
       stop("facet must be a character string specifying the name of the faceting column.")
-    }}
-  
+    }
+  }
+
   # If multiple groups are provided, make a new grouping column
   multiple_groups <- FALSE
   if (length(group) > 1) {
     multiple_groups <- TRUE
     sig_activity <- dplyr::mutate(sig_activity,
-                                  group = apply(sig_activity[, group], 1, paste, collapse = "_"),
-                                  .before = 1
+      group = apply(sig_activity[, group], 1, paste, collapse = "_"),
+      .before = 1
     )
     group_multiple <- group
     group <- "group"
-    
+
     group_table <- dplyr::distinct(dplyr::select(sig_activity, dplyr::all_of(c("group", group_multiple))))
   }
-  
+
   facet_true <- !missing(facet)
   # will there be a few facet panels, or many? used to determine # of columns
   facets_few <- ifelse(facet_true, length(unique(unlist(sig_activity[facet]))) <= 4, FALSE)
-  
+
   if (length(K) > 0) {
     if (K > (ncol(sig_activity) - 1)) warning("K too large, not enough columns in K; K reduced to ncol(sig_activity)-1=", ncol(sig_activity) - 1)
   }
-  
+
   signatures <- colnames(sig_activity)[(ncol(sig_activity) - K + 1):ncol(sig_activity)]
-  
+
   if (facet_true) {
     sig_activity_sigs <- cbind(
       data.frame(
@@ -388,7 +392,7 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
       })
     ) %>%
       `colnames<-`(c("group", "facet", signatures))
-    
+
     sig_activity_present <- sig_activity_sigs %>%
       dplyr::group_by(group, facet) %>%
       dplyr::summarise(dplyr::across(
@@ -409,7 +413,7 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
       })
     ) %>%
       `colnames<-`(c("group", signatures))
-    
+
     sig_activity_present <- sig_activity_sigs %>%
       dplyr::group_by(group) %>%
       dplyr::summarise(dplyr::across(
@@ -421,8 +425,8 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
         values_to = "Proportion_present"
       )
   }
-  
-  
+
+
   if (median) {
     sig_activity_means <- sig_activity_sigs %>%
       dplyr::group_by(group) %>%
@@ -442,12 +446,12 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
         values_to = "Mean_activity"
       )
   }
-  
-  
+
+
   plot_data <- dplyr::inner_join(sig_activity_present, sig_activity_means) %>%
     dplyr::mutate(Signature = factor(Signature,
-                                     ordered = TRUE,
-                                     levels = (signatures)
+      ordered = TRUE,
+      levels = (signatures)
     )) %>%
     {
       if (facet_true) {
@@ -464,8 +468,8 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
         .
       }
     }
-  
-  
+
+
   ggplot2::ggplot(
     plot_data,
     ggplot2::aes(
@@ -497,13 +501,13 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
           breaks = signif(seq(
             from = 0,
             to = ifelse(normalized, 1,
-                        max(plot_data$Mean_activity, na.rm = TRUE)
+              max(plot_data$Mean_activity, na.rm = TRUE)
             ),
             length.out = 3
           ), 2),
           name = ifelse(normalized,
-                        "Median relative\nactivity in\ntumors with\nsignature",
-                        "Median activity\nin tumors with\nsignature"
+            "Median relative\nactivity in\ntumors with\nsignature",
+            "Median activity\nin tumors with\nsignature"
           )
         )
       }
@@ -518,18 +522,18 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
           ),
           colours = c("#E81F27", "#881F92", "#2419F9"),
           limits = signif(c(0, ifelse(normalized, 1,
-                                      max(plot_data$Mean_activity, na.rm = TRUE)
+            max(plot_data$Mean_activity, na.rm = TRUE)
           )), 2),
           breaks = signif(seq(
             from = 0,
             to = ifelse(normalized, 1,
-                        max(plot_data$Mean_activity, na.rm = TRUE)
+              max(plot_data$Mean_activity, na.rm = TRUE)
             ),
             length.out = 3
           ), 2),
           name = ifelse(normalized,
-                        "Mean relative\nactivity in\ntumors with\nsignature",
-                        "Mean activity\nin tumors with\nsignature"
+            "Mean relative\nactivity in\ntumors with\nsignature",
+            "Mean activity\nin tumors with\nsignature"
           )
         )
       }
@@ -578,25 +582,25 @@ plot_dots <- function(sig_activity, group = colnames(sig_activity)[1],
 plot_SBS_spectrum <- function(SBS_table) {
   # Satisfy R cmd check
   Type <- name <- Relative_abundance <- Sub <- NULL
-  
-  
+
+
   # CHECKS ON SBS_table ------------------------------------------------------
-  
+
   # is SBS_table a table?
-  if(!(is.matrix(SBS_table) | is.data.frame(SBS_table) | dplyr::is.tbl(SBS_table))){
+  if (!(is.matrix(SBS_table) | is.data.frame(SBS_table) | dplyr::is.tbl(SBS_table))) {
     stop("SBS_table must be a matrix, data frame, or tibble.")
   }
-  
+
   # does SBS_table have 96 rows?
   if (nrow(SBS_table) != 96) {
     stop("SBS_table must have exactly 96 rows, one for each single-base substitution.")
   }
-  
-  
+
+
   # does SBS_table have only numeric columns?
   col_count <- ncol(SBS_table)
   SBS_table <- dplyr::select_if(SBS_table, is.numeric)
-  
+
   if (col_count != ncol(SBS_table)) {
     warning(
       "The ",
@@ -604,35 +608,35 @@ plot_SBS_spectrum <- function(SBS_table) {
       " column(s) containing non-numeric values were omitted."
     )
   }
-  
+
   # does SBS_table have only columns that sum to 1?
   if (any(round(colSums(SBS_table), 5) != 1)) {
     SBS_table <- apply(SBS_table, 2, function(col) col / sum(col))
-    
+
     warning("At least one column did not sum to 1. The columns have each been divided by their sum so that they now sum to 1.")
   }
-  
+
   # Create a temporary environment to safely load the data
   tmp_env <- new.env()
   utils::data("COSMIC3.3.1_SBS", package = "sigvar", envir = tmp_env)
-  
+
   # Assign to a standard variable name
   COSMIC3.3.1_SBS <- tmp_env$COSMIC3.3.1_SBS
-  
+
   sbs <- COSMIC3.3.1_SBS %>%
     dplyr::select(Type)
   sbs$Sub <- stringr::str_split(sbs$Type, "\\[|\\]", simplify = TRUE)[, 2]
-  
+
   sbs$Context <- stringr::str_split(sbs$Type, "\\[|\\]|>") %>%
     lapply(function(x) paste0(x[1], x[2], x[4])) %>%
     unlist()
-  
+
   sub_pal <- c(
     "#02BCED", "#010101", "#E22926",
     "#CAC8C9", "#A0CE62", "#ECC6C5"
   ) %>%
     `names<-`(unique(sort(sbs$Sub)))
-  
+
   sbs <- dplyr::left_join(
     sbs,
     data.frame(
@@ -640,34 +644,42 @@ plot_SBS_spectrum <- function(SBS_table) {
       color = sub_pal
     )
   )
-  
-  
+
+
   strip <- ggh4x::strip_themed(
     background_x = ggh4x::elem_list_rect(fill = sub_pal, color = sub_pal),
     text_x = ggh4x::elem_list_text(color = c("black", "white", "white", rep("black", 3)))
   )
-  
+
+  # plot_data_wide <- cbind(sbs, SBS_table) %>%
+  #   dplyr::mutate(name = glue::glue("<b style='color:#BEBEBE'>{stringr::str_sub(Context, 1,1)}<b style='color:{color}'>{stringr::str_sub(Context, 2, 2)}<b style='color:#BEBEBE'>{stringr::str_sub(Context, 3,3)}"), .before = 5)
+
   plot_data_wide <- cbind(sbs, SBS_table) %>%
-    dplyr::mutate(name = glue::glue("<b style='color:#BEBEBE'>{stringr::str_sub(Context, 1,1)}<b style='color:{color}'>{stringr::str_sub(Context, 2, 2)}<b style='color:#BEBEBE'>{stringr::str_sub(Context, 3,3)}"), .before = 5)
-  
+    dplyr::mutate(
+      name = glue::glue(
+        "<span style='color:#BEBEBE'>{stringr::str_sub(Context, 1, 1)}</span>",
+        "<span style='color:{color}; font-weight:bold'>{stringr::str_sub(Context, 2, 2)}</span>",
+        "<span style='color:#BEBEBE'>{stringr::str_sub(Context, 3, 3)}</span>"
+      ),
+      .before = 5
+    )
+
   plot_data_long <- tidyr::pivot_longer(plot_data_wide,
-                                        cols = colnames(SBS_table),
-                                        names_to = "Spectrum", values_to = "Relative_abundance"
+    cols = colnames(SBS_table),
+    names_to = "Spectrum", values_to = "Relative_abundance"
   )
-  
-  ggplot2::ggplot(plot_data_long, ggplot2::aes(x = name, y = Relative_abundance, fill = Sub)) +
+
+  ggplot2::ggplot(
+    plot_data_long,
+    ggplot2::aes(x = name, y = Relative_abundance, fill = Sub)
+  ) +
     ggplot2::geom_bar(stat = "identity") +
     ggh4x::facet_grid2(Spectrum ~ Sub, strip = strip, scales = "free") +
-    ggplot2::theme_minimal() +
-    # scale_x_discrete(expand = c(0, 0))+
-    # scale_y_continuous(expand = c(0, 0)) +
-    ggplot2::theme( # axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0,
-      # size = 6, family = "mono"),
+    ggplot2::theme(
       axis.text.x = ggtext::element_markdown(
         angle = 90, vjust = 0.5, hjust = 0, size = 4,
         family = "mono", margin = ggplot2::margin(0)
       ),
-      # axis.title.y = ggplot2::element_blank(),
       axis.title.x = ggplot2::element_blank(),
       strip.text.x = ggplot2::element_text(size = 8),
       strip.text.y = ggplot2::element_text(size = 12),
