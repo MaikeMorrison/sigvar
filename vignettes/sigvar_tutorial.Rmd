@@ -7,7 +7,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{0: Tutorial}
+  %\VignetteIndexEntry{Tutorial}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -22,7 +22,6 @@ knitr::opts_chunk$set(
   fig.width = 10
 )
 ```
-
 
 # Introduction
 
@@ -44,7 +43,16 @@ The *sigvar* package contains two core functions to perform signature variabilit
 
 ## Installation
 
-You can install the development version of sigvar from [GitHub](https://github.com/MaikeMorrison/sigvar) with:
+Install sigvar from Bioconductor using the following code:
+
+```{r install, eval = FALSE}
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("sigvar")
+```
+
+You can also install the development version of sigvar from [GitHub](https://github.com/MaikeMorrison/sigvar) with:
 
 ```{r install packages , eval=FALSE}
 install.packages("devtools") # run only if devtools not already installed
@@ -56,8 +64,18 @@ devtools::install_github("MaikeMorrison/sigvar",
 After installation, you can access this introductory vignette at an time by running:
 
 ```{r load vignette, eval = FALSE}
-vignette("tutorial", package = "sigvar")
+vignette("sigvar_tutorial", package = "sigvar")
+
+# or
+
+browseVignettes("sigvar")
 ```
+
+## Connection to other Bioconductor R packages
+
+There are several Bioconductor R packages available for the inference of mutational signatures, performing either de novo signature extraction (e.g., `RESOLVE`, `signeR`, `SomaticSignatures`) or fitting a mutational profile to a combination of known signatures (e.g., `YAPSA`). There are also broad packages that include these inference and fitting capabilities as well as downstream analyses and visualizations (e.g., `musicatk`, `MutationalPatterns`). 
+
+The `sigvar` R package is downstream of all of these packages, computing novel diversity and heterogeneity statistics using a matrix of signature activities for different samples. Users of sigvar are welcome to use any of the above packages (or others) in order to produce this matrix of signature activities. The present tutorial begins with such signature activities in hand and proceeds by explaining how to use `sigvar` to perform the statistical analyses introduced by [Morrison et al.](https://doi.org/10.1101/2023.11.23.23298821). 
 
 
 ## Overview
