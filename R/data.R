@@ -11,6 +11,7 @@
 #'   \item{SBS1, SBS2}{Number of mutations for each signature}
 #'   ...
 #' }
+#' @usage data(PCAWG_SigProfiler_COSMIC_SBS)
 #' @source <https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples>
 "PCAWG_SigProfiler_COSMIC_SBS"
 
@@ -27,6 +28,7 @@
 #'   \item{ID1, ID2}{Number of mutations for each signature}
 #'   ...
 #' }
+#' @usage data(PCAWG_SigProfiler_COSMIC_ID)
 #' @source <https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples>
 "PCAWG_SigProfiler_COSMIC_ID"
 
@@ -43,6 +45,7 @@
 #'   \item{DBS1, DBS2}{Number of mutations for each signature}
 #'   ...
 #' }
+#' @usage data(PCAWG_SigProfiler_COSMIC_DBS)
 #' @source <https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples>
 "PCAWG_SigProfiler_COSMIC_DBS"
 
@@ -62,6 +65,7 @@
 #'   \item{dose}{Treatment dose}
 #'   \item{chemical}{Known or suspected carcinogen chemical administered}
 #' }
+#' @usage data(mutsig_carcinogens_mice_SBS)
 #' @source <https://github.com/team113sanger/mouse-mutatation-signatures/blob/6a00d910df40d178c373ac4d57849918e9814951/figure1/mexposure.rds>
 "mutsig_carcinogens_mice_SBS"
 
@@ -78,6 +82,7 @@
 #'   \item{Subtype}{Substitution type with 5' and 3' context (e.g., ACA)}
 #'   \item{mSBS5, ..., mSBS_N3}{Proportion of mutations in each class for each signature}
 #' }
+#' @usage data(mutsig_carcinogens_mice_SBS.refs)
 "mutsig_carcinogens_mice_SBS.refs"
 
 
@@ -97,6 +102,7 @@
 #'   \item{mean_within_sample_diversity}{P-values comparing values of within-sample diversity between group and group_2}
 #'   \item{pooled_diversity}{P-values comparing the pooled diversity between group and group_2}
 #' }
+#' @usage data(mutsig_carcinogens_mice_bootstrap_p_vals)
 "mutsig_carcinogens_mice_bootstrap_p_vals"
 
 
@@ -120,6 +126,7 @@
 #'   \item{CN1,...,CN19}{Copy number signature attributions}
 #'   \item{SBS1,...,SBS40}{Single Base Substitution signature attributions}
 #' }
+#' @usage data(MESOMICS_CN_SBS) 
 #' @source <https://static-content.springer.com/esm/art%3A10.1038%2Fs41588-023-01321-1/MediaObjects/41588_2023_1321_MOESM4_ESM.xlsx>
 "MESOMICS_CN_SBS"
 
@@ -134,6 +141,7 @@
 #'   \item{Type}{Type of SBS}
 #'   \item{SBS1,...,SBS85}{Proportion of SBS in each class for each signature}
 #' }
+#' @usage data(COSMIC3.0_SBS)
 #' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
 "COSMIC3.0_SBS"
 
@@ -148,6 +156,7 @@
 #'   \item{Type}{Type of SBS}
 #'   \item{SBS1,...,SBS95}{Proportion of SBS in each class for each signature}
 #' }
+#' @usage data(COSMIC3.3.1_SBS)
 #' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
 "COSMIC3.3.1_SBS"
 
@@ -162,6 +171,7 @@
 #'   \item{Type}{Type of ID}
 #'   \item{ID1,...,ID17}{Proportion of ID in each class for each signature}
 #' }
+#' @usage data(COSMIC3.0_ID)
 #' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
 "COSMIC3.0_ID"
 
@@ -176,6 +186,7 @@
 #'   \item{Type}{Type of ID}
 #'   \item{ID1,...,ID18}{Proportion of ID in each class for each signature}
 #' }
+#' @usage data(COSMIC3.3_ID)
 #' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
 "COSMIC3.3_ID"
 
@@ -190,6 +201,7 @@
 #'   \item{Type}{Type of ID}
 #'   \item{DBS1,...,DBS11}{Proportion of DBS in each class for each signature}
 #' }
+#' @usage data(COSMIC3.3_DBS)
 #' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
 "COSMIC3.3_DBS"
 
@@ -204,6 +216,7 @@
 #'   \item{Type}{Type of ID}
 #'   \item{DBS1,...,DBS11}{Proportion of DBS in each class for each signature}
 #' }
+#' @usage data(COSMIC3.3_DBS_mm10)
 #' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
 "COSMIC3.3_DBS_mm10"
 
@@ -218,6 +231,7 @@
 #'   \item{Type}{Type of SBS}
 #'   \item{SBS1,...,SBS95}{Proportion of SBS in each class for each signature}
 #' }
+#' @usage data(COSMIC3.3.1_SBS_mm10)
 #' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
 "COSMIC3.3.1_SBS_mm10"
 
@@ -232,6 +246,7 @@
 #'   \item{MutationsType}{Type of segment}
 #'   \item{CN1,...,CN19}{Proportion of Copy number segments in each category}
 #' }
+#' @usage data(COSMIC3.1_CN)
 #' @source <https://static-content.springer.com/esm/art%3A10.1038%2Fs41588-023-01321-1/MediaObjects/41588_2023_1321_MOESM4_ESM.xlsx>
 "COSMIC3.1_CN"
 
@@ -246,6 +261,7 @@
 #'   \item{MutationsType}{Type of segment}
 #'   \item{CN1,...,CN19}{Proportion of Copy number segments in each category}
 #' }
+#' @usage data(COSMIC3.3_CN)
 #' @source <https://cancer.sanger.ac.uk/signatures/downloads/>
 "COSMIC3.3_CN"
 
@@ -256,6 +272,7 @@
 #'
 #' @format ## `sbs_palette`
 #' A vector of RGB color codes for COSMIC SBS signatures.
+#' @usage data(sbs_palette)
 #' @source <https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples>
 "sbs_palette"
 
@@ -266,6 +283,7 @@
 #'
 #' @format ## `all_sig_pal`
 #' A vector of HEX color codes for mutational signature activities.
+#' @usage  data(all_sig_pal)
 "all_sig_pal"
 
 
@@ -281,6 +299,7 @@
 #' \item{Sample}{Unique sample ID}
 #' \item{SBS1, ..., ID17}{Relative abundance of mutational signatures in each sample. These columns sum to 1 for each row.}
 #' }
+#' @usage data(ESCC_sig_activity)
 #' @source <https://doi.org/10.1038/s41588-021-00928-6>
 "ESCC_sig_activity"
 
@@ -297,6 +316,7 @@
 #' \item{ASR}{Age-standardized rate (ASR) of RCC incidence in each country}
 #' \item{SBS1, ..., ID_C}{Relative abundance of mutational signatures in each sample. These columns sum to 1 for each row.}
 #' }
+#' @usage data(rcc_sig_activity)
 #' @source <https://doi.org/10.1101/2023.06.20.23291538>
 "rcc_sig_activity"
 
@@ -310,6 +330,7 @@
 #' \describe{
 #' \item{SBS1, ..., ID_C}{Cosine similarity between mutational signatures.}
 #' }
+#' @usage data(rcc_sim)
 #' @source <https://doi.org/10.1101/2023.06.20.23291538>
 "rcc_sim"
 
@@ -323,6 +344,7 @@
 #' \describe{
 #' \item{SBS1, ..., ID17}{Pairwise cosine similarities between mutational signatures.}
 #' }
+#' @usage data(ESCC_sig_similarity)
 #' @source <https://doi.org/10.1038/s41588-021-00928-6>
 "ESCC_sig_similarity"
 
@@ -340,6 +362,7 @@
 #' ...
 #' \item{SBS1, ..., SBS40}{Relative abundance of mutational signatures in each sample. These columns sum to 1 for each row.}
 #' }
+#' @usage data(zhang_sig_activity)
 #' @source <https://doi.org/10.1038/s41588-021-00920-0>
 "zhang_sig_activity"
 
@@ -354,6 +377,7 @@
 #' \describe{
 #' \item{SBS1, ..., SBS40}{Pairwise cosine similarities between mutational signatures.}
 #' }
+#' @usage data(zhang_sig_similarity)
 #' @source <https://doi.org/10.1038/s41588-021-00920-0>
 "zhang_sig_similarity"
 
@@ -372,6 +396,7 @@
 #' \item{APOBEC}{Activity of APOBEC mutational signature}
 #' \item{Ageing}{Activity of ageing mutational signature}
 #' }
+#' @usage data(smoker_sigs_chen)
 #' @source <https://doi.org/10.1038/s41588-019-0569-6>
 "smoker_sigs_chen"
 
@@ -385,86 +410,102 @@
 #' \describe{
 #' \item{Smoking, ..., Ageing}{Pairwise cosine similarities between mutational signatures.}
 #' }
+#' @usage data(smoker_sigs_chen_cossim)
 #' @source <https://doi.org/10.1038/s41588-019-0569-6>
 "smoker_sigs_chen_cossim"
 
 #' Single base substitution signature attributions found in esophageal squamous cell carcinoma across countries with varying incidence.
 #'
 #' Data from: Moody et al. Nat Genet (2021)
+#' @usage data(ESCC_countries_SBS)
 "ESCC_countries_SBS"
 
 #' Reference COSMIC Single base substitution signatures found in esophageal squamous cell carcinoma across countries with varying incidence.
 #'
 #' Data from: Moody et al. Nat Genet (2021)
+#' @usage data(ESCC_countries_SBS.refs)
 "ESCC_countries_SBS.refs"
 
 #' Metadata accompanying mutational signatures for lung cancer in never smokers.
 #'
 #' Data from: Zhang et al. Nat Genet (2021)
+#' @usage data(Sherlock_LCINS.metadata)
 "Sherlock_LCINS.metadata"
 
 #' Single base substitution signature attributions found in Lung cancer in never smokers.
 #'
 #' Data from: Zhang et al. Nat Genet (2021)
+#' @usage data(Sherlock_LCINS_SBS)
 "Sherlock_LCINS_SBS"
 
 #' Reference COSMIC Single base substitution signatures found in Lung cancer in never smokers.
 #'
 #' Data from: Zhang et al. Nat Genet (2021)
+#' @usage data(Sherlock_LCINS_SBS.refs)
 "Sherlock_LCINS_SBS.refs"
 
 #' Single base substitution signature attributions found in mice exposed to 20 known or suspected carcinogens.
 #'
 #' Data from: Riva et al. Nat Genet (2020)
+#' @usage data(carcinogens_mice_SBS)
 "carcinogens_mice_SBS"
 
 
 #' Reference single base substitution signatures found in mice exposed to 20 known or suspected carcinogens.
 #'
 #' Data from: Riva et al. Nat Genet (2020)
+#' @usage data(carcinogens_mice_SBS.refs)
 "carcinogens_mice_SBS.refs"
 
 
 #' Single base substitution signature attributions found in papillary thyroid carcinoma from Chernobyl incident survivors.
 #'
 #' Data from: Morton et al. Science (2021)
+#' @usage data(radiation_sigs_morton)
 "radiation_sigs_morton"
 
 #' Cosine similarity matrix of Single base substitution signatures found in papillary thyroid carcinoma from Chernobyl incident survivors.
 #'
 #' Data from: Morton et al. Science (2021)
+#' @usage data(radiation_sigs_morton_cossim)
 "radiation_sigs_morton_cossim"
 
 
 #' Driver mutations from the intogen website for gene EGFR in lung adenocarcinomas
 #'
 #' Data from: Intogen database
+#' @usage data(Intogen_EGFR_LUAD)
 "Intogen_EGFR_LUAD"
 
 #' Driver mutations from the intogen website for gene TP53 in lung adenocarcinomas
 #'
 #' Data from: Intogen database
+#' @usage data(TP53_drivers_intogen_LUAD)
 "TP53_drivers_intogen_LUAD"
 
 
 #' Counts of each context class for the main transcript of gene EGFR
 #'
 #' Data from: Ensembl
+#' @usage data(EGFR_context_counts_ordered)
 "EGFR_context_counts_ordered"
 
 
 #' Counts of each context class for the main transcript of gene TP53
 #'
 #' Data from: Ensembl
+#' @usage data(TP53_context_counts_ordered)
 "TP53_context_counts_ordered"
 
 
 #' SBS96 spectrum from the intogen website for gene EGFR in lung adenocarcinomas
 #'
 #' Data from: Intogen database
+#' @usage data(EGFR_drivers_intogen_SBS96)
 "EGFR_drivers_intogen_SBS96"
 
 #' SBS96 spectrum from the intogen website for gene TP53 in lung adenocarcinomas
 #'
 #' Data from: Intogen database
+#' @usage data(TP53_drivers_intogen_SBS96)
 "TP53_drivers_intogen_SBS96"

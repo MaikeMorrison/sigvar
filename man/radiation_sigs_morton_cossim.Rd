@@ -8,7 +8,7 @@
 An object of class \code{matrix} (inherits from \code{array}) with 13 rows and 13 columns.
 }
 \usage{
-radiation_sigs_morton_cossim
+data(radiation_sigs_morton_cossim)
 }
 \description{
 Data from: Morton et al. Science (2021)

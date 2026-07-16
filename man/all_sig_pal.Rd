@@ -11,7 +11,7 @@ A vector of HEX color codes for mutational signature activities.
 }
 }
 \usage{
-all_sig_pal
+data(all_sig_pal)
 }
 \description{
 Vector of named colors for use in plotting the relative activities of mutational

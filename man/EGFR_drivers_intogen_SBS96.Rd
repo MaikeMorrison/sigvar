@@ -8,7 +8,7 @@
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 96 rows and 4 columns.
 }
 \usage{
-EGFR_drivers_intogen_SBS96
+data(EGFR_drivers_intogen_SBS96)
 }
 \description{
 Data from: Intogen database

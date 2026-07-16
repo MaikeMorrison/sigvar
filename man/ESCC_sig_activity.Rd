@@ -20,7 +20,7 @@ A dataframe with 552 rows and 46 columns:
 \url{https://doi.org/10.1038/s41588-021-00928-6}
 }
 \usage{
-ESCC_sig_activity
+data(ESCC_sig_activity)
 }
 \description{
 Data from: Moody, S., Senkin, S., Islam, S.M.A. et al. Mutational signatures in esophageal squamous cell carcinoma from eight countries with varying incidence. Nat Genet 53, 1553–1563 (2021).

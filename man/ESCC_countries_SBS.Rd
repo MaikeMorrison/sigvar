@@ -8,7 +8,7 @@
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 552 rows and 31 columns.
 }
 \usage{
-ESCC_countries_SBS
+data(ESCC_countries_SBS)
 }
 \description{
 Data from: Moody et al. Nat Genet (2021)

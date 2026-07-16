@@ -20,7 +20,7 @@ A tibble with 29 rows and 7 columns:
 }
 }
 \usage{
-mutsig_carcinogens_mice_bootstrap_p_vals
+data(mutsig_carcinogens_mice_bootstrap_p_vals)
 }
 \description{
 Data on single Base Substitution mutational signature attributions

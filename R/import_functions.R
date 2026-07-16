@@ -15,6 +15,10 @@
 #' plot_dots(Qlist[[1]], normalized = FALSE)
 #' @importFrom readr read_tsv
 import_SigProfiler <- function(folder = ".") {
+  if (!file.exists(folder)) {
+    stop("Input 'folder' does not exist.")
+  }
+  
   # find activity files within the folder
   input_files <- list.files(folder, pattern = "Activities[_refit]*.txt", recursive = TRUE, full.names = TRUE)
   # get name (de novo or COSMIC)

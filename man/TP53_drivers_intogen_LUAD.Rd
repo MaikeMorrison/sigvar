@@ -8,7 +8,7 @@
 An object of class \code{spec_tbl_df} (inherits from \code{tbl_df}, \code{tbl}, \code{data.frame}) with 202 rows and 10 columns.
 }
 \usage{
-TP53_drivers_intogen_LUAD
+data(TP53_drivers_intogen_LUAD)
 }
 \description{
 Data from: Intogen database

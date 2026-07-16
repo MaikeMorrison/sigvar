@@ -18,7 +18,7 @@ A tibble with 83 rows and 19 columns:
 \url{https://cancer.sanger.ac.uk/signatures/downloads/}
 }
 \usage{
-COSMIC3.3_ID
+data(COSMIC3.3_ID)
 }
 \description{
 COSMIC 3.3 Indel mutational signatures

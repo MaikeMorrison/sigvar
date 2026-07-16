@@ -18,7 +18,7 @@ A tibble with 96 rows and 68 columns:
 \url{https://cancer.sanger.ac.uk/signatures/downloads/}
 }
 \usage{
-COSMIC3.0_SBS
+data(COSMIC3.0_SBS)
 }
 \description{
 COSMIC 3.0 Single base substitutions mutational signatures
