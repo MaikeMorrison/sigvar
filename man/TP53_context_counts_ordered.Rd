@@ -8,7 +8,7 @@
 An object of class \code{table} of length 96.
 }
 \usage{
-data(TP53_context_counts_ordered)
+TP53_context_counts_ordered
 }
 \description{
 Data from: Ensembl

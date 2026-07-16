@@ -17,7 +17,7 @@ A dataframe with 28 rows and 28 columns:
 \url{https://doi.org/10.1101/2023.06.20.23291538}
 }
 \usage{
-data(rcc_sim)
+rcc_sim
 }
 \description{
 Data from: Senkin et al. (2023). Geographic variation of mutagenic exposures in kidney cancer genomes. MedRxiv, 14, 2023.06.20.23291538. https://doi.org/10.1101/2023.06.20.23291538

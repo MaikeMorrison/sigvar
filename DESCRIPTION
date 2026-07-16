@@ -43,15 +43,12 @@ Imports:
     scales,
     GenomicFeatures,
     GenomeInfoDb,
-    BSgenome.Hsapiens.UCSC.hg38,
-    BSgenome.Hsapiens.UCSC.hg19,
-    BSgenome.Mmusculus.UCSC.mm10,
+    BSgenome,
     Biostrings,
     rtracklayer,
     TxDb.Hsapiens.UCSC.hg38.knownGene,
     TxDb.Mmusculus.UCSC.mm10.knownGene,
     lifecycle,
-    txdbmaker,
     withr
 Suggests: 
     knitr,
@@ -59,6 +56,7 @@ Suggests:
     testthat (>= 3.0.0),
     magick,
     BiocStyle,
+    BSgenome.Hsapiens.UCSC.hg38,
     PNWColors,
     cowplot,
     ggpubr,
@@ -74,3 +72,4 @@ Depends:
 VignetteBuilder: knitr
 LazyData: false
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3

@@ -4,12 +4,18 @@
 \alias{get_SBS96_spectrum}
 \title{get_SBS96_spectrum}
 \usage{
-get_SBS96_spectrum(transcript = "ENST00000269305.9", organism = "Homo sapiens")
+get_SBS96_spectrum(
+  transcript = "ENST00000269305.9",
+  organism = "Homo sapiens",
+  ref_genome
+)
 }
 \arguments{
 \item{transcript}{the ensembl ID of the transcript}
 
 \item{organism}{the name of the organism associated with the transcript (species)}
+
+\item{ref_genome}{BSgenome reference genome}
 }
 \value{
 A 96 x 1 matrix containing the SBS spectrum of the transcript
@@ -19,6 +25,8 @@ get_SBS96_spectrum
 }
 \examples{
 # Run on
-spectrum <- get_SBS96_spectrum(transcript = "ENST00000269305.9")
+ref_genome <- "BSgenome.Hsapiens.UCSC.hg38"
+library(ref_genome, character.only = TRUE)
+spectrum <- get_SBS96_spectrum(transcript = "ENST00000269305.9", ref_genome=ref_genome)
 print(spectrum)
 }

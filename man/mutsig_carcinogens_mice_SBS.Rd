@@ -22,7 +22,7 @@ A tibble with 181 rows and 46 columns:
 \url{https://github.com/team113sanger/mouse-mutatation-signatures/blob/6a00d910df40d178c373ac4d57849918e9814951/figure1/mexposure.rds}
 }
 \usage{
-data(mutsig_carcinogens_mice_SBS)
+mutsig_carcinogens_mice_SBS
 }
 \description{
 Single Base Substitution mutational signature attributions

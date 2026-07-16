@@ -8,7 +8,7 @@
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 96 rows and 13 columns.
 }
 \usage{
-data(carcinogens_mice_SBS.refs)
+carcinogens_mice_SBS.refs
 }
 \description{
 Data from: Riva et al. Nat Genet (2020)

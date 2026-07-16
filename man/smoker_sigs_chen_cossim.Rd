@@ -17,7 +17,7 @@ A dataframe with 3 rows and 3 columns:
 \url{https://doi.org/10.1038/s41588-019-0569-6}
 }
 \usage{
-data(smoker_sigs_chen_cossim)
+smoker_sigs_chen_cossim
 }
 \description{
 Data from: Chen, J., Yang, H., Teo, A.S.M. et al. Genomic landscape of lung adenocarcinoma in East Asians. Nat Genet 52, 177–186 (2020).

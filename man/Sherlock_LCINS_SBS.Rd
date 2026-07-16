@@ -8,7 +8,7 @@
 An object of class \code{spec_tbl_df} (inherits from \code{tbl_df}, \code{tbl}, \code{data.frame}) with 232 rows and 15 columns.
 }
 \usage{
-data(Sherlock_LCINS_SBS)
+Sherlock_LCINS_SBS
 }
 \description{
 Data from: Zhang et al. Nat Genet (2021)

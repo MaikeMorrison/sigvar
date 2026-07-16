@@ -47,19 +47,19 @@ import_SigProfiler <- function(folder = ".") {
 #'
 #' @param transcript the ensembl ID of the transcript
 #' @param organism the name of the organism associated with the transcript (species)
+#' @param ref_genome BSgenome reference genome
 #'
 #' @return A 96 x 1 matrix containing the SBS spectrum of the transcript
 #' @export
 #'
 #' @examples
 #' # Run on
-#' spectrum <- get_SBS96_spectrum(transcript = "ENST00000269305.9")
+#' ref_genome <- "BSgenome.Hsapiens.UCSC.hg38"
+#' library(ref_genome, character.only = TRUE)
+#' spectrum <- get_SBS96_spectrum(transcript = "ENST00000269305.9", ref_genome=ref_genome)
 #' print(spectrum)
-#' @importFrom txdbmaker makeTxDbFromBiomart
 #' @importFrom GenomicFeatures exons
 #' @importFrom GenomeInfoDb seqlevelsStyle
-#' @importFrom BSgenome.Hsapiens.UCSC.hg38 BSgenome.Hsapiens.UCSC.hg38
-#' @importFrom BSgenome.Mmusculus.UCSC.mm10 BSgenome.Mmusculus.UCSC.mm10
 #' @importFrom Biostrings getSeq
 #' @importFrom rtracklayer chrom
 #' @importFrom rtracklayer start
@@ -71,7 +71,7 @@ import_SigProfiler <- function(folder = ".") {
 #' @importFrom Biostrings DNAStringSet
 #' @importFrom TxDb.Hsapiens.UCSC.hg38.knownGene TxDb.Hsapiens.UCSC.hg38.knownGene
 #' @importFrom TxDb.Mmusculus.UCSC.mm10.knownGene TxDb.Mmusculus.UCSC.mm10.knownGene
-get_SBS96_spectrum <- function(transcript = "ENST00000269305.9", organism = "Homo sapiens") {
+get_SBS96_spectrum <- function(transcript = "ENST00000269305.9", organism = "Homo sapiens",ref_genome ) {
   if (sub("_| ", "", tolower(organism)) == "homosapiens") txdb <- TxDb.Hsapiens.UCSC.hg38.knownGene::TxDb.Hsapiens.UCSC.hg38.knownGene
   if (sub("_| ", "", tolower(organism)) == "musmusculus") txdb <- TxDb.Mmusculus.UCSC.mm10.knownGene::TxDb.Mmusculus.UCSC.mm10.knownGene
   if (!exists("txdb")) stop("Organism not found. Valid answers are Homo sapiens or Mus musculus.")
@@ -95,22 +95,24 @@ get_SBS96_spectrum <- function(transcript = "ENST00000269305.9", organism = "Hom
   )
   # retrieve transcript sequence + neighboring nucleotides from DB
   ref_tr <- GenomicFeatures::exons(txdb, filter = list(tx_name = transcript))
-  if (sub("_| ", "", tolower(organism)) == "homosapiens") {
-    GenomeInfoDb::seqlevelsStyle(ref_tr) <- GenomeInfoDb::seqlevelsStyle(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38)
-    ref_seq <- Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38,
+
+  # Get the reference genome
+  tryCatch(
+    error = function(cnd) {
+      stop("Please provide the name of a valid BSgenome object.", call. = FALSE)
+    },
+    {
+      ref_genome <- BSgenome::getBSgenome(ref_genome)
+    }
+  )
+  
+  GenomeInfoDb::seqlevelsStyle(ref_tr) <- GenomeInfoDb::seqlevelsStyle(ref_genome)
+  ref_seq <- Biostrings::getSeq(ref_genome,
       names = rtracklayer::chrom(ref_tr),
       start = rtracklayer::start(ref_tr) - 1, end = rtracklayer::end(ref_tr) + 1,
       strand = rtracklayer::strand(ref_tr)
-    )
-  }
-  if (sub("_| ", "", tolower(organism)) == "musmusculus") {
-    GenomeInfoDb::seqlevelsStyle(ref_tr) <- GenomeInfoDb::seqlevelsStyle(BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10)
-    ref_seq <- Biostrings::getSeq(BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10,
-      names = rtracklayer::chrom(ref_tr),
-      start = rtracklayer::start(ref_tr) - 1, end = rtracklayer::end(ref_tr) + 1,
-      strand = rtracklayer::strand(ref_tr)
-    )
-  }
+  )
+
   # compute spectrum
   spectrum <- colSums(Biostrings::trinucleotideFrequency(ref_seq))
   spectrumW <- spectrum[names(spectrum) %in% SBS96_Subtypes]
@@ -127,24 +129,25 @@ get_SBS96_spectrum <- function(transcript = "ENST00000269305.9", organism = "Hom
 #' get_SBS96_driver_spectrum
 #'
 #' @param driverlist a table containing a list of drivers alterations, with columns chr, pos, and alt
-#' @param genome a string indicating the reference genome (currently supports hg38, hg19, or mm10)
+#' @param ref_genome BSgenome reference genome
 #'
 #' @return A a named integer table (length 96) containing the SBS spectrum of the transcript
 #' @export
 #'
 #' @examples
 #' data(TP53_drivers_intogen_LUAD, package = "sigvar")
-#' TP53_LUAD.driver.spectrum <- get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
+#' ref_genome <- "BSgenome.Hsapiens.UCSC.hg38"
+#' library(ref_genome, character.only = TRUE)
+#' TP53_LUAD.driver.spectrum <- get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD,ref_genome)
 #' print(TP53_LUAD.driver.spectrum)
-#' @importFrom BSgenome.Hsapiens.UCSC.hg38 BSgenome.Hsapiens.UCSC.hg38
 #' @importFrom Biostrings getSeq
 #' @importFrom Biostrings trinucleotideFrequency
 #' @importFrom Biostrings complement
 #' @importFrom Biostrings reverse
 #' @importFrom Biostrings DNAStringSet
-get_SBS96_driver_spectrum <- function(driverlist, genome = "hg38") {
+get_SBS96_driver_spectrum <- function(driverlist, ref_genome ) {
   # @param driverlist a dataframe with the list of driver positions (columns chr and pos required)
-  # @param genome the name of the reference genome corresponding to the driverlist positions (hg19, hg38 or mm10)
+  # @param ref_genome BSgenome reference genome corresponding to the driverlist positions
   driver.preds <- driverlist
   if (nrow(driver.preds) == 0) stop("Gene-cohort pair not found in intogen data")
 
@@ -166,29 +169,22 @@ get_SBS96_driver_spectrum <- function(driverlist, genome = "hg38") {
     "A[T>C]A", "A[T>C]C", "A[T>C]G", "A[T>C]T", "C[T>C]A", "C[T>C]C", "C[T>C]G", "C[T>C]T", "G[T>C]A", "G[T>C]C", "G[T>C]G", "G[T>C]T", "T[T>C]A", "T[T>C]C", "T[T>C]G", "T[T>C]T",
     "A[T>G]A", "A[T>G]C", "A[T>G]G", "A[T>G]T", "C[T>G]A", "C[T>G]C", "C[T>G]G", "C[T>G]T", "G[T>G]A", "G[T>G]C", "G[T>G]G", "G[T>G]T", "T[T>G]A", "T[T>G]C", "T[T>G]G", "T[T>G]T"
   )
+  
+  # Get the reference genome
+  tryCatch(
+    error = function(cnd) {
+      stop("Please provide the name of a valid BSgenome object.", call. = FALSE)
+    },
+    {
+      ref_genome <- BSgenome::getBSgenome(ref_genome)
+    }
+  )
+  
   # retrieve transcript sequence + neighboring nucleotides from DB
-  if (genome %in% c("hg38", "GRCh38")) {
-    ref_seq <- as.character(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38,
+  ref_seq <- as.character(Biostrings::getSeq(ref_genome,
       names = driver.preds$chr,
       start = driver.preds$pos - 1, end = driver.preds$pos + 1
     ))
-  } else {
-    if (genome %in% c("hg19", "GRCh37")) {
-      ref_seq <- as.character(Biostrings::getSeq(BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19,
-        names = driver.preds$chr,
-        start = driver.preds$pos - 1, end = driver.preds$pos + 1
-      ))
-    } else {
-      if (genome %in% c("mm10", "GRCm38")) {
-        ref_seq <- as.character(Biostrings::getSeq(BSgenome.Mmusculus.UCSC.mm10::BSgenome.Mmusculus.UCSC.mm10,
-          names = driver.preds$chr,
-          start = driver.preds$pos - 1, end = driver.preds$pos + 1
-        ))
-      } else {
-        stop("genome parameter not recognized. Please use one of hg38, hg19, or mm10")
-      }
-    }
-  }
   ref_seq.alt <- driver.preds$alt
   # complement mutations
   to_comp <- which(!ref_seq %in% SBS32_Subtypes)

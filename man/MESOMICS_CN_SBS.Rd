@@ -27,7 +27,7 @@ A tibble with 120 rows and 41 columns:
 \url{https://static-content.springer.com/esm/art\%3A10.1038\%2Fs41588-023-01321-1/MediaObjects/41588_2023_1321_MOESM4_ESM.xlsx}
 }
 \usage{
-data(MESOMICS_CN_SBS)
+MESOMICS_CN_SBS
 }
 \description{
 Copy Number and Single Base Substitution mutational signature attributions

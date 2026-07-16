@@ -14,7 +14,7 @@ A vector of RGB color codes for COSMIC SBS signatures.
 \url{https://dcc.icgc.org/releases/PCAWG/mutational_signatures/Signatures_in_Samples/SP_Signatures_in_Samples}
 }
 \usage{
-data(sbs_palette)
+sbs_palette
 }
 \description{
 Single Base Substitution mutational signature attributions to COSMIC signatures

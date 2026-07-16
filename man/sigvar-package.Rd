@@ -20,7 +20,6 @@ Useful links:
 
 Authors:
 \itemize{
-  \item Nicolas Alcala \email{alcalan@iarc.who.int} (\href{https://orcid.org/0000-0002-5961-5064}{ORCID})
   \item Maike Morrison \email{maike.morrison@gmail.com} (\href{https://orcid.org/0000-0003-0430-1401}{ORCID})
 }
 

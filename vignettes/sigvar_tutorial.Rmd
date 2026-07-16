@@ -396,7 +396,9 @@ comparison_boot$P_values
 `get_SBS96_spectrum` is a function to obtain the SBS96 spectrum of a transcript based on its ensembl ID. For example, to get the SBS96 spectrum of the gene TP53, we would run the following code: 
 
 ```{r load TP53 spectrum}
-TP53_spectrum <- get_SBS96_spectrum(transcript = "ENST00000269305.9")
+ref_genome <- "BSgenome.Hsapiens.UCSC.hg38"
+library(ref_genome, character.only = TRUE)
+TP53_spectrum <- get_SBS96_spectrum(transcript = "ENST00000269305.9",ref_genome=ref_genome)
 
 # look at first 10 entries
 TP53_spectrum[1:10]
@@ -406,7 +408,9 @@ TP53_spectrum[1:10]
 
 ```{r TP53 drivers}
 data(TP53_drivers_intogen_LUAD, package = "sigvar")
-TP53_driver_spectrum <- get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD)
+ref_genome <- "BSgenome.Hsapiens.UCSC.hg38"
+library(ref_genome, character.only = TRUE)
+TP53_driver_spectrum <- get_SBS96_driver_spectrum(TP53_drivers_intogen_LUAD,ref_genome = ref_genome)
 
 # look at first 10 entries
 TP53_driver_spectrum[1:10]

@@ -21,7 +21,7 @@ A dataframe with 39 rows and 213 columns:
 \url{https://doi.org/10.1038/s41588-021-00920-0}
 }
 \usage{
-data(zhang_sig_activity)
+zhang_sig_activity
 }
 \description{
 Data from: Zhang et al. (2021). Genomic and evolutionary classification of lung cancer in never smokers. Nature Genetics, 53(9), 1348–1359. https://doi.org/10.1038/s41588-021-00920-0

@@ -8,7 +8,7 @@
 An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 25 rows and 13 columns.
 }
 \usage{
-data(Intogen_EGFR_LUAD)
+Intogen_EGFR_LUAD
 }
 \description{
 Data from: Intogen database

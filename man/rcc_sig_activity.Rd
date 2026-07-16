@@ -20,7 +20,7 @@ A dataframe with 962 rows and 31 columns:
 \url{https://doi.org/10.1101/2023.06.20.23291538}
 }
 \usage{
-data(rcc_sig_activity)
+rcc_sig_activity
 }
 \description{
 Data from: Senkin et al. (2023). Geographic variation of mutagenic exposures in kidney cancer genomes. MedRxiv, 14, 2023.06.20.23291538. https://doi.org/10.1101/2023.06.20.23291538
