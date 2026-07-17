@@ -1,4 +1,12 @@
-# sigvar 0.99.8
+# sigvar 0.99.8 (July 2026)
+
+* Turn off lazy data loading
+
+* Move figure vignettes to https://github.com/IARCbioinfo/MS_sigvar
+
+* Increase test coverage
+
+* Fix bug with random seed in sigboot
 
 # sigvar 0.99.7 (April 2026)
 
