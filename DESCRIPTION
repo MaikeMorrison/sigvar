@@ -1,6 +1,6 @@
 Package: sigvar
 Title: Quantify and visualize variability of mutational signatures within and across samples
-Version: 0.99.7
+Version: 0.99.8
 Authors@R: c(
     person(
         "Maike", "Morrison",
@@ -72,4 +72,4 @@ Depends:
 VignetteBuilder: knitr
 LazyData: false
 Config/roxygen2/version: 8.0.0
-RoxygenNote: 7.3.3
+RoxygenNote: 8.0.0

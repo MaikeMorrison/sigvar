@@ -1,3 +1,5 @@
+# sigvar 0.99.8
+
 # sigvar 0.99.7 (April 2026)
 
 * Remove sigvar.Rproj from online version.
